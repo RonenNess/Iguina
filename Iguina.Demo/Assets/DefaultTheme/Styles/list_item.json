@@ -1,0 +1,28 @@
+{
+	"Default": {
+		"TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
+        "NoValueTextFillColor": {"R": 175, "G": 175, "B": 175, "A": 255},
+        "FontSize": 26,
+        "TextSpacing": 2,
+        "TextOutlineWidth": 2,
+        "TextAlignment": "Left",
+        "DefaultTextAnchor": "CenterLeft",
+        "ExtraSize": {"Left": 0, "Right": 0, "Top": 0, "Bottom": 10}
+	},
+    "Targeted": {
+		"TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
+	},
+    "Checked": {
+        "FillTextureStretched": {
+            "TextureId": "Textures/UI.png",
+            "SourceRect": {"X": 0, "Y": 80, "Width": 16, "Height": 16},
+            "ExtraSize": {"Left": 20, "Right": 10, "Top": 10, "Bottom": 0}
+        },
+		"TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	},
+	"InterpolateStatesSpeed": 0
+}

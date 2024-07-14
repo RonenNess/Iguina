@@ -1,0 +1,27 @@
+{
+	"Default": {
+		"FillTextureFramed": {
+			"TextureId": "Textures/UI.png",
+			"InternalSourceRect": {"X": 102, "Y": 144, "Width": 14, "Height": 12},
+			"ExternalSourceRect": {"X": 96, "Y": 144, "Width": 26, "Height": 12},
+			"TextureScale": 3
+		},
+        "Padding": {"Left": 0, "Right": 0, "Top": 0, "Bottom": 0},
+        "MarginBefore": {"X": 0, "Y": 18},
+        "MarginAfter": {"X": 0, "Y": 18}
+	},
+    "Targeted": {
+		"FillTextureFramed": {
+			"TextureId": "Textures/UI.png",
+			"InternalSourceRect": {"X": 102, "Y": 156, "Width": 14, "Height": 12},
+			"ExternalSourceRect": {"X": 96, "Y": 156, "Width": 26, "Height": 12},
+			"TextureScale": 3
+		}
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	},
+    "DefaultWidth": {"Value": 100, "Units": "PercentOfParent"},
+    "DefaultHeight": {"Value": 48, "Units": "Pixels"},
+	"InterpolateStatesSpeed": 5
+}

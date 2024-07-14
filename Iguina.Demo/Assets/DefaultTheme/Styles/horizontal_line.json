@@ -1,0 +1,18 @@
+{
+	"Default": {
+		"FillTextureFramed": {
+			"TextureId": "Textures/UI.png",
+			"InternalSourceRect": {"X": 3, "Y": 96, "Width": 74, "Height": 2},
+			"ExternalSourceRect": {"X": 0, "Y": 96, "Width": 80, "Height": 2},
+			"TextureScale": 3
+		},
+        "Padding": {"Left": 8, "Right": 8, "Top": 0, "Bottom": 0},
+        "MarginBefore": {"X": 0, "Y": 5},
+        "MarginAfter": {"X": 0, "Y": 6}
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	},
+    "DefaultWidth": {"Value": 100, "Units": "PercentOfParent"},
+    "DefaultHeight": {"Value": 8, "Units": "Pixels"}
+}

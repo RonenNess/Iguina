@@ -1,0 +1,23 @@
+{
+	"Default": {
+		"FillTextureFramed": {
+			"TextureId": "Textures/UI.png",
+			"InternalSourceRect": {"X": 4, "Y": 98, "Width": 72, "Height": 14},
+			"ExternalSourceRect": {"X": 0, "Y": 98, "Width": 80, "Height": 14},
+            "Offset": {"X": 0, "Y": -10},
+			"TextureScale": 3
+		},
+        "Padding": {"Left": 6, "Right": 6, "Top": 0, "Bottom": 0},
+        "ExtraSize": {"Left": 60, "Right": 60, "Top": 0, "Bottom": 0},
+        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
+        "MarginAfter": {"X": 0, "Y": 20},
+        "FontSize": 24,
+        "TextSpacing": 1.75,
+        "TextOutlineWidth": 2,
+        "TextAlignment": "Center"
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	}
+}

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>A framework-agnostic, cross platform, modern UI system for C#</Title>
+    <Authors>RonenNess</Authors>
+    <Copyright>Ronen Ness</Copyright>
+    <PackageProjectUrl></PackageProjectUrl>
+    <PackageIcon>logo_no_text.png</PackageIcon>
+    <Description>Iguina is a framework-agnostic, cross platform, modern UI system for C#.
+
+Its a spiritual successor to the GeonBit.UI library, but takes a more flexible and modern approach, and can be used with any framework, and not just MonoGame.
+</Description>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/RonenNess/Iguina</RepositoryUrl>
+    <PackageTags>UI;GUI;Game;User Interface;UX;MonoGame;RayLib</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\ReadmeAssets\logo_no_text.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
