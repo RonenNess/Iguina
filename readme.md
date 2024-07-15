@@ -970,6 +970,11 @@ Currently selected list index, or -1 if no item is selected.
 
 Currently selected item value, or null if no item is selected.
 
+### `SelectedText`
+
+Return selected value label, or value itself if it has no label.
+Will return null if no value is selected.
+
 ### `AllowDeselect`
 
 If true, users can click on selected item again to deselect it.
@@ -1152,6 +1157,13 @@ Caret offset.
 
 Character to use to show caret.
 
+# Changelist
+
+## 1.0.1
+
+- Added `SelectedText` property to `ListBox` and `DropDown`.
+- Fixed `DropDown` to properly show the selected item label (if set) and not just the item value.
+- Adjusted `ListBox` and `DropDown` to change selection value if the selected item value is replaced.
 
 # License
 
