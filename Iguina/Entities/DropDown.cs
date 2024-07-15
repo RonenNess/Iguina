@@ -149,7 +149,7 @@ namespace Iguina.Entities
                         var p = _paragraphs[0];
                         p.LockedState = null;
                         p.Visible = true;
-                        p.Text = SelectedValue ?? DefaultSelectedText ?? string.Empty;
+                        p.Text = SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
                         p.UseEmptyValueTextColor = SelectedValue == null;
                     }
                 }

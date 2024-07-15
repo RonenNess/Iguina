@@ -84,6 +84,20 @@ namespace Iguina.Entities
         string? _selectedValue;
 
         /// <summary>
+        /// Get selected item text.
+        /// Can be the item label, if a label is defined, or the value itself if not.
+        /// Will return null if no value is selected.
+        /// </summary>
+        public string? SelectedText
+        {
+            get
+            {
+                if (SelectedValue == null) { return null; }
+                return _items[SelectedIndex].Label ?? SelectedValue;
+            }
+        }
+
+        /// <summary>
         /// If true and user clicks on the selected item, it will deselect it.
         /// </summary>
         public bool AllowDeselect = true;
@@ -281,6 +295,10 @@ namespace Iguina.Entities
         public void ReplaceItem(int index, string value, string? label = null)
         {
             if (index < 0 || index >= _items.Count) { throw new IndexOutOfRangeException("Invalid index to replace!"); }
+            if (SelectedIndex == index)
+            {
+                _selectedValue = value;
+            }
             _items[index] = new ListItem() { Value = value, Label = label };
         }
 
@@ -293,9 +311,12 @@ namespace Iguina.Entities
         /// <param name="index">Index to add this item to.</param>
         public void ReplaceItem(string valueToReplace, string value, string? label = null)
         {
-            if (valueToReplace == SelectedValue) { SelectedValue = null; }
             var index = GetIndexOfValue(valueToReplace);
             if (index < 0 || index >= _items.Count) { throw new IndexOutOfRangeException("Invalid value to replace!"); }
+            if (_selectedValue == valueToReplace)
+            {
+                _selectedValue = value;
+            }
             _items[index] = new ListItem() { Value = value, Label = label };
         }
 
