@@ -1164,6 +1164,7 @@ Character to use to show caret.
 - Added `SelectedText` property to `ListBox` and `DropDown`.
 - Fixed `DropDown` to properly show the selected item label (if set) and not just the item value.
 - Adjusted `ListBox` and `DropDown` to change selection value if the selected item value is replaced.
+- Added `OverrideSelectedText` property to `DropDown`.
 
 # License
 

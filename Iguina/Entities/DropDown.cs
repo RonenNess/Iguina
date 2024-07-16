@@ -25,6 +25,11 @@ namespace Iguina.Entities
         internal override bool TopMostInteractions => IsOpened;
 
         /// <summary>
+        /// If defined, this will be the text to display when the dropdown is collapsed, regardless of the currently selected item or default text.
+        /// </summary>
+        public string? OverrideSelectedText = null;
+
+        /// <summary>
         /// Create the drop down.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
@@ -149,7 +154,7 @@ namespace Iguina.Entities
                         var p = _paragraphs[0];
                         p.LockedState = null;
                         p.Visible = true;
-                        p.Text = SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
+                        p.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
                         p.UseEmptyValueTextColor = SelectedValue == null;
                     }
                 }
