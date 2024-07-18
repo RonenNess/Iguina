@@ -30,6 +30,17 @@ namespace Iguina.Entities
         public string? OverrideSelectedText = null;
 
         /// <summary>
+        /// Styles to override stylesheet defaults, regardless of entity state, for the paragraph showing the selected value in closed state.
+        /// </summary>
+        public StyleSheetState OverrideClosedStateTextStyles = new();
+
+        /// <summary>
+        /// If true, will always show the box with currently selected value / label, even when list is opened.
+        /// If false, will hide the selected value box when list is shown.
+        /// </summary>
+        public bool ShowSelectedValueBoxWhenOpened = false;
+
+        /// <summary>
         /// Create the drop down.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
@@ -37,6 +48,8 @@ namespace Iguina.Entities
         /// <param name="itemsStylesheet">Drop down box items stylesheet. If not set, will use the same as base stylesheet.</param>
         public DropDown(UISystem system, StyleSheet? stylesheet, StyleSheet? itemsStylesheet = null) : base(system, stylesheet, itemsStylesheet)
         {
+            // set as auto-height by default
+            AutoHeight = true;
         }
 
         /// <summary>
@@ -50,13 +63,22 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Get the dropdown height, in pixels, when its closed.
+        /// </summary>
+        /// <returns>Drop down height in pixels when closed.</returns>
+        public int GetClosedStateHeight(bool includePadding = true, bool includeExtraSize = true)
+        {
+            var padding = includePadding ? GetPadding() : Sides.Zero;
+            var extra = includeExtraSize ? GetExtraSize() : Sides.Zero;
+            return ItemHeight + padding.Top + padding.Bottom + extra.Top + extra.Bottom;
+        }
+
+        /// <summary>
         /// Set bounding rectangles size to its closed state.
         /// </summary>
         private void SetSizeToClosedState(ref Rectangle boundingRect, ref Rectangle internalBoundingRect)
         {
-            var padding = GetPadding();
-            var extra = GetExtraSize();
-            internalBoundingRect.Height = ItemHeight + padding.Top + padding.Bottom + extra.Top + extra.Bottom;
+            internalBoundingRect.Height = GetClosedStateHeight();
             boundingRect.Height = internalBoundingRect.Height;
         }
 
@@ -66,6 +88,12 @@ namespace Iguina.Entities
             // special - if we are rendering in open mode, top most
             if (_isInTopmostDraw)
             {
+                if (ShowSelectedValueBoxWhenOpened)
+                {
+                    var closedHeight = GetClosedStateHeight();
+                    boundingRect.Y += closedHeight;
+                    internalBoundingRect.Y += closedHeight;
+                }
                 base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
                 return;
             }
@@ -79,6 +107,15 @@ namespace Iguina.Entities
             // dropdown is opened - render as list top-most
             if (IsOpened)
             {
+                // draw panel background for closed state
+                if (ShowSelectedValueBoxWhenOpened)
+                {
+                    Rectangle rect = boundingRect;
+                    rect.Height = GetClosedStateHeight();
+                    DrawFillTextures(rect);
+                }
+
+                // draw opened list in top-most mode at the end of frame
                 DrawMethodResult parentResults = parentDrawResult;
                 DrawMethodResult? siblingResults = siblingDrawResult;
                 UISystem.RunAfterDrawingEntities(() =>
@@ -100,7 +137,6 @@ namespace Iguina.Entities
             {
                 SetSizeToClosedState(ref boundingRect, ref internalBoundingRect);
             }
-
         }
         bool _isInTopmostDraw = false;
 
@@ -123,6 +159,12 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         internal override void PostUpdate(InputState inputState)
         {
+            // check if clicks main label
+            if ((_paragraphs.Count > 0) && _paragraphs[0].IsPointedOn(inputState.MousePosition))
+            {
+                return;
+            }
+
             // if opened and clicked outside, close list
             if (IsOpened && !IsPointedOn(inputState.MousePosition) && inputState.LeftMousePressedNow)
             {
@@ -136,7 +178,11 @@ namespace Iguina.Entities
             // if opened, set list paragraphs as-is
             if (IsOpened)
             {
-                if (_paragraphs.Count > 0) { _paragraphs[0].UseEmptyValueTextColor = false; }
+                if (_paragraphs.Count > 0) 
+                { 
+                    _paragraphs[0].UseEmptyValueTextColor = false;
+                    _paragraphs[0].ExtraMarginForInteractions.TurnToZero();
+                }
                 base.SetParagraphs(scrollOffset);
             }
             // if not opened, hide all paragraphs except top which is used for selected
@@ -150,12 +196,16 @@ namespace Iguina.Entities
                             p.Visible = false;
                         }
                     }
+
                     {
                         var p = _paragraphs[0];
                         p.LockedState = null;
                         p.Visible = true;
+                        var padding = GetPadding();
+                        p.ExtraMarginForInteractions.Set(padding.Left, padding.Right, padding.Top, padding.Bottom);
+                        p.OverrideStyles = OverrideClosedStateTextStyles;
                         p.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
-                        p.UseEmptyValueTextColor = SelectedValue == null;
+                        p.UseEmptyValueTextColor = (SelectedValue == null);
                     }
                 }
             }

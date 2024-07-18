@@ -15,7 +15,8 @@ namespace Iguina.Entities
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Title stylesheet.</param>
         /// <param name="text">Title text.</param>
-        public Title(UISystem system, StyleSheet? stylesheet, string text = "New Title") : base(system, stylesheet, text)
+        /// <param name="ignoreInteractions">If true, this title will ignore user interactions.</param>
+        public Title(UISystem system, StyleSheet? stylesheet, string text = "New Title", bool ignoreInteractions = true) : base(system, stylesheet, text, ignoreInteractions)
         {
         }
 
@@ -24,7 +25,8 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="text">Title text.</param>
-        public Title(UISystem system, string text = "New Title") : this(system, system.DefaultStylesheets.Titles, text)
+        /// <param name="ignoreInteractions">If true, this title will ignore user interactions.</param>
+        public Title(UISystem system, string text = "New Title", bool ignoreInteractions = true) : this(system, system.DefaultStylesheets.Titles, text, ignoreInteractions)
         {
         }
     }

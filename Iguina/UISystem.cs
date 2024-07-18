@@ -44,6 +44,7 @@ namespace Iguina
             public StyleSheet? Panels;
             public StyleSheet? Paragraphs;
             public StyleSheet? Titles;
+            public StyleSheet? Labels;
             public StyleSheet? Buttons;
             public StyleSheet? HorizontalLines;
             public StyleSheet? CheckBoxes;
@@ -140,7 +141,7 @@ namespace Iguina
         /// <param name="stylesheetsFolder">If the UI stylesheet loads any additional stylesheet files, this will be the folder to load them from. If null, will use current working dir.</param>
         /// <param name="renderer">Renderer provider, to draw UI elements.</param>
         /// <param name="input">Input provider, to get mouse-like and keyboard input.</param>
-        public UISystem(SystemStyleSheet styleSheet, string? stylesheetsFolder, Drivers.IRenderer renderer, Drivers.IInputProvider input) : this(renderer, input)
+        public UISystem(SystemStyleSheet styleSheet, string? stylesheetsFolder, IRenderer renderer, IInputProvider input) : this(renderer, input)
         {
             SystemStyleSheet = styleSheet;
             if (SystemStyleSheet.LoadDefaultStylesheets != null)
@@ -157,7 +158,7 @@ namespace Iguina
         /// </remarks>
         /// <param name="renderer">Renderer provider, to draw UI elements.</param>
         /// <param name="input">Input provider, to get mouse-like and keyboard input.</param>
-        public UISystem(Drivers.IRenderer renderer, Drivers.IInputProvider input) 
+        public UISystem(IRenderer renderer, IInputProvider input) 
         {
             // store renderer and input
             Renderer = renderer;

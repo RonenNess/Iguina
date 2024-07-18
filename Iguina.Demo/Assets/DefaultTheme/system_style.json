@@ -25,6 +25,7 @@
         "Panels": "Styles/panel.json",
         "Paragraphs": "Styles/paragraph.json",
         "Titles": "Styles/title.json",
+        "Labels": "Styles/label.json",
         "Buttons": "Styles/button.json",
         "HorizontalLines": "Styles/horizontal_line.json",
         "CheckBoxes": "Styles/checkbox.json",

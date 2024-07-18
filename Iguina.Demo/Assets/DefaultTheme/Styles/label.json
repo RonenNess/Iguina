@@ -1,0 +1,14 @@
+{
+	"Default": {
+		"TextFillColor": {"R": 220, "G": 220, "B": 220, "A": 255},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
+        "FontSize": 24,
+        "TextSpacing": 2,
+        "TextOutlineWidth": 2,
+        "TextAlignment": "Left",
+        "MarginAfter": {"X": 0, "Y": 6}
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	}
+}

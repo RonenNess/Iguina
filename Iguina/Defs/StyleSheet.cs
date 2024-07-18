@@ -97,6 +97,21 @@ namespace Iguina.Defs
         /// Extra offset to add to next entities in parent that has auto anchor from this entity.
         /// </summary>
         public Point? MarginAfter { get; set; }
+
+        /// <summary>
+        /// Outline width, in pixels, around the bounding rectangle borders of the entity.
+        /// </summary>
+        public Sides BoxOutlineWidth { get; set; }
+
+        /// <summary>
+        /// Box outline offset, in pixels.
+        /// </summary>
+        public Point BoxOutlineOffset { get; set; }
+
+        /// <summary>
+        /// Outline color for the bounding rectangle outlines, if set.
+        /// </summary>
+        public Color? BoxOutlineColor { get; set; }
     }
 
     /// <summary>

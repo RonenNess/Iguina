@@ -143,6 +143,11 @@ namespace Iguina.Entities
         /// </summary>
         internal int MinHeight => StyleSheet?.MinHeight ?? 0;
 
+        /// <summary>
+        /// Extra pixels to add to sides of the entity when checking collision detection for user interactions.
+        /// </summary>
+        internal Sides ExtraMarginForInteractions = new Sides();
+
         // interpolation for next state
         protected float _interpolateToNextState = 0f;
         protected EntityState _lastState = EntityState.Default;
@@ -222,12 +227,12 @@ namespace Iguina.Entities
         /// <summary>
         /// Last drawn internal bounding rect.
         /// </summary>
-        public Rectangle LastInternalBoundingRect { get; private set; }
+        public Rectangle LastInternalBoundingRect { get; protected set; }
 
         /// <summary>
         /// Last drawn bounding rect.
         /// </summary>
-        public Rectangle LastBoundingRect { get; private set; }
+        public Rectangle LastBoundingRect { get; protected set; }
 
         /// <summary>
         /// Last drawn visible bounding rect, with parents visible region taken into consideration.
@@ -938,6 +943,9 @@ namespace Iguina.Entities
             // perform rendering
             DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
 
+            // add optional box outline
+            DrawBoxOutline(boundingRect);
+
             // return rendering result
             return new DrawMethodResult() 
             { 
@@ -945,6 +953,38 @@ namespace Iguina.Entities
                 InternalBoundingRect = internalBoundingRect,
                 WasDragged = WasDraggedToPosition
             };
+        }
+
+        /// <summary>
+        /// Render box outline, if set.
+        /// </summary>
+        protected virtual void DrawBoxOutline(Rectangle boundingRect)
+        {
+            var boxOutline = StyleSheet.GetProperty("BoxOutlineWidth", State, Sides.Zero, OverrideStyles);
+            if (boxOutline.Left > 0 || boxOutline.Right > 0 || boxOutline.Top > 0 || boxOutline.Bottom > 0)
+            {
+                var color = StyleSheet.GetProperty("BoxOutlineColor", State, Color.White, OverrideStyles);
+                var offset = StyleSheet.GetProperty("BoxOutlineOffset", State, Point.Zero, OverrideStyles);
+                if (color.A > 0)
+                {
+                    if (boxOutline.Top > 0)
+                    {
+                        UISystem.Renderer.DrawRectangle(new Rectangle(offset.X + boundingRect.Left - boxOutline.Left, offset.Y + boundingRect.Top - boxOutline.Top, boundingRect.Width + boxOutline.Left + boxOutline.Right, boxOutline.Top), color);
+                    }
+                    if (boxOutline.Bottom > 0)
+                    {
+                        UISystem.Renderer.DrawRectangle(new Rectangle(offset.X + boundingRect.Left - boxOutline.Left, offset.Y + boundingRect.Bottom, boundingRect.Width + boxOutline.Left + boxOutline.Right, boxOutline.Bottom), color);
+                    }
+                    if (boxOutline.Left > 0)
+                    {
+                        UISystem.Renderer.DrawRectangle(new Rectangle(offset.X + boundingRect.Left - boxOutline.Left, offset.Y + boundingRect.Top, boxOutline.Left, boundingRect.Height), color);
+                    }
+                    if (boxOutline.Right > 0)
+                    {
+                        UISystem.Renderer.DrawRectangle(new Rectangle(offset.X + boundingRect.Right, offset.Y + boundingRect.Top, boxOutline.Right, boundingRect.Height), color);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -970,6 +1010,14 @@ namespace Iguina.Entities
         /// <param name="internalBoundingRect">Self internal bounding rect.</param>
         /// <param name="parentDrawResult">Parent draw call results.</param>
         protected virtual void DrawEntityType(ref Rectangle boundingRect, ref Rectangle internalBoundingRect, DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
+        {
+            DrawFillTextures(boundingRect);
+        }
+
+        /// <summary>
+        /// Draw just the fill textures of this entity.
+        /// </summary>
+        protected virtual void DrawFillTextures(Rectangle boundingRect)
         {
             if (DrawFillTexture)
             {
@@ -1519,12 +1567,12 @@ namespace Iguina.Entities
             if (useVisibleRect)
             {
                 return (
-                (cp.X >= LastVisibleBoundingRect.X) && (cp.X <= (LastVisibleBoundingRect.X + LastVisibleBoundingRect.Width)) &&
-                (cp.Y >= LastVisibleBoundingRect.Y) && (cp.Y <= (LastVisibleBoundingRect.Y + LastVisibleBoundingRect.Height)));
+                (cp.X >= (LastVisibleBoundingRect.X - ExtraMarginForInteractions.Left)) && (cp.X <= (LastVisibleBoundingRect.X + LastVisibleBoundingRect.Width + ExtraMarginForInteractions.Right)) &&
+                (cp.Y >= (LastVisibleBoundingRect.Y - ExtraMarginForInteractions.Top)) && (cp.Y <= (LastVisibleBoundingRect.Y + LastVisibleBoundingRect.Height + ExtraMarginForInteractions.Bottom)));
             }
             return (
-                (cp.X >= LastBoundingRect.X) && (cp.X <= (LastBoundingRect.X + LastBoundingRect.Width)) &&
-                (cp.Y >= LastBoundingRect.Y) && (cp.Y <= (LastBoundingRect.Y + LastBoundingRect.Height)));
+                (cp.X >= (LastBoundingRect.X - ExtraMarginForInteractions.Left)) && (cp.X <= (LastBoundingRect.X + LastBoundingRect.Width + ExtraMarginForInteractions.Right)) &&
+                (cp.Y >= (LastBoundingRect.Y - ExtraMarginForInteractions.Top)) && (cp.Y <= (LastBoundingRect.Y + LastBoundingRect.Height + ExtraMarginForInteractions.Bottom)));
         }
 
         /// <summary>

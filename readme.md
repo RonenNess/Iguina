@@ -44,7 +44,7 @@ Miscs:
 	* Sliders.
 	* Progress Bars.
 	* Scrollbars.
-	* Paragraphs.
+	* Paragraphs, Titles, Labels.
 	* Checkboxes.
 	* Radio Buttons.
 	* List Box.
@@ -744,6 +744,9 @@ For each state, we can define the following properties:
 * **ExtraSize** (Sides): Optional extra size to add to the sides of this entity.
 * **MarginBefore** (Point): Optional extra pixels to add before this entity, when using auto anchors.
 * **MarginAfter** (Point): Optional extra pixels to add after this entity, when using auto anchors.
+* **BoxOutlineWidth** (Sides): Optional outline width to add around the bounding rectangle of the entity.
+* **BoxOutlineOffset** (Point): Bounding rectangle outline offset, in pixels.
+* **BoxOutlineColor** (Color): Bounding rectangle outline color.
 
 # Iguina Setup
 
@@ -1060,7 +1063,11 @@ Determine how to handle a text that overflows the parent entity width:
 
 ## Title
 
-`Title` entity is a derived class of `Paragraph`, but it uses different default stylesheets and its used for texts that are titles for sections or panels.
+`Title` entity is a derived class of `Paragraph`, but it uses different default stylesheets and used for texts that are titles for sections or panels.
+
+## Label
+
+`Label` entity is a derived class of `Paragraph`, but it uses different default stylesheets and used for smaller texts above input entities.
 
 ## Slider
 
@@ -1165,6 +1172,15 @@ Character to use to show caret.
 - Fixed `DropDown` to properly show the selected item label (if set) and not just the item value.
 - Adjusted `ListBox` and `DropDown` to change selection value if the selected item value is replaced.
 - Added `OverrideSelectedText` property to `DropDown`.
+
+## 1.0.2
+
+- Added `Label` entity.
+- Added the ability to override styles for items and selected items in `ListBox` and `DropDown`.
+- Set `DropDown` to `Auto Height` by default.
+- Added `BoxOutlineWidth`, `BoxOutlineOffset` and `BoxOutlineColor` property to entities.
+- Made Paragraphs ignore user interactions by default.
+- Made `DropDown` collision rectangle slightly larger to make it more convenient.
 
 # License
 

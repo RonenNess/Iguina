@@ -306,6 +306,7 @@ And they can even function as a radio button, meaning only one button can be che
                     btn.ToggleCheckOnClick = true;
                     btn.CanClickToUncheck = false;
                     btn.ExclusiveSelection = true;
+
                 }
                 {
                     var btn = panel.AddChild(new Button(_system, "Ignore them pick me!!"));
@@ -361,7 +362,7 @@ Another thing to keep in mind about paragraphs is that you can change the way th
 "));
                 {
                     var slider = panel.AddChild(new Slider(_system));
-                    var label = panel.AddChild(new Paragraph(_system, @$"Slider Value: {slider.Value}
+                    var label = panel.AddChild(new Label(_system, @$"Slider Value: {slider.Value}
 "));
                     slider.Events.OnValueChanged = (Entity entity) => { label.Text = $"Slider Value: {slider.Value}\n"; };
                 }
@@ -374,7 +375,7 @@ Another thing to keep in mind about paragraphs is that you can change the way th
                     
                     slider.Size.Y.SetPixels(280);
                     slider.Offset.X.SetPixels(40);
-                    var label = panel.AddChild(new Paragraph(_system, @$"Slider Value: {slider.Value}
+                    var label = panel.AddChild(new Label(_system, @$"Slider Value: {slider.Value}
 "));
                     slider.Events.OnValueChanged = (Entity entity) => { label.Text = $"Slider Value: {slider.Value}\n"; };
                 }
@@ -397,7 +398,7 @@ Another thing to keep in mind about paragraphs is that you can change the way th
 ")); 
                 {
                     var progressBar = panel.AddChild(new ProgressBar(_system));
-                    var label = panel.AddChild(new Paragraph(_system, @$"Progress Bar Value: {progressBar.Value}
+                    var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}
 "));
                     float _timeForNextValueChange = 3f;
                     progressBar.Events.AfterUpdate = (Entity entity) =>
@@ -417,7 +418,7 @@ Another thing to keep in mind about paragraphs is that you can change the way th
 "));
                 {
                     var progressBar = panel.AddChild(new ProgressBar(_system));
-                    var label = panel.AddChild(new Paragraph(_system, @$"Progress Bar Value: {progressBar.Value}
+                    var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}
 "));
                     progressBar.Handle.OverrideStyles.FillColor = new Color(255, 0, 0, 255);
                     progressBar.IgnoreInteractions = false;
@@ -449,7 +450,7 @@ Another thing to keep in mind about paragraphs is that you can change the way th
                     @"List Boxes allow you to add items and select them from a list. For example:
 "));
                 {
-                    panel.AddChild(new Paragraph(_system,
+                    panel.AddChild(new Label(_system,
                     @"
 Select Race:"));
                     var listbox = panel.AddChild(new ListBox(_system));
@@ -463,10 +464,11 @@ Select Race:"));
                     @"Did you notice that you can't clear selection once a value is set? That is a configurable property. In the class selection below, you can clear by clicking the selected item again."));
                 }
                 {
-                    panel.AddChild(new Paragraph(_system,
+                    panel.AddChild(new Label(_system,
                     @"
 Select Class:"));
                     var listbox = panel.AddChild(new ListBox(_system));
+                    listbox.AutoHeight = false;
                     foreach (var val in dndClasses)
                     {
                         listbox.AddItem(val);
@@ -488,7 +490,7 @@ Select Class:"));
                     @"Drop Down entities are basically list boxes, but they collapse while they are not interacted with. For example:
 "));
                 {
-                    panel.AddChild(new Paragraph(_system,
+                    panel.AddChild(new Label(_system,
                     @"
 Select Race:"));
                     var dropdown = panel.AddChild(new DropDown(_system));
@@ -497,16 +499,19 @@ Select Race:"));
                     dropdown.AddItem("Elf");
                     dropdown.AddItem("Orc");
                     dropdown.AddItem("Dwarf");
+                    dropdown.AddItem("Gnome");
+                    dropdown.AddItem("Tiefling");
                     dropdown.AllowDeselect = false;
                     dropdown.AutoHeight = true;
                     panel.AddChild(new Paragraph(_system,
                     @"Did you notice that you can't clear selection once a value is set? That is a configurable property. In the class selection below, you can clear by clicking the selected item again."));
                 }
                 {
-                    panel.AddChild(new Paragraph(_system,
+                    panel.AddChild(new Label(_system,
                     @"
 Select Class:"));
                     var dropdown = panel.AddChild(new DropDown(_system));
+                    dropdown.AutoHeight = false;
                     dropdown.DefaultSelectedText = "< Select Class >";
                     foreach (var val in dndClasses)
                     {

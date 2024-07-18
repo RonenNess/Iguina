@@ -40,6 +40,21 @@ namespace Iguina.Entities
         internal override bool Interactable => true;
 
         /// <summary>
+        /// Styles to override stylesheet defaults, regardless of entity state, for the list items paragraphs.
+        /// </summary>
+        public StyleSheetState OverrideItemStyles = new();
+
+        /// <summary>
+        /// Styles to override stylesheet defaults, regardless of entity state, for the selected item paragraphs.
+        /// </summary>
+        public StyleSheetState OverrideSelectedItemStyles = new();
+
+        /// <summary>
+        /// Styles to override stylesheet defaults, regardless of entity state, for a specific list item by value.
+        /// </summary>
+        public Dictionary<string, StyleSheetState> OverrideItemStyleByValue = new();
+
+        /// <summary>
         /// Get / set selected index.
         /// Set to -1 to unselect.
         /// </summary>
@@ -192,7 +207,7 @@ namespace Iguina.Entities
             // create new item paragraphs
             while (_paragraphs.Count < paragraphsCount)
             {
-                var p = new Paragraph(UISystem, _itemsStylesheet);
+                var p = new Paragraph(UISystem, _itemsStylesheet, "", false);
                 p.TextOverflowMode = TextOverflowMode.Overflow;
                 p.ShrinkWidthToMinimalSize = false;
                 p._overrideInteractableState = true;
@@ -262,7 +277,10 @@ namespace Iguina.Entities
                 paragraph.Visible = true;
                 paragraph.UserData = item.Value;
                 paragraph.Text = item.Label ?? item.Value;
-                paragraph.LockedState = item.Value == SelectedValue ? EntityState.Checked : null;
+                bool selected = item.Value == SelectedValue;
+                paragraph.LockedState = selected ? EntityState.Checked : null;
+                OverrideItemStyleByValue.TryGetValue(item.Value, out var perItemStyleValue);
+                paragraph.OverrideStyles = selected ? OverrideSelectedItemStyles : (perItemStyleValue ?? OverrideItemStyles);
             }
         }
 

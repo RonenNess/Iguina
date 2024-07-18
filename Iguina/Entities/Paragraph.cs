@@ -156,9 +156,11 @@ namespace Iguina.Entities
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Paragraph stylesheet.</param>
         /// <param name="text">Paragraph text.</param>
-        public Paragraph(UISystem system, StyleSheet? stylesheet, string text = "New paragraph") : base(system, stylesheet)
+        /// <param name="ignoreInteractions">If true, this paragraph will ignore user interactions.</param>
+        public Paragraph(UISystem system, StyleSheet? stylesheet, string text = "New paragraph", bool ignoreInteractions = true) : base(system, stylesheet)
         {
             _textValue = text;
+            IgnoreInteractions = ignoreInteractions;
         }
 
         /// <summary>
@@ -166,7 +168,8 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="text">Paragraph text.</param>
-        public Paragraph(UISystem system, string text = "New paragraph") : this(system, system.DefaultStylesheets.Paragraphs, text)
+        /// <param name="ignoreInteractions">If true, this paragraph will ignore user interactions.</param>
+        public Paragraph(UISystem system, string text = "New paragraph", bool ignoreInteractions = true) : this(system, system.DefaultStylesheets.Paragraphs, text, ignoreInteractions)
         {
         }
 
