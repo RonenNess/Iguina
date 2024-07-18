@@ -194,6 +194,14 @@ namespace Iguina.Entities
             }
         }
 
+        /// <summary>
+        /// Get extra paragraphs count for this list.
+        /// </summary>
+        protected virtual int GetExtraParagraphsCount()
+        {
+            return 0;
+        }
+
         /// <inheritdoc/>
         protected override void DrawEntityType(ref Rectangle boundingRect, ref Rectangle internalBoundingRect, DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
         {
@@ -201,7 +209,8 @@ namespace Iguina.Entities
             base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
 
             // calculate how many items we should show at any given time
-            int paragraphsCount = (int)Math.Ceiling((float)internalBoundingRect.Height / (float)ItemHeight);
+            int paragraphsCount = (int)Math.Ceiling((float)internalBoundingRect.Height / (float)ItemHeight) + GetExtraParagraphsCount();
+            if (paragraphsCount < 1) { paragraphsCount = 1; }
             if (paragraphsCount > _items.Count) { paragraphsCount = _items.Count; }
 
             // create new item paragraphs
@@ -250,29 +259,34 @@ namespace Iguina.Entities
         protected virtual void OnItemClicked(Entity entity)
         {
             var newValue = entity.UserData as string;
-            if (AllowDeselect && (newValue == SelectedValue))
+            if (newValue != null)
             {
-                SelectedValue = null;
-            }
-            else
-            {
-                SelectedValue = newValue;
+                if (AllowDeselect && (newValue == SelectedValue))
+                {
+                    SelectedValue = null;
+                }
+                else
+                {
+                    SelectedValue = newValue;
+                }
             }
         }
 
         /// <summary>
         /// Set the values and texts of the paragraphs.
         /// </summary>
-        protected virtual void SetParagraphs(int scrollOffset)
+        protected virtual void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
-            for (var i = 0; i < _paragraphs.Count; ++i)
+            for (var i = startIndex; i < _paragraphs.Count; ++i)
             {
-                if (i + scrollOffset >= _items.Count)
+                var itemIndex = i + scrollOffset - startIndex;
+                if ((itemIndex < 0) || (itemIndex > _items.Count)) { continue; }
+                if (itemIndex >= _items.Count)
                 {
                     _paragraphs[i].Visible = false;
                     break;
                 }
-                var item = _items[i + scrollOffset];
+                var item = _items[itemIndex];
                 var paragraph = _paragraphs[i];
                 paragraph.Visible = true;
                 paragraph.UserData = item.Value;

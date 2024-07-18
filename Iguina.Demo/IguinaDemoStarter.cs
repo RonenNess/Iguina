@@ -487,7 +487,7 @@ Select Class:"));
                 var panel = CreateDemoContainer("Drop Down", new Point(680, 1));
 
                 panel.AddChild(new Paragraph(_system,
-                    @"Drop Down entities are basically list boxes, but they collapse while they are not interacted with. For example:
+                    @"Drop Down entities are basically list boxes, but the list is hidden while not interacted with. For example:
 "));
                 {
                     panel.AddChild(new Label(_system,
@@ -503,10 +503,11 @@ Select Race:"));
                     dropdown.AddItem("Tiefling");
                     dropdown.AllowDeselect = false;
                     dropdown.AutoHeight = true;
-                    panel.AddChild(new Paragraph(_system,
-                    @"Did you notice that you can't clear selection once a value is set? That is a configurable property. In the class selection below, you can clear by clicking the selected item again."));
                 }
                 {
+                    panel.AddChild(new Paragraph(_system,
+@"
+In the dropdown below, you can clear selection by clicking the selected item again."));
                     panel.AddChild(new Label(_system,
                     @"
 Select Class:"));
@@ -523,6 +524,24 @@ Select Class:"));
                     {
                         selectedParagraph.Text = "Selected Class: " + (dropdown.SelectedValue ?? "None");
                     };
+                }
+
+                {
+                    panel.AddChild(new Paragraph(_system,
+                    @"
+Drop Downs can also work in a mode that cover the selected value when opened:
+"));
+                    var dropdown = panel.AddChild(new DropDown(_system));
+                    dropdown.DefaultSelectedText = "< Select Race >";
+                    dropdown.AddItem("Human");
+                    dropdown.AddItem("Elf");
+                    dropdown.AddItem("Orc");
+                    dropdown.AddItem("Dwarf");
+                    dropdown.AddItem("Gnome");
+                    dropdown.AddItem("Tiefling");
+                    dropdown.ShowSelectedValueBoxWhenOpened = false;
+                    dropdown.AllowDeselect = false;
+                    dropdown.AutoHeight = true;
                 }
             }
 

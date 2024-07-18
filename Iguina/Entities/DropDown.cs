@@ -38,7 +38,7 @@ namespace Iguina.Entities
         /// If true, will always show the box with currently selected value / label, even when list is opened.
         /// If false, will hide the selected value box when list is shown.
         /// </summary>
-        public bool ShowSelectedValueBoxWhenOpened = false;
+        public bool ShowSelectedValueBoxWhenOpened = true;
 
         /// <summary>
         /// Create the drop down.
@@ -62,6 +62,27 @@ namespace Iguina.Entities
         {
         }
 
+        /// <inheritdoc/>
+        protected override void SetAutoSizes(int maxWidth, int maxHeight)
+        {
+            // set auto size
+            if (AutoWidth)
+            {
+                Size.X.SetPixels(maxWidth);
+            }
+            if (AutoHeight)
+            {
+                if (ShowSelectedValueBoxWhenOpened)
+                {
+                    Size.Y.SetPixels((int)(ItemHeight * (ItemsCount + 2f)));
+                }
+                else
+                {
+                    Size.Y.SetPixels(ItemHeight * (ItemsCount + 1));
+                }
+            }
+        }
+
         /// <summary>
         /// Get the dropdown height, in pixels, when its closed.
         /// </summary>
@@ -83,18 +104,32 @@ namespace Iguina.Entities
         }
 
         /// <inheritdoc/>
+        protected override int GetExtraParagraphsCount()
+        {
+            return ShowSelectedValueBoxWhenOpened ? -1 : 0;
+        }
+
+        /// <inheritdoc/>
         protected override void DrawEntityType(ref Rectangle boundingRect, ref Rectangle internalBoundingRect, DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
         {
             // special - if we are rendering in open mode, top most
-            if (_isInTopmostDraw)
+            if (_isCurrentlyDrawingOpenedListTopMost)
             {
                 if (ShowSelectedValueBoxWhenOpened)
                 {
-                    var closedHeight = GetClosedStateHeight();
-                    boundingRect.Y += closedHeight;
-                    internalBoundingRect.Y += closedHeight;
+                    var height = -ItemHeight * 2;
+                    internalBoundingRect.Height += height;
+                    boundingRect.Height += height;
                 }
+                
                 base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
+                
+                if (ShowSelectedValueBoxWhenOpened)
+                {
+                    Rectangle rect = boundingRect;
+                    rect.Height = GetClosedStateHeight();
+                    DrawFillTextures(rect);
+                }
                 return;
             }
 
@@ -107,12 +142,16 @@ namespace Iguina.Entities
             // dropdown is opened - render as list top-most
             if (IsOpened)
             {
-                // draw panel background for closed state
+                // move the scrollbar under the selected value box
                 if (ShowSelectedValueBoxWhenOpened)
                 {
-                    Rectangle rect = boundingRect;
-                    rect.Height = GetClosedStateHeight();
-                    DrawFillTextures(rect);
+                    if (VerticalScrollbar != null)
+                    {
+                        var extra = GetExtraSize();
+                        var scrollbarOffset = (int)((GetClosedStateHeight() - extra.Bottom) * 0.85f);
+                        VerticalScrollbar.Offset.Y.Value = scrollbarOffset;
+                        VerticalScrollbar.OverrideStyles.ExtraSize = new Sides(0, 0, 0, -scrollbarOffset);
+                    }
                 }
 
                 // draw opened list in top-most mode at the end of frame
@@ -120,9 +159,9 @@ namespace Iguina.Entities
                 DrawMethodResult? siblingResults = siblingDrawResult;
                 UISystem.RunAfterDrawingEntities(() =>
                 {
-                    _isInTopmostDraw = true;
+                    _isCurrentlyDrawingOpenedListTopMost = true;
                     _DoDraw(parentResults, siblingResults);
-                    _isInTopmostDraw = false;
+                    _isCurrentlyDrawingOpenedListTopMost = false;
                 });
             }
             // dropdown is closed - render normally in close state
@@ -138,7 +177,7 @@ namespace Iguina.Entities
                 SetSizeToClosedState(ref boundingRect, ref internalBoundingRect);
             }
         }
-        bool _isInTopmostDraw = false;
+        bool _isCurrentlyDrawingOpenedListTopMost = false;
 
         /// <inheritdoc/>
         protected override void OnItemClicked(Entity entity)
@@ -159,56 +198,89 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         internal override void PostUpdate(InputState inputState)
         {
-            // check if clicks main label
-            if ((_paragraphs.Count > 0) && _paragraphs[0].IsPointedOn(inputState.MousePosition))
+            // if opened and click outside, close the list
+            if (IsOpened && inputState.LeftMousePressedNow)
             {
-                return;
-            }
+                // clicked on closed state box? skip
+                if ((_paragraphs.Count > 0) && _paragraphs[0].IsPointedOn(inputState.MousePosition))
+                {
+                    return;
+                }
 
-            // if opened and clicked outside, close list
-            if (IsOpened && !IsPointedOn(inputState.MousePosition) && inputState.LeftMousePressedNow)
-            {
-                IsOpened = false;
+                // if we show closed state box while opened, and clicked on it, skip
+                if (ShowSelectedValueBoxWhenOpened)
+                {
+                    var rect = LastBoundingRect;
+                    rect.Y -= GetClosedStateHeight();
+                    if (rect.Contains(inputState.MousePosition))
+                    {
+                        return;
+                    }
+                }
+
+                // if got here and point outside the list, close.
+                if (!IsPointedOn(inputState.MousePosition))
+                {
+                    IsOpened = false;
+                }
             }
         }
 
         /// <inheritdoc/>
-        protected override void SetParagraphs(int scrollOffset)
+        protected override void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
             // if opened, set list paragraphs as-is
             if (IsOpened)
             {
-                if (_paragraphs.Count > 0) 
-                { 
-                    _paragraphs[0].UseEmptyValueTextColor = false;
-                    _paragraphs[0].ExtraMarginForInteractions.TurnToZero();
+                if (ShowSelectedValueBoxWhenOpened)
+                {
+                    SetFirstParagraphToSelected();
+                    base.SetParagraphs(scrollOffset, 1);
+                    if (_paragraphs.Count > 0)
+                    {
+                        _paragraphs[0].Text += '\n';
+                    }
                 }
-                base.SetParagraphs(scrollOffset);
+                else
+                {
+                    // "fix" first paragraph back to normal state
+                    if (_paragraphs.Count > 0)
+                    {
+                        var p = _paragraphs[0];
+                        p.UseEmptyValueTextColor = false;
+                        p.ExtraMarginForInteractions.TurnToZero();
+                    }
+                    base.SetParagraphs(scrollOffset);
+                }
             }
             // if not opened, hide all paragraphs except top which is used for selected
             else
             {
                 if (_paragraphs.Count > 0)
-                {
+                {  
+                    foreach (var p in _paragraphs)
                     {
-                        foreach (var p in _paragraphs)
-                        {
-                            p.Visible = false;
-                        }
-                    }
-
-                    {
-                        var p = _paragraphs[0];
-                        p.LockedState = null;
-                        p.Visible = true;
-                        var padding = GetPadding();
-                        p.ExtraMarginForInteractions.Set(padding.Left, padding.Right, padding.Top, padding.Bottom);
-                        p.OverrideStyles = OverrideClosedStateTextStyles;
-                        p.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
-                        p.UseEmptyValueTextColor = (SelectedValue == null);
-                    }
+                        p.Visible = false;
+                    }      
+                    SetFirstParagraphToSelected();
                 }
             }
+        }
+
+        /// <summary>
+        /// Set the first paragraph to selected state.
+        /// </summary>
+        private void SetFirstParagraphToSelected()
+        {
+            var p = _paragraphs[0];
+            p.LockedState = null;
+            p.Visible = true;
+            var padding = GetPadding();
+            p.ExtraMarginForInteractions.Set(padding.Left, padding.Right, padding.Top, padding.Bottom);
+            p.OverrideStyles = OverrideClosedStateTextStyles;
+            p.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
+            p.UseEmptyValueTextColor = (SelectedValue == null);
+            p.UserData = null;
         }
     }
 }

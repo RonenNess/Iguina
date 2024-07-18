@@ -6,7 +6,7 @@
         "TextSpacing": 2,
         "TextOutlineWidth": 2,
         "TextAlignment": "Left",
-        "MarginAfter": {"X": 0, "Y": 6}
+        "MarginAfter": {"X": 0, "Y": 2}
 	},
 	"Disabled": {
 		"EffectIdentifier": "disabled"
