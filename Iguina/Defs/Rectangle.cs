@@ -30,6 +30,14 @@ namespace Iguina.Defs
         }
 
         /// <summary>
+        /// Check if a point is container in rectangle.
+        /// </summary>
+        public bool Contains(Point point)
+        {
+            return point.X >= Left && point.X <= Right && point.Y >= Top && Y <= Bottom;
+        }
+
+        /// <summary>
         /// Merge two rectangles.
         /// </summary>
         public static Rectangle MergeRectangles(Rectangle rect1, Rectangle rect2)
