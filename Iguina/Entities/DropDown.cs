@@ -115,13 +115,6 @@ namespace Iguina.Entities
             // special - if we are rendering in open mode, top most
             if (_isCurrentlyDrawingOpenedListTopMost)
             {
-                if (ShowSelectedValueBoxWhenOpened)
-                {
-                    var height = -ItemHeight * 2;
-                    internalBoundingRect.Height += height;
-                    boundingRect.Height += height;
-                }
-                
                 base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
                 
                 if (ShowSelectedValueBoxWhenOpened)
