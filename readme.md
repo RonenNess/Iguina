@@ -1190,11 +1190,13 @@ An empty entity that creates an extra space between rows of entities, with const
 - Added `SetVisibleItemsCount()` method to `ListBox` and `DropDown`.
 - Added methods to `DropDown` to open, close and toggle list.
 
-## 1.0.3 [WIP]
+## 1.0.3
 
 - Made `HorizontalLine` ignore interactions by default.
 - Added entity to create empty spaces between rows.
 - Fixed auto sizes to take `MarginAfter` property into calculation.
+- Improved debug drawing entities.
+- Updated demo project.
 
 # License
 

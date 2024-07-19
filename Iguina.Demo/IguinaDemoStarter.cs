@@ -228,10 +228,8 @@ For example, see these two buttons and two paragraphs? Each set is inside an inv
                     panelRight.AddChild(new Button(_system));
                 }
 
-                panel.AddChild(new Paragraph(_system,
-                    @"You can add a small title to panels when you create them. It's not a built-in feature in Iguina, but its very easy to pull off: 
-
-"));
+                panel.AddChild(new Paragraph(_system, @"You can add a small title to panels when you create them. It's not a built-in feature in Iguina, but its very easy to pull off: "));
+                panel.AddChild(new RowsSpacer(_system, 2));
                 {
                     var titledPanel = new Panel(_system);
                     titledPanel.Size.X.SetPercents(100f);
@@ -247,11 +245,10 @@ For example, see these two buttons and two paragraphs? Each set is inside an inv
                     titledPanel.AddChild(new Paragraph(_system, "Looks nice, isn't it? Check out the source code to see how we did it."));
                 }
 
+                panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Paragraph(_system,
-                    @"
-Did you know that entities can be draggable? This panel can be dragged, lets try it out!
-The small box in the corner is draggable too:
-"));
+                    @"Did you know that entities can be draggable? This panel can be dragged, lets try it out!
+The small box in the corner is draggable too:"));
                 panel.DraggableMode = DraggableMode.DraggableConfinedToScreen;
 
                 // create draggable small box
@@ -266,9 +263,7 @@ The small box in the corner is draggable too:
             // buttons
             {
                 var panel = CreateDemoContainer("Buttons", new Point(650, 1));
-                panel.AddChild(new Paragraph(_system,
-                    @"If you see this panel, it means you already used a button! Iguina has basic buttons you can easily place and register to their click events:
-"));
+                panel.AddChild(new Paragraph(_system,@"If you see this panel, it means you already used buttons! Here's a simple button with an OnClick event handler:"));
                 {
                     int clicksCount = 0;
                     var btn = panel.AddChild(new Button(_system, "Click Me!"));
@@ -279,19 +274,17 @@ The small box in the corner is draggable too:
                     };
                 }
 
+                panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Paragraph(_system,
-    @"
-Buttons can also function as checkboxes, allowing you to click on them to toggle their state (checked/unchecked):
-"));
+    @"Buttons can also function as checkboxes, allowing you to click on them to toggle their state (checked/unchecked):"));
                 {
                     var btn = panel.AddChild(new Button(_system, "Toggle Me!"));
                     btn.ToggleCheckOnClick = true;
                 }
 
+                panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Paragraph(_system,
-    @"
-And they can even function as a radio button, meaning only one button can be checked at any given time:
-"));
+    @"And they can even function as radio buttons:"));
                 {
                     var btn = panel.AddChild(new Button(_system, "Pick Me!"));
                     btn.ToggleCheckOnClick = true;
@@ -324,8 +317,7 @@ ${FC:00FF00}Paragraphs${RESET} support special ${OC:FF0000}style changing comman
 
 You can change ${FC:00FF00}Fill Color${RESET}, ${OC:AA0000}Outline Color${RESET}, and ${OW:0}Outline Width${RESET}. To learn more, check out the source code of this demo project, or read the ${FC:FF00FF}official docs${RESET}.
 
-Another thing to keep in mind about paragraphs is that you can change the way they wrap when exceeding the parent width. They can either wrap with breaking words, wrap while keeping words intact, or overflow without wrapping.
-"));
+Another thing to keep in mind about paragraphs is that you can change the way they wrap when exceeding the parent width. They can either wrap with breaking words, wrap while keeping words intact, or overflow without wrapping."));
                 
             }
 
@@ -333,18 +325,14 @@ Another thing to keep in mind about paragraphs is that you can change the way th
             {
                 var panel = CreateDemoContainer("Checkbox / Radio", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Iguina provides a basic Checkbox entity:
-"));
+                panel.AddChild(new Paragraph(_system, @"Iguina provides a basic Checkbox entity:"));
                 panel.AddChild(new Checkbox(_system, "Checkbox Option 1"));
                 panel.AddChild(new Checkbox(_system, "Checkbox Option 2"));
                 panel.AddChild(new Checkbox(_system, "Checkbox Option 3"));
 
                 panel.AddChild(new HorizontalLine(_system));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Iguina also provides radio button entities:
-"));
+                panel.AddChild(new Paragraph(_system, @"Iguina also provides radio button entities:"));
                 panel.AddChild(new RadioButton(_system, "Radio Option 1")).Checked = true;
                 panel.AddChild(new RadioButton(_system, "Radio Option 2"));
                 panel.AddChild(new RadioButton(_system, "Radio Option 3"));
@@ -354,35 +342,22 @@ Another thing to keep in mind about paragraphs is that you can change the way th
             {
                 var panel = CreateDemoContainer("Sliders", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Sliders are useful to select numeric values:
-"));
+                panel.AddChild(new Paragraph(_system, @"Sliders are useful to select numeric values:"));
                 {
                     var slider = panel.AddChild(new Slider(_system));
-                    var label = panel.AddChild(new Label(_system, @$"Slider Value: {slider.Value}
-"));
-                    slider.Events.OnValueChanged = (Entity entity) => { label.Text = $"Slider Value: {slider.Value}\n"; };
+                    var label = panel.AddChild(new Label(_system, @$"Slider Value: {slider.Value}"));
+                    panel.AddChild(new RowsSpacer(_system, 2));
+                    slider.Events.OnValueChanged = (Entity entity) => { label.Text = $"Slider Value: {slider.Value}"; };
                 }
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Sliders can also be vertical and scrollbars:
-"));
+                panel.AddChild(new Paragraph(_system, @"Sliders can also be vertical:"));
                 {
                     var slider = panel.AddChild(new Slider(_system, Orientation.Vertical));
                     
                     slider.Size.Y.SetPixels(280);
                     slider.Offset.X.SetPixels(40);
-                    var label = panel.AddChild(new Label(_system, @$"Slider Value: {slider.Value}
-"));
-                    slider.Events.OnValueChanged = (Entity entity) => { label.Text = $"Slider Value: {slider.Value}\n"; };
-                }
-
-                {
-                    var slider = panel.AddChild(new Slider(_system, _system.DefaultStylesheets.VerticalScrollbars, _system.DefaultStylesheets.VerticalScrollbarsHandle, Orientation.Vertical));
-                    slider.Size.Y.SetPixels(260);
-                    slider.Offset.X.SetPixels(140);
-                    slider.Offset.Y.SetPixels(90);
-                    slider.Anchor = Anchor.BottomLeft;
+                    var label = panel.AddChild(new Label(_system, @$"Slider Value: {slider.Value}"));
+                    slider.Events.OnValueChanged = (Entity entity) => { label.Text = $"Slider Value: {slider.Value}"; };
                 }
             }
 
@@ -390,13 +365,11 @@ Another thing to keep in mind about paragraphs is that you can change the way th
             {
                 var panel = CreateDemoContainer("Progress Bars", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Progress Bars are similar to sliders, but are designed to show progress or things like health bars:
-")); 
+                panel.AddChild(new Paragraph(_system, @"Progress Bars are similar to sliders, but are designed to show progress or things like health bars:")); 
                 {
                     var progressBar = panel.AddChild(new ProgressBar(_system));
-                    var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}
-"));
+                    var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}"));
+                    panel.AddChild(new RowsSpacer(_system));
                     float _timeForNextValueChange = 3f;
                     progressBar.Events.AfterUpdate = (Entity entity) =>
                     {
@@ -407,24 +380,20 @@ Another thing to keep in mind about paragraphs is that you can change the way th
                             _timeForNextValueChange = 3f;
                         }
                     };
-                    progressBar.Events.OnValueChanged = (Entity entity) => { label.Text = $"Progress Bar Value: {progressBar.Value}\n"; };
+                    progressBar.Events.OnValueChanged = (Entity entity) => { label.Text = $"Progress Bar Value: {progressBar.Value}"; };
                 }
 
-                panel.AddChild(new Paragraph(_system,
-                    @"By default Progress Bars are not interactable, but you can make them behave like sliders by settings 'IgnoreInteractions' to false:
-"));
+                panel.AddChild(new Paragraph(_system, @"By default Progress Bars are not interactable, but you can make them behave like sliders by settings 'IgnoreInteractions' to false:"));
                 {
                     var progressBar = panel.AddChild(new ProgressBar(_system));
-                    var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}
-"));
+                    var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}"));
+                    panel.AddChild(new RowsSpacer(_system));
                     progressBar.Handle.OverrideStyles.FillColor = new Color(255, 0, 0, 255);
                     progressBar.IgnoreInteractions = false;
-                    progressBar.Events.OnValueChanged = (Entity entity) => { label.Text = $"Progress Bar Value: {progressBar.Value}\n"; };
+                    progressBar.Events.OnValueChanged = (Entity entity) => { label.Text = $"Progress Bar Value: {progressBar.Value}"; };
                 }
 
-                panel.AddChild(new Paragraph(_system,
-                    @"And finally, here's an alternative progress bar design, without animation:
-"));
+                panel.AddChild(new Paragraph(_system, @"And finally, here's an alternative progress bar design, without animation:"));
                 {
                     var progressBar = panel.AddChild(new ProgressBar(_system, hProgressBarAltStyle, hProgressBarAltFillStyle));
                     progressBar.Size.X.SetPixels(420 + 36);
@@ -443,13 +412,10 @@ Another thing to keep in mind about paragraphs is that you can change the way th
             {
                 var panel = CreateDemoContainer("List Box", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"List Boxes allow you to add items and select them from a list. For example:
-"));
+                panel.AddChild(new Paragraph(_system, @"List Boxes allow you to add items and select them from a list. For example:"));
+                panel.AddChild(new RowsSpacer(_system));
                 {
-                    panel.AddChild(new Label(_system,
-                    @"
-Select Race:"));
+                    panel.AddChild(new Label(_system, @"Select Race:"));
                     var listbox = panel.AddChild(new ListBox(_system));
                     listbox.AddItem("Human");
                     listbox.AddItem("Elf");
@@ -457,13 +423,11 @@ Select Race:"));
                     listbox.AddItem("Dwarf");
                     listbox.AutoHeight = true;
                     listbox.AllowDeselect = false;
-                    panel.AddChild(new Paragraph(_system,
-                    @"Did you notice that you can't clear selection once a value is set? That is a configurable property. In the class selection below, you can clear by clicking the selected item again."));
                 }
                 {
-                    panel.AddChild(new Label(_system,
-                    @"
-Select Class:"));
+                    panel.AddChild(new Paragraph(_system, @"Did you notice that you can't clear selection once a value is set? That is a configurable property. In the class selection below, you can clear by clicking the selected item again."));
+                    panel.AddChild(new RowsSpacer(_system));
+                    panel.AddChild(new Label(_system, @"Select Class:"));
                     var listbox = panel.AddChild(new ListBox(_system));
                     listbox.AutoHeight = false;
                     foreach (var val in dndClasses)
@@ -483,13 +447,10 @@ Select Class:"));
             {
                 var panel = CreateDemoContainer("Drop Down", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Drop Down entities are basically list boxes, but the list is hidden while not interacted with. For example:
-"));
+                panel.AddChild(new Paragraph(_system, @"Drop Down entities are basically list boxes, but the list is hidden while not interacted with. For example:"));
+                panel.AddChild(new RowsSpacer(_system));
                 {
-                    panel.AddChild(new Label(_system,
-                    @"
-Select Race:"));
+                    panel.AddChild(new Label(_system, @"Select Race:"));
                     var dropdown = panel.AddChild(new DropDown(_system));
                     dropdown.DefaultSelectedText = "< Select Race >";
                     dropdown.AddItem("Human");
@@ -502,12 +463,9 @@ Select Race:"));
                     dropdown.AutoHeight = true;
                 }
                 {
-                    panel.AddChild(new Paragraph(_system,
-@"
-In the dropdown below, you can clear selection by clicking the selected item again."));
-                    panel.AddChild(new Label(_system,
-                    @"
-Select Class:"));
+                    panel.AddChild(new Paragraph(_system, @"In the dropdown below, you can clear selection by clicking the selected item again."));
+                    panel.AddChild(new RowsSpacer(_system));
+                    panel.AddChild(new Label(_system, @"Select Class:"));
                     var dropdown = panel.AddChild(new DropDown(_system));
                     dropdown.SetVisibleItemsCount(7);
                     dropdown.DefaultSelectedText = "< Select Class >";
@@ -529,17 +487,15 @@ Select Class:"));
                 var panel = CreateDemoContainer("Scrollbars", new Point(780, 350));
                 panel.AutoHeight = false;
                 panel.CreateVerticalScrollbar(true);
-                panel.AddChild(new Paragraph(_system,
-                    @"Sometimes panels content is too long, and we need scrollbars to show everything.
+                panel.AddChild(new Paragraph(_system, @"Sometimes panels content is too long, and we need scrollbars to show everything.
 This panel has some random entities below that go wayyyy down.
 
-Use the scrollbar on the right to see more of it.
-"));
+Use the scrollbar on the right to see more of it."));
+                panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Button(_system, "Some Button"));
-                panel.AddChild(new Paragraph(_system,
-                    @"
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-"));
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."));
+                panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Button(_system, "Another Button"));
                 panel.AddChild(new Slider(_system));
                 panel.AddChild(new Checkbox(_system, "A Checkbox") );
@@ -556,18 +512,14 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
             {
                 var panel = CreateDemoContainer("Text Input", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system,
-                    @"Text Input entity is useful to get free text input from the user:
-"));
+                panel.AddChild(new Paragraph(_system, @"Text Input entity is useful to get free text input from users. This is a single-line text input:"));
                 {
                     var textInput = panel.AddChild(new TextInput(_system));
                     textInput.PlaceholderText = "Click to edit text input.";
                 }
 
-                panel.AddChild(new Paragraph(_system,
-    @"
-Text Inputs can also be multiline:
-"));
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"And here's a multiline text input:"));
                 {
                     var textInput = panel.AddChild(new TextInput(_system));
                     textInput.PlaceholderText = "A multiline text input..\nClick to edit.";
@@ -581,21 +533,16 @@ Text Inputs can also be multiline:
             // locked / disabled
             {
                 var panel = CreateDemoContainer("Locked / Disabled", new Point(780, 1));
-                panel.AddChild(new Paragraph(_system,
-                    @"You can disable entities to make them ignore user interactions and render them with 'disabled' effect (in this demo, grayscale):
-"));
+                panel.AddChild(new Paragraph(_system, @"You can disable entities to make them ignore user interactions and render them with 'disabled' effect (in this demo, grayscale):"));
                 panel.AddChild(new Button(_system, "Disabled Button") { Enabled = false });
-                panel.AddChild(new Paragraph(_system,
-                    @"
-When you disable a panel, all entities under it will be disabled too.
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"When you disable a panel, all entities under it will be disabled too.
 
-If you want to just lock items without rendering them with 'disabled' style, you can also set the Locked property. For example the following button is locked, but will render normally:
-"));
+If you want to just lock items without rendering them with 'disabled' style, you can also set the Locked property. For example the following button is locked, but will render normally:"));
+                panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Button(_system, "Locked Button") { Locked = true });
-                panel.AddChild(new Paragraph(_system,
-        @"
-Any type of entity can be locked and disabled and locked:
-"));
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"Any type of entity can be locked and disabled and locked:"));
                 panel.AddChild(new Slider(_system) { Enabled = false });
                 panel.AddChild(new Checkbox(_system, "Disabled Checkbox") { Enabled = false });
                 panel.AddChild(new RadioButton(_system, "Disabled Radio Button") { Enabled = false });

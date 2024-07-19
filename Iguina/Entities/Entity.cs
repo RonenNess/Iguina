@@ -633,7 +633,7 @@ namespace Iguina.Entities
             Color fillColor;
             if (IsCurrentlyLocked())
             {
-                fillColor = new Color(255, 0, 0, 65);
+                fillColor = new Color(255, 0, 50, 65);
             }
             else if (IsCurrentlyDisabled())
             {
@@ -641,7 +641,8 @@ namespace Iguina.Entities
             }
             else if (IsTargeted)
             {
-                fillColor = new Color(0, 255, (byte)Math.Clamp(100 + 155 * Math.Sin(UISystem.ElapsedTime * 5), 0, 255), 50);
+                var animatedColor = (byte)Math.Clamp(100 + 155 * Math.Sin(UISystem.ElapsedTime * 5), 0, 255);
+                fillColor = new Color((byte)(255 - animatedColor), 255, animatedColor, 50);
             }
             else if (Interactable)
             {
@@ -649,7 +650,14 @@ namespace Iguina.Entities
             }
             else
             {
-                fillColor = new Color(0, 155, 0, 50);
+                if (IgnoreInteractions)
+                {
+                    fillColor = new Color(10, 0, 175, 50);
+                }
+                else
+                {
+                    fillColor = new Color(0, 155, 0, 50);
+                }
             }
 
             // draw internal rect
@@ -659,6 +667,26 @@ namespace Iguina.Entities
             if (interactable)
             {
                 UISystem.Renderer.DrawRectangle(LastBoundingRect, fillColor);
+            }
+
+            // draw marings
+            var marginBefore = GetMarginBefore();
+            var marginAfter = GetMarginAfter();
+            if (marginBefore.X > 0)
+            {
+                UISystem.Renderer.DrawRectangle(new Rectangle(LastBoundingRect.X - marginBefore.X, LastBoundingRect.Y + LastBoundingRect.Height / 2 - 4, marginBefore.X, 8), new Color(255, 255, 0, 100));
+            }
+            if (marginBefore.Y > 0)
+            {
+                UISystem.Renderer.DrawRectangle(new Rectangle(LastBoundingRect.X + LastBoundingRect.Width / 2 - 4, LastBoundingRect.Y - marginBefore.Y, 8, marginBefore.Y), new Color(255, 255, 0, 100));
+            }
+            if (marginAfter.X > 0)
+            {
+                UISystem.Renderer.DrawRectangle(new Rectangle(LastBoundingRect.Right, LastBoundingRect.Y + LastBoundingRect.Height / 2 - 4, marginAfter.X, 8), new Color(255, 255, 0, 100));
+            }
+            if (marginAfter.Y > 0)
+            {
+                UISystem.Renderer.DrawRectangle(new Rectangle(LastBoundingRect.X + LastBoundingRect.Width / 2 - 4, LastBoundingRect.Bottom, 8, marginAfter.Y), new Color(255, 255, 0, 100));
             }
 
             // draw anchor

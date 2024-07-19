@@ -32,5 +32,21 @@ namespace Iguina.Entities
             ret.Y.SetPixels(8);
             return ret;
         }
+
+        /// <inheritdoc/>
+        internal override void DebugDraw(bool debugDrawChildren)
+        {
+            if (!Visible) { return; }
+
+            UISystem.Renderer.DrawRectangle(LastBoundingRect, new Color(255, 0, 0, 65));
+
+            if (debugDrawChildren)
+            {
+                IterateChildren((Entity child) => { 
+                    child.DebugDraw(debugDrawChildren); 
+                    return true; 
+                });
+            }
+        }
     }
 }
