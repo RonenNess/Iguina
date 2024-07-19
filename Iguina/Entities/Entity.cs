@@ -575,12 +575,20 @@ namespace Iguina.Entities
         /// Add a child entity.
         /// </summary>
         /// <param name="child">Child entity to add.</param>
+        /// <param name="index">Index to add child to.</param>
         /// <exception cref="Exception">Thrown if child already have a parent.</exception>
-        public T AddChild<T>(T child) where T : Entity
+        public T AddChild<T>(T child, int? index = null) where T : Entity
         {
             if (child.Parent != null) { throw new Exception("Entity to add as child already have a parent entity! Remove it first."); }
             if (child.UISystem != UISystem) { throw new Exception("Entity to add belongs to a different UI system!"); }
-            _children.Add(child);
+            if (index.HasValue)
+            {
+                _children.Insert(index.Value, child);
+            }
+            else
+            {
+                _children.Add(child);
+            }
             child.Parent = this;
             return child;
         }
