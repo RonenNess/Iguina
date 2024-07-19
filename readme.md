@@ -826,6 +826,11 @@ Events you can register callbacks to, which will be called for *any* entity and 
 If true (default) will render the UI cursor.
 Does not affect the default operation system cursor, its up to you to hide / show it.
 
+### `MessageBoxes`
+
+A utility to generate message boxes.
+This is just an instance of the `MessageBoxUtils` utility for this system.
+
 # Iguina UI Entities
 
 Now its time to add UI Entities and actually start building your UI!
@@ -1200,7 +1205,7 @@ An empty entity that creates an extra space between rows of entities, with const
 - Improved debug drawing entities.
 - Updated demo project.
 
-## 1.0.4 [WIP]
+## 1.0.4
 
 - Added utility to generate message boxes.
 - Added `BackgroundColor` stylesheet property.
