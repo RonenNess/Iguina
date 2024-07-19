@@ -32,13 +32,15 @@ namespace Iguina.Entities
         /// <summary>
         /// Styles to override stylesheet defaults, regardless of entity state, for the paragraph showing the selected value in closed state.
         /// </summary>
-        public StyleSheetState OverrideClosedStateTextStyles = new();
+        public StyleSheetState OverrideClosedStateTextStyles
+        {
+            get => _selectedValueParagraph.OverrideStyles;
+            set => _selectedValueParagraph.OverrideStyles = value;
+        }
 
-        /// <summary>
-        /// If true, will always show the box with currently selected value / label, even when list is opened.
-        /// If false, will hide the selected value box when list is shown.
-        /// </summary>
-        public bool ShowSelectedValueBoxWhenOpened = true;
+        // panel for selected value text
+        Panel _selectedValuePanel;
+        Paragraph _selectedValueParagraph;
 
         /// <summary>
         /// Create the drop down.
@@ -50,6 +52,24 @@ namespace Iguina.Entities
         {
             // set as auto-height by default
             AutoHeight = true;
+
+            // create panel with selected value paragraph
+            _selectedValuePanel = new Panel(system, stylesheet);
+            _selectedValueParagraph = _selectedValuePanel.AddChild(new Paragraph(system, itemsStylesheet ?? stylesheet, string.Empty, true));
+            _selectedValuePanel.Size.X.SetPercents(100f);
+            _selectedValuePanel.Size.Y.SetPixels(GetClosedStateHeight());
+            _selectedValuePanel.IgnoreScrollOffset = true;
+            var padding = GetPadding();
+            _selectedValuePanel.Offset.X.Value = -padding.Left;
+            _selectedValuePanel.Offset.Y.Value = -padding.Top;
+            _selectedValuePanel.OverrideStyles.ExtraSize = new Sides() { Right = padding.Left + padding.Right };
+            AddChildInternal(_selectedValuePanel);
+
+            // clicking on selected value panel will open / close dropdown
+            _selectedValuePanel.Events.OnClick += (Entity entity) =>
+            {
+                ToggleList();
+            };
         }
 
         /// <summary>
@@ -62,26 +82,6 @@ namespace Iguina.Entities
         {
         }
 
-        /// <inheritdoc/>
-        protected override void SetAutoSizes(int maxWidth, int maxHeight)
-        {
-            // set auto size
-            if (AutoWidth)
-            {
-                Size.X.SetPixels(maxWidth);
-            }
-            if (AutoHeight)
-            {
-                if (ShowSelectedValueBoxWhenOpened)
-                {
-                    Size.Y.SetPixels((int)(ItemHeight * (ItemsCount + 2f)));
-                }
-                else
-                {
-                    Size.Y.SetPixels(ItemHeight * (ItemsCount + 1));
-                }
-            }
-        }
 
         /// <summary>
         /// Get the dropdown height, in pixels, when its closed.
@@ -104,9 +104,10 @@ namespace Iguina.Entities
         }
 
         /// <inheritdoc/>
-        protected override int GetExtraParagraphsCount()
+        public override void SetVisibleItemsCount(int items)
         {
-            return ShowSelectedValueBoxWhenOpened ? -1 : 0;
+            AutoHeight = false;
+            Size.Y.SetPixels(ItemHeight * (items + 2));
         }
 
         /// <inheritdoc/>
@@ -115,14 +116,13 @@ namespace Iguina.Entities
             // special - if we are rendering in open mode, top most
             if (_isCurrentlyDrawingOpenedListTopMost)
             {
+                // draw open list
                 base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
                 
-                if (ShowSelectedValueBoxWhenOpened)
-                {
-                    Rectangle rect = boundingRect;
-                    rect.Height = GetClosedStateHeight();
-                    DrawFillTextures(rect);
-                }
+                // this part makes sure the top panel border is not hidden
+                Rectangle rect = boundingRect;
+                rect.Height = GetClosedStateHeight();
+                DrawFillTextures(rect);
                 return;
             }
 
@@ -136,7 +136,7 @@ namespace Iguina.Entities
             if (IsOpened)
             {
                 // move the scrollbar under the selected value box
-                if (ShowSelectedValueBoxWhenOpened)
+                //if (ShowSelectedValueBoxWhenOpened)
                 {
                     if (VerticalScrollbar != null)
                     {
@@ -172,108 +172,91 @@ namespace Iguina.Entities
         }
         bool _isCurrentlyDrawingOpenedListTopMost = false;
 
+        /// <summary>
+        /// Close the dropdown list.
+        /// </summary>
+        public void CloseList()
+        {
+            IsOpened = false;
+        }
+
+        /// <summary>
+        /// Open the dropdown list.
+        /// </summary>
+        public void OpenList()
+        {
+            IsOpened = true;
+        }
+
+        /// <summary>
+        /// Toggle dropdown list state.
+        /// </summary>
+        public void ToggleList()
+        {
+            if (IsOpened)
+            {
+                CloseList();
+            }
+            else
+            {
+                OpenList();
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnItemClicked(Entity entity)
         {
             // if closed, open the list
             if (!IsOpened)
             {
-                IsOpened = true;
+                OpenList();
             }
             // if opened, call default action and close the list
             else
             {
                 base.OnItemClicked(entity);
-                IsOpened = false;
-            }
-        }
-
-        /// <inheritdoc/>
-        internal override void PostUpdate(InputState inputState)
-        {
-            // if opened and click outside, close the list
-            if (IsOpened && inputState.LeftMousePressedNow)
-            {
-                // clicked on closed state box? skip
-                if ((_paragraphs.Count > 0) && _paragraphs[0].IsPointedOn(inputState.MousePosition))
-                {
-                    return;
-                }
-
-                // if we show closed state box while opened, and clicked on it, skip
-                if (ShowSelectedValueBoxWhenOpened)
-                {
-                    var rect = LastBoundingRect;
-                    rect.Y -= GetClosedStateHeight();
-                    if (rect.Contains(inputState.MousePosition))
-                    {
-                        return;
-                    }
-                }
-
-                // if got here and point outside the list, close.
-                if (!IsPointedOn(inputState.MousePosition))
-                {
-                    IsOpened = false;
-                }
+                CloseList();
             }
         }
 
         /// <inheritdoc/>
         protected override void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
-            // if opened, set list paragraphs as-is
             if (IsOpened)
             {
-                if (ShowSelectedValueBoxWhenOpened)
-                {
-                    SetFirstParagraphToSelected();
-                    base.SetParagraphs(scrollOffset, 1);
-                    if (_paragraphs.Count > 0)
-                    {
-                        _paragraphs[0].Text += '\n';
-                    }
-                }
-                else
-                {
-                    // "fix" first paragraph back to normal state
-                    if (_paragraphs.Count > 0)
-                    {
-                        var p = _paragraphs[0];
-                        p.UseEmptyValueTextColor = false;
-                        p.ExtraMarginForInteractions.TurnToZero();
-                    }
-                    base.SetParagraphs(scrollOffset);
-                }
+                base.SetParagraphs(scrollOffset, startIndex);
             }
-            // if not opened, hide all paragraphs except top which is used for selected
             else
             {
-                if (_paragraphs.Count > 0)
-                {  
-                    foreach (var p in _paragraphs)
-                    {
-                        p.Visible = false;
-                    }      
-                    SetFirstParagraphToSelected();
+                foreach (var p in _paragraphs)
+                {
+                    p.Visible = false;
                 }
             }
         }
 
-        /// <summary>
-        /// Set the first paragraph to selected state.
-        /// </summary>
-        private void SetFirstParagraphToSelected()
+        /// <inheritdoc/>
+        internal override void PostUpdate(InputState inputState)
         {
-            var p = _paragraphs[0];
-            p.LockedState = null;
-            p.Visible = true;
-            var padding = GetPadding();
-            p.ExtraMarginForInteractions.Set(padding.Left, padding.Right, padding.Top, padding.Bottom);
-            p.OverrideStyles = OverrideClosedStateTextStyles;
-            p.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
-            p.UseEmptyValueTextColor = (SelectedValue == null);
-            p.UserData = null;
+            // update selected value text
+            _selectedValueParagraph.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
+            _selectedValueParagraph.UseEmptyValueTextColor = (SelectedValue == null);
+
+            // if opened and click outside, close the list
+            if (IsOpened && inputState.LeftMousePressedNow)
+            {
+                // clicked on closed state box? skip
+                if (_selectedValuePanel.IsPointedOn(inputState.MousePosition))
+                {
+                    return;
+                }
+
+                // if got here and point outside the list, close.
+                if (!IsPointedOn(inputState.MousePosition))
+                {
+                    CloseList();
+                }
+            }
         }
     }
 }

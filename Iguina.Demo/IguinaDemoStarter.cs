@@ -512,7 +512,7 @@ In the dropdown below, you can clear selection by clicking the selected item aga
                     @"
 Select Class:"));
                     var dropdown = panel.AddChild(new DropDown(_system));
-                    dropdown.AutoHeight = false;
+                    dropdown.SetVisibleItemsCount(7);
                     dropdown.DefaultSelectedText = "< Select Class >";
                     foreach (var val in dndClasses)
                     {
@@ -524,24 +524,6 @@ Select Class:"));
                     {
                         selectedParagraph.Text = "Selected Class: " + (dropdown.SelectedValue ?? "None");
                     };
-                }
-
-                {
-                    panel.AddChild(new Paragraph(_system,
-                    @"
-Drop Downs can also work in a mode that cover the selected value when opened:
-"));
-                    var dropdown = panel.AddChild(new DropDown(_system));
-                    dropdown.DefaultSelectedText = "< Select Race >";
-                    dropdown.AddItem("Human");
-                    dropdown.AddItem("Elf");
-                    dropdown.AddItem("Orc");
-                    dropdown.AddItem("Dwarf");
-                    dropdown.AddItem("Gnome");
-                    dropdown.AddItem("Tiefling");
-                    dropdown.ShowSelectedValueBoxWhenOpened = false;
-                    dropdown.AllowDeselect = false;
-                    dropdown.AutoHeight = true;
                 }
             }
 

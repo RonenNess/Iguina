@@ -1178,10 +1178,12 @@ Character to use to show caret.
 - Added `Label` entity.
 - Added the ability to override styles for items and selected items in `ListBox` and `DropDown`.
 - Set `DropDown` to `Auto Height` by default.
-- Added mode to `DropDown` that always keep selected value visible.
+- Refactored `DropDown` to always show selected value and look more like a 'classic' dropdown.
 - Added `BoxOutlineWidth`, `BoxOutlineOffset` and `BoxOutlineColor` property to entities.
 - Made Paragraphs ignore user interactions by default.
 - Made `DropDown` collision rectangle slightly larger to make it more convenient.
+- Added `SetVisibleItemsCount()` method to `ListBox` and `DropDown`.
+- Added methods to `DropDown` to open, close and toggle list.
 
 # License
 

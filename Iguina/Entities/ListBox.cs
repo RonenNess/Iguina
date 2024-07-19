@@ -273,6 +273,16 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Set the height of this list to show exactly this number of items.
+        /// </summary>
+        /// <param name="items">How many items should be visible.</param>
+        public virtual void SetVisibleItemsCount(int items)
+        {
+            AutoHeight = false;
+            Size.Y.SetPixels(ItemHeight * items);
+        }
+
+        /// <summary>
         /// Set the values and texts of the paragraphs.
         /// </summary>
         protected virtual void SetParagraphs(int scrollOffset, int startIndex = 0)
