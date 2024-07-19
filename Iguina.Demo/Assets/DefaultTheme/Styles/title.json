@@ -9,5 +9,6 @@
 	},
 	"Disabled": {
 		"EffectIdentifier": "disabled"
-	}
+	},
+    "DefaultTextAnchor": "AutoCenter"
 }

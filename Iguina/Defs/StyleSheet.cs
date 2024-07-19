@@ -25,9 +25,14 @@ namespace Iguina.Defs
         public IconTexture? Icon { get; set; }
 
         /// <summary>
-        /// Fill color tint.
+        /// Tint color for textures.
         /// </summary>
-        public Color? FillColor { get; set; }
+        public Color? TintColor { get; set; }
+
+        /// <summary>
+        /// Background color to draw.
+        /// </summary>
+        public Color? BackgroundColor { get; set; }
 
         /// <summary>
         /// Text alignment for entities with text.

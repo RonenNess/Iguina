@@ -51,6 +51,7 @@ Miscs:
 	* Drop Down List.
 	* Text Input.
 	* Horizontal Lines.
+    * Message Boxes.
 * Extensive Stylesheet system to load an entire UI theme from files.
 * Smooth transitions and animations.
 * Cursor styles and handling.
@@ -731,7 +732,8 @@ For each state, we can define the following properties:
 * **FillTextureFramed** (FramedTexture): If defined, will render the entity as framed texture.
 * **FillTextureStretched** (StretchedTexture): If defined, will render the entity as framed texture.
 * **Icon** (IconTexture): If defined, will render the entity as icon texture.
-* **FillColor** (Color): Optional tint color. Will apply on any texture rendered.
+* **TintColor** (Color): Optional tint color. Will apply on any texture rendered.
+* **BackgroundColor** (Color): Background color to paint over the region of the entity, below everything.
 * **TextAlignment** (TextAlignment): Values can be Left, Right, or Center. Will set text alignment for text-based entities.
 * **FontIdentifier** (string): Font to use when drawing text. If not defined will use default font.
 * **TextFillColor** (Color): Text fill color, when drawing text.
@@ -1197,6 +1199,13 @@ An empty entity that creates an extra space between rows of entities, with const
 - Fixed auto sizes to take `MarginAfter` property into calculation.
 - Improved debug drawing entities.
 - Updated demo project.
+
+## 1.0.4 [WIP]
+
+- Added utility to generate message boxes.
+- Added `BackgroundColor` stylesheet property.
+- Renamed `FillColor` stylesheet property.
+- Updated stylesheet.
 
 # License
 

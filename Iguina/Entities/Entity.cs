@@ -1058,7 +1058,10 @@ namespace Iguina.Entities
                 void DrawStateFill(EntityState state, Rectangle boundingRect, float alpha)
                 {
                     // get color
-                    var color = StyleSheet.GetProperty("FillColor", state, Color.White, OverrideStyles)!;
+                    var color = StyleSheet.GetProperty("TintColor", state, Color.White, OverrideStyles)!;
+
+                    // get background color
+                    var backColor = StyleSheet.GetProperty("BackgroundColor", state, new Color(0, 0, 0, 0), OverrideStyles)!;
 
                     // animate colors
                     if (ColorAnimator != null)
@@ -1070,6 +1073,13 @@ namespace Iguina.Entities
                     if (alpha <= 1f)
                     {
                         color.A = (byte)((float)color.A * alpha);
+                        backColor.A = (byte)((float)backColor.A * alpha);
+                    }
+
+                    // draw background color
+                    if (backColor.A > 0)
+                    {
+                        UISystem.Renderer.DrawRectangle(boundingRect, backColor);
                     }
 
                     // not visible? skip

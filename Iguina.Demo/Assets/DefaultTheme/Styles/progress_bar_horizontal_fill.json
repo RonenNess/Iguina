@@ -9,7 +9,7 @@
         "Padding": {"Left": 40, "Right": 40, "Top": 0, "Bottom": 0},
         "MarginBefore": {"X": 0, "Y": 18},
         "MarginAfter": {"X": 0, "Y": 18},
-        "FillColor": {"R": 155, "G": 255, "B": 255, "A": 255}
+        "TintColor": {"R": 155, "G": 255, "B": 255, "A": 255}
 	},
 	"Disabled": {
 		"EffectIdentifier": "disabled"

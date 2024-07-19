@@ -388,7 +388,7 @@ Another thing to keep in mind about paragraphs is that you can change the way th
                     var progressBar = panel.AddChild(new ProgressBar(_system));
                     var label = panel.AddChild(new Label(_system, @$"Progress Bar Value: {progressBar.Value}"));
                     panel.AddChild(new RowsSpacer(_system));
-                    progressBar.Handle.OverrideStyles.FillColor = new Color(255, 0, 0, 255);
+                    progressBar.Handle.OverrideStyles.TintColor = new Color(255, 0, 0, 255);
                     progressBar.IgnoreInteractions = false;
                     progressBar.Events.OnValueChanged = (Entity entity) => { label.Text = $"Progress Bar Value: {progressBar.Value}"; };
                 }
@@ -528,6 +528,25 @@ Use the scrollbar on the right to see more of it."));
                     //textInput.MaxLines = 8;
                     textInput.CreateVerticalScrollbar();
                 }
+            }
+
+            // message boxes
+            {
+                var panel = CreateDemoContainer("Message Boxes", new Point(780, 1));
+                panel.AddChild(new Paragraph(_system, @"Message boxes are useful to get quick input from the user. Iguina comes with a utility to quickly generate common message boxes.
+
+Click below to see an example."));
+
+                panel.AddChild(new Button(_system, "Show Message Box")).Events.OnClick = (Entity entity) =>
+                {
+                    _system.MessageBoxes.ShowConfirmMessageBox("Hi There!", 
+                        @"This is a simple message box with just confirm / cancel options.\nNote that message boxes can have their own stylesheets, and you can set their defaults per-system.
+
+This specific message box won't do much.
+You can just close it.");
+                };
+
+                panel.AddChild(new RowsSpacer(_system));
             }
 
             // locked / disabled

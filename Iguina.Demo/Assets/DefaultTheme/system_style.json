@@ -24,6 +24,7 @@
 	"TimeToLockInteractiveState": 0.135,
     "LoadDefaultStylesheets": {
         "Panels": "Styles/panel.json",
+        "MessageBoxBackdrop": "Styles/message_box_backdrop.json",
         "Paragraphs": "Styles/paragraph.json",
         "Titles": "Styles/title.json",
         "Labels": "Styles/label.json",

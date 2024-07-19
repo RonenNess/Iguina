@@ -1,6 +1,7 @@
 ﻿using Iguina.Defs;
 using Iguina.Drivers;
 using Iguina.Entities;
+using Iguina.Utils;
 using System.Text.Json;
 
 
@@ -42,6 +43,11 @@ namespace Iguina
         public class _DefaultStylesheets
         {
             public StyleSheet? Panels;
+            public StyleSheet? MessageBoxPanels;
+            public StyleSheet? MessageBoxParagraphs;
+            public StyleSheet? MessageBoxTitles;
+            public StyleSheet? MessageBoxButtons;
+            public StyleSheet? MessageBoxBackdrop;
             public StyleSheet? Paragraphs;
             public StyleSheet? Titles;
             public StyleSheet? Labels;
@@ -66,6 +72,11 @@ namespace Iguina
             public StyleSheet? VerticalProgressBarsFill;
         }
         public _DefaultStylesheets DefaultStylesheets = new();
+
+        /// <summary>
+        /// Default message box utils instance attached to this UI system.
+        /// </summary>
+        public MessageBoxUtils MessageBoxes { get; private set; }
 
         /// <summary>
         /// Currently-targeted entity (entity we point on with the cursor).
@@ -166,6 +177,9 @@ namespace Iguina
 
             // create root entity
             Root = new Panel(this, new StyleSheet()) { Identifier = "Root" };
+
+            // create message box utils
+            MessageBoxes = new MessageBoxUtils(this);
         }
 
         /// <summary>
