@@ -540,7 +540,9 @@ Click below to see an example."));
                 panel.AddChild(new Button(_system, "Show Message Box")).Events.OnClick = (Entity entity) =>
                 {
                     _system.MessageBoxes.ShowConfirmMessageBox("Hi There!", 
-                        @"This is a simple message box with just confirm / cancel options.\nNote that message boxes can have their own stylesheets, and you can set their defaults per-system.
+                        @"This is a simple message box with just confirm / cancel options.
+
+Note that message boxes can have their own stylesheets, and you can set their defaults per-system.
 
 This specific message box won't do much.
 You can just close it.");
