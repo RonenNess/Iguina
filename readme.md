@@ -1194,6 +1194,7 @@ An empty entity that creates an extra space between rows of entities, with const
 
 - Made `HorizontalLine` ignore interactions by default.
 - Added entity to create empty spaces between rows.
+- Fixed auto sizes to take `MarginAfter` property into calculation.
 
 # License
 

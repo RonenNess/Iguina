@@ -832,11 +832,13 @@ namespace Iguina.Entities
                     PostDrawingChild(siblingDrawResult);
 
                     // adjust auto size
-                    if (AutoWidth) { 
-                        maxWidth = (int)MathF.Max(maxWidth, siblingDrawResult.Value.BoundingRect.Right - LastBoundingRect.Left + (LastBoundingRect.Width - LastInternalBoundingRect.Width) / 2); 
+                    if (AutoWidth) {
+                        var margin = child.GetMarginAfter();
+                        maxWidth = (int)MathF.Max(maxWidth, margin.X + siblingDrawResult.Value.BoundingRect.Right - LastBoundingRect.Left + (LastBoundingRect.Width - LastInternalBoundingRect.Width) / 2); 
                     }
-                    if (AutoHeight) { 
-                        maxHeight = (int)MathF.Max(maxHeight, siblingDrawResult.Value.BoundingRect.Bottom - LastBoundingRect.Top + (LastBoundingRect.Height - LastInternalBoundingRect.Height) / 2); 
+                    if (AutoHeight) {
+                        var margin = child.GetMarginAfter();
+                        maxHeight = (int)MathF.Max(maxHeight, margin.Y + siblingDrawResult.Value.BoundingRect.Bottom - LastBoundingRect.Top + (LastBoundingRect.Height - LastInternalBoundingRect.Height) / 2); 
                     }
                 }
             }
