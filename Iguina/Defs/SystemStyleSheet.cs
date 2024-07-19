@@ -34,6 +34,12 @@ namespace Iguina.Defs
         public CursorProperties? CursorLocked { get; set; }
 
         /// <summary>
+        /// How much space a row spacer unit takes, in pixels.
+        /// This determine what the UI system defines as a default empty "row" size.
+        /// </summary>
+        public int RowSpaceHeight { get; set; } = 14;
+
+        /// <summary>
         /// Lock entities to interactive state for at least this value in seconds, to make sure the 'interactive' state is properly displayed even for rapid clicks.
         /// </summary>
         public float TimeToLockInteractiveState { get; set; }

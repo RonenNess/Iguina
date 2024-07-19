@@ -129,8 +129,7 @@ Iguina is framework-agnostic UI library that can work with any rendering framewo
 
 On the left panel, you'll find a list of all the subjects included in this demo. ${{FC:00FF00}}Click on a subject to select it and explore the components and features it showcases${{RESET}}.
 
-PS. this demo UI theme was made by me and its public domain, so feel free to use it!
-") { TextOverflowMode = TextOverflowMode.WrapWords });
+PS. this demo UI theme was made by me and its public domain, so feel free to use it!") { TextOverflowMode = TextOverflowMode.WrapWords });
             }
 
             // anchors
@@ -139,8 +138,7 @@ PS. this demo UI theme was made by me and its public domain, so feel free to use
                 panel.AddChild(new Paragraph(_system,
                     @"In Iguina, Entities are positioned using Anchors. An Anchor can be a pre-defined position on the parent entity, like Top-Left, or an automatic anchor, like AutoLTR, which places entities in rows from left to right.
 
-The panel below shows all built-in non-automatic anchors:
-"));
+The panel below shows all built-in non-automatic anchors:"));
 
                 var anchorsPanel = new Panel(_system);
                 anchorsPanel.Size.X.SetPercents(100f);
@@ -165,9 +163,9 @@ The panel below shows all built-in non-automatic anchors:
                 panel.AddChild(new Paragraph(_system,
                     @"Previously we saw regular Anchors. Now its time to explore the Automatic anchors.
 
-Auto Anchors are a set of anchors that place entities automatically, based on their siblings. For example:
-"));
+Auto Anchors are a set of anchors that place entities automatically, based on their siblings. For example:"));
 
+                panel.AddChild(new RowsSpacer(_system));
                 var anchorsPanel = new Panel(_system);
                 anchorsPanel.Size.X.SetPercents(100f);
                 anchorsPanel.AutoHeight = true;
@@ -206,8 +204,7 @@ Auto Anchors are a set of anchors that place entities automatically, based on th
                 panel.AddChild(new Paragraph(_system,
                     @"Panels are simple containers for entities. They can have graphics, like the panel this text is in, or be transparent and used only for grouping.
 
-For example, see these two buttons and two paragraphs? Each set is inside an invisible panel that takes up 50% of the parent panel's width. One is aligned left, the other right: 
-"));
+For example, see these two buttons and two paragraphs? Each set is inside an invisible panel that takes up 50% of the parent panel's width. One is aligned left, the other right: "));
                 panel.AddChild(new HorizontalLine(_system));
 
                 {

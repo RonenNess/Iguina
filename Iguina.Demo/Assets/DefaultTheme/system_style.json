@@ -20,6 +20,7 @@
         "Scale": 3,
         "SourceRect": {"X": 0, "Y": 32, "Width": 16, "Height": 16}
     },
+	"RowSpaceHeight": 14,
 	"TimeToLockInteractiveState": 0.135,
     "LoadDefaultStylesheets": {
         "Panels": "Styles/panel.json",

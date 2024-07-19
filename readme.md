@@ -699,6 +699,7 @@ In addition to the cursor styles and the default stylesheets to load, the global
 
 * **ThemeIdentifier** (string): optional name you can give to your UI theme. this has no actual affect on anything, its for documentation only.
 * **TimeToLockInteractiveState** (float): for how long, in seconds, to keep entities in "interactive" state once the mouse points on them even if the mouse immediately leaves. This is useful to prevent flickering if the user constantly point on and off an entity and it has animations.
+* **RowSpaceHeight** (int): define the size, in pixels, of a single `RowsSpacer` row.
 
 
 ## Entities Stylesheet
@@ -1164,6 +1165,10 @@ Caret offset.
 
 Character to use to show caret.
 
+## RowsSpacer
+
+An empty entity that creates an extra space between rows of entities, with constant space unit that can be defined by the UI system stylesheet `RowSpaceHeight` property.
+
 # Changelist
 
 ## 1.0.1
@@ -1188,6 +1193,7 @@ Character to use to show caret.
 ## 1.0.3 [WIP]
 
 - Made `HorizontalLine` ignore interactions by default.
+- Added entity to create empty spaces between rows.
 
 # License
 
