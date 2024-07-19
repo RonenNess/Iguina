@@ -183,7 +183,6 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         protected override void SetAutoSizes(int maxWidth, int maxHeight)
         {
-            // set auto size
             if (AutoWidth)
             {
                 Size.X.SetPixels(maxWidth);

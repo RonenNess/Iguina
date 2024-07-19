@@ -59,10 +59,12 @@ namespace Iguina.Entities
             _selectedValuePanel.Size.X.SetPercents(100f);
             _selectedValuePanel.Size.Y.SetPixels(GetClosedStateHeight());
             _selectedValuePanel.IgnoreScrollOffset = true;
+            _selectedValuePanel._overrideInteractableState = true;
             var padding = GetPadding();
             _selectedValuePanel.Offset.X.Value = -padding.Left;
             _selectedValuePanel.Offset.Y.Value = -padding.Top;
             _selectedValuePanel.OverrideStyles.ExtraSize = new Sides() { Right = padding.Left + padding.Right };
+            _selectedValuePanel.ExtraMarginForInteractions = new Sides(padding.Left, padding.Right, padding.Top, 0);
             AddChildInternal(_selectedValuePanel);
 
             // clicking on selected value panel will open / close dropdown
@@ -70,6 +72,19 @@ namespace Iguina.Entities
             {
                 ToggleList();
             };
+        }
+
+        /// <inheritdoc/>
+        protected override void SetAutoSizes(int maxWidth, int maxHeight)
+        {
+            if (AutoWidth)
+            {
+                Size.X.SetPixels(maxWidth);
+            }
+            if (AutoHeight)
+            {
+                Size.Y.SetPixels(ItemHeight * (ItemsCount + 3)); // +3 to compensate top panel
+            }
         }
 
         /// <summary>
@@ -104,10 +119,16 @@ namespace Iguina.Entities
         }
 
         /// <inheritdoc/>
+        protected override int GetExtraParagraphsCount()
+        {
+            return -2; // -2 to compensate top panel that shows selected value
+        }
+
+        /// <inheritdoc/>
         public override void SetVisibleItemsCount(int items)
         {
             AutoHeight = false;
-            Size.Y.SetPixels(ItemHeight * (items + 2));
+            Size.Y.SetPixels(ItemHeight * (items + 2)); // +2 to compensate top panel that shows selected value
         }
 
         /// <inheritdoc/>
@@ -224,6 +245,10 @@ namespace Iguina.Entities
         {
             if (IsOpened)
             {
+                if (_paragraphs.Count > 0)
+                {
+                    _paragraphs[0].Offset.Y.Value = ItemHeight / 2;
+                }
                 base.SetParagraphs(scrollOffset, startIndex);
             }
             else
