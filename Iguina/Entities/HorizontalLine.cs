@@ -15,6 +15,7 @@ namespace Iguina.Entities
         /// <param name="stylesheet">Horizontal line stylesheet.</param>
         public HorizontalLine(UISystem system, StyleSheet? stylesheet) : base(system, stylesheet)
         {
+            IgnoreInteractions = true;
         }
 
         /// <summary>

@@ -1185,6 +1185,10 @@ Character to use to show caret.
 - Added `SetVisibleItemsCount()` method to `ListBox` and `DropDown`.
 - Added methods to `DropDown` to open, close and toggle list.
 
+## 1.0.3 [WIP]
+
+- Made `HorizontalLine` ignore interactions by default.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 
