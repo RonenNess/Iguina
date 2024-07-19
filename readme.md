@@ -1212,6 +1212,11 @@ An empty entity that creates an extra space between rows of entities, with const
 - Renamed `FillColor` stylesheet property.
 - Updated stylesheet.
 
+## 1.0.5 [WIP]
+
+- Added index property when adding child.
+- Small improvements to Message Boxes.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 
