@@ -566,6 +566,12 @@ Use the scrollbar on the right to see more of it."));
                     textInput.MinValue = -10;
                     textInput.MaxValue = 10;
                 }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"You can also create Numeric Input without the buttons:"));
+                {
+                    var textInput = panel.AddChild(new NumericInput(_system, false, false));
+                }
             }
 
             // message boxes
