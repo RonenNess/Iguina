@@ -543,6 +543,31 @@ Use the scrollbar on the right to see more of it."));
                 }
             }
 
+            // numeric text input
+            {
+                var panel = CreateDemoContainer("Numeric Input", new Point(680, 1));
+
+                panel.AddChild(new Paragraph(_system, @"Numeric text input get float or integer value from the user in a form similar to a text input. For example, with decimal point:"));
+                {
+                    var textInput = panel.AddChild(new NumericInput(_system));
+                }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"This Numeric Input don't accept a decimal point:"));
+                {
+                    var textInput = panel.AddChild(new NumericInput(_system));
+                    textInput.AcceptsDecimal = false;
+                }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"This Numeric Input has min and max limits (-10, 10):"));
+                {
+                    var textInput = panel.AddChild(new NumericInput(_system));
+                    textInput.MinValue = -10;
+                    textInput.MaxValue = 10;
+                }
+            }
+
             // message boxes
             {
                 var panel = CreateDemoContainer("Message Boxes", new Point(780, 1));

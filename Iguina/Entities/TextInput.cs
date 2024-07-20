@@ -1,5 +1,4 @@
 ﻿using Iguina.Defs;
-using System.Data;
 
 
 namespace Iguina.Entities
@@ -12,12 +11,17 @@ namespace Iguina.Entities
         /// <summary>
         /// Text to show if input is empty.
         /// </summary>
-        public string? PlaceholderText = null;
+        public virtual string? PlaceholderText
+        {
+            get => _placeholder;
+            set => _placeholder = value;
+        }
+        string? _placeholder;
 
         /// <summary>
         /// Text input value.
         /// </summary>
-        public string Value
+        public virtual string Value
         {
             get => _value;
             set 
@@ -54,14 +58,14 @@ namespace Iguina.Entities
         /// <summary>
         /// If true, text input will support line breaks.
         /// </summary>
-        public bool Multiline
+        public virtual bool Multiline
         {
             get => _multiline;
             set 
             {
                 if (!value && _value.Contains('\n'))
                 {
-                    throw new Exception("Text input value contains line breaks, but multiline flag was turned to false!");
+                    throw new InvalidOperationException("Text input value contains line breaks, but multiline flag was turned to false!");
                 }
                 _multiline = value; 
                 _valueParagraph.TextOverflowMode = value ? TextOverflowMode.WrapWords : TextOverflowMode.Overflow; 

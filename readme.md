@@ -50,6 +50,7 @@ Miscs:
 	* List Box.
 	* Drop Down List.
 	* Text Input.
+    * Numeric Input.
 	* Horizontal Lines.
     * Message Boxes.
 * Extensive Stylesheet system to load an entire UI theme from files.
@@ -1172,6 +1173,39 @@ Caret offset.
 
 Character to use to show caret.
 
+### `MaskingCharacter`
+
+If provided, will replace all characters with this character when presenting the input text.
+Useful for stuff like passwords input field, where you want the password hidden.
+
+## NumericInput
+
+`NumericInput` entity is a derived class of `TextInput`, but it only accept numbers as input.
+
+### `NumericValue`
+
+Get / set value as a float.
+
+### `DefaultValue`
+
+Default numeric value, when no value is set.
+
+### `CultureInfo`
+
+Culture info to use, will determine the character to use as decimal separator. 
+
+### `AcceptsDecimal`
+
+If true, it will accept decimal point and float values.
+
+### `MinValue`
+
+If defined, will add a min value limit to the Numeric Input.
+
+### `MaxValue`
+
+If defined, will add a max value limit to the Numeric Input.
+
 ## RowsSpacer
 
 An empty entity that creates an extra space between rows of entities, with constant space unit that can be defined by the UI system stylesheet `RowSpaceHeight` property.
@@ -1214,6 +1248,7 @@ An empty entity that creates an extra space between rows of entities, with const
 
 ## 1.0.5 [WIP]
 
+- Added `NumericInput` entity.
 - Added index property when adding child.
 - Small improvements to Message Boxes.
 - Added `MaskingCharacter` to `TextInput`.
