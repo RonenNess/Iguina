@@ -568,7 +568,7 @@ Use the scrollbar on the right to see more of it."));
                 }
 
                 panel.AddChild(new RowsSpacer(_system));
-                panel.AddChild(new Paragraph(_system, @"You can also create Numeric Input without the buttons:"));
+                panel.AddChild(new Paragraph(_system, @"You can also create a Numeric Input entity without the buttons:"));
                 {
                     var textInput = panel.AddChild(new NumericInput(_system, false, false));
                 }
