@@ -528,6 +528,19 @@ Use the scrollbar on the right to see more of it."));
                     //textInput.MaxLines = 8;
                     textInput.CreateVerticalScrollbar();
                 }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"You can also mask the text, for password input:"));
+                {
+                    var textInput = panel.AddChild(new TextInput(_system));
+                    textInput.PlaceholderText = "Password";
+                    textInput.MaskingCharacter = '*';
+                    var showPassword = panel.AddChild(new Checkbox(_system, "Show Password"));
+                    showPassword.Events.OnValueChanged = (Entity entity) =>
+                    {
+                        textInput.MaskingCharacter = showPassword.Checked ? null : '*';
+                    };
+                }
             }
 
             // message boxes

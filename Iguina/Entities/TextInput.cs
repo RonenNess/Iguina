@@ -36,6 +36,12 @@ namespace Iguina.Entities
             }
         }
 
+        /// <summary>
+        /// If set, will show this character instead of the actual input value.
+        /// Used for password input fields.
+        /// </summary>
+        public char? MaskingCharacter = null;
+
         // current value
         string _value = string.Empty;
 
@@ -193,15 +199,25 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
         {
-            // update paragraph to display text
+            // do we currently have a value?
             var noValue = string.IsNullOrEmpty(Value);
+
+            // set text to placeholder or empty
             if (noValue)
             {
                 _valueParagraph.Text = _isEditing ? "\r" : (PlaceholderText ?? string.Empty);
             }
+            // set text to value or mask
             else
             {
-                _valueParagraph.Text = Value;
+                if (MaskingCharacter == null)
+                {
+                    _valueParagraph.Text = Value;
+                }
+                else
+                {
+                    _valueParagraph.Text = new string(MaskingCharacter.Value, Value.Length);
+                }
             }
             _valueParagraph.UseEmptyValueTextColor = noValue;
 
