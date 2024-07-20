@@ -1252,6 +1252,7 @@ An empty entity that creates an extra space between rows of entities, with const
 - Added index property when adding child.
 - Small improvements to Message Boxes.
 - Added `MaskingCharacter` to `TextInput`.
+- Added small extra margin to scissor region to make sure text outline don't get cut off.
 
 # License
 

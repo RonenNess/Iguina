@@ -802,6 +802,10 @@ namespace Iguina.Entities
             {
                 // if we already have scissor region set, queue it.
                 var newRegion = LastInternalBoundingRect;
+                newRegion.X -= 2;
+                newRegion.Y -= 2;
+                newRegion.Width += 4;
+                newRegion.Height += 4;
                 var currentRegion = UISystem.Renderer.GetScissorRegion();
                 if (currentRegion.HasValue)
                 {
