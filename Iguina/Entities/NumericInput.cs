@@ -23,6 +23,11 @@ namespace Iguina.Entities
             set => throw new InvalidOperationException("Numeric input fields can't have placeholder text!");
         }
 
+        /// <summary>
+        /// How much to increase / decrease values when clicking on the plus / minus buttons.
+        /// </summary>
+        public decimal ButtonsStepSize = 1;
+
         /// <inheritdoc/>
         public override string Value
         {
@@ -47,7 +52,7 @@ namespace Iguina.Entities
                 }
 
                 // special case: if the only input is - it might be the begining of a negative number, so we allow it
-                if ((MinValue == null || MinValue.Value < 0f) && (value == "-"))
+                if ((MinValue == null || MinValue.Value < 0) && (value == "-"))
                 {
                     base.Value = value;
                     _valueFloat = null;
@@ -55,7 +60,7 @@ namespace Iguina.Entities
                 }
 
                 // set float value and base value
-                if (float.TryParse(value, CultureInfo, out float result))
+                if (decimal.TryParse(value, CultureInfo, out decimal result))
                 {
                     // check min value
                     if (result < MinValue)
@@ -72,7 +77,7 @@ namespace Iguina.Entities
                     }
 
                     // special - if value is 0, make sure input is not 00000...)
-                    if (result == 0f)
+                    if (result == 0)
                     {
                         value = "0";
                     }
@@ -91,11 +96,29 @@ namespace Iguina.Entities
             }
         }
 
+        /// <inheritdoc/>
+        internal override void PostUpdate(InputState inputState)
+        {
+            base.PostUpdate(inputState);
+
+            if (inputState.LeftMouseDown)
+            {
+                if (_lockSelf && (_minusButton?.IsPointedOn(inputState.MousePosition) ?? false))
+                {
+                    _lockSelf = false;
+                }
+
+                if (_lockSelf && (_plusButton?.IsPointedOn(inputState.MousePosition) ?? false))
+                {
+                    _lockSelf = false;
+                }
+            }
+        }
 
         /// <summary>
         /// Optional min value.
         /// </summary>
-        public float? MinValue
+        public decimal? MinValue
         {
             get => _minValue;
             set
@@ -107,12 +130,12 @@ namespace Iguina.Entities
                 }
             }
         }
-        float? _minValue;
+        decimal? _minValue;
 
         /// <summary>
         /// Optional max value.
         /// </summary>
-        public float? MaxValue
+        public decimal? MaxValue
         {
             get => _maxValue;
             set
@@ -124,17 +147,17 @@ namespace Iguina.Entities
                 }
             }
         }
-        float? _maxValue;
+        decimal? _maxValue;
 
         /// <summary>
         /// Get / set value as a float number.
         /// </summary>
-        public float NumericValue
+        public decimal NumericValue
         {
             get => _valueFloat ?? DefaultValue;
             set
             {
-                if (!AcceptsDecimal && (MathF.Floor(value) != value))
+                if (!AcceptsDecimal && (Math.Floor(value) != value))
                 {
                     throw new InvalidOperationException("Can't set NumericInput float value while not accepting decimal point!");
                 }
@@ -147,12 +170,12 @@ namespace Iguina.Entities
         }
 
         // current value as float
-        float? _valueFloat = null;
+        decimal? _valueFloat = null;
 
         /// <summary>
         /// Default value to return when there's no numeric input or when an invalid value is provided.
         /// </summary>
-        public float DefaultValue = 0f;
+        public decimal DefaultValue = 0;
 
         /// <summary>
         /// Culture info to use when parsing floats.
@@ -171,21 +194,71 @@ namespace Iguina.Entities
         /// </summary>
         public bool AcceptsDecimal = true;
 
+        // minus / plus buttons
+        Button? _minusButton;
+        Button? _plusButton;
+
         /// <summary>
         /// Create the numeric text input.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Numeric input stylesheet.</param>
-        public NumericInput(UISystem system, StyleSheet? stylesheet) : base(system, stylesheet)
+        /// <param name="addPlusButton">If true, will add a plus button to increase value.</param>
+        /// <param name="addMinusButton">If true, will add a minus button to decrease value.</param>
+        public NumericInput(UISystem system, StyleSheet? stylesheet, bool addPlusButton = true, bool addMinusButton = true) : base(system, stylesheet)
         {
+            var buttonStyle = system.DefaultStylesheets.NumericTextInputButton ?? system.DefaultStylesheets.Buttons;
+
+            // add + button
+            if (addPlusButton)
+            {
+                var plusButton = new Button(system, buttonStyle, "+");
+                plusButton.Anchor = Anchor.CenterRight;
+                plusButton.Offset.X.SetPixels(-GetPadding().Right);
+                plusButton.Events.OnClick = (Entity entity) =>
+                {
+                    var value = NumericValue + ButtonsStepSize;
+                    if (value < MinValue) { value = MinValue.Value; }
+                    if (value > MaxValue) { value = MaxValue.Value; }
+                    NumericValue = value;
+                };
+                AddChildInternal(plusButton);
+                _plusButton = plusButton;
+            }
+
+            // add + button
+            if (addMinusButton)
+            {
+                var minusButton = new Button(system, buttonStyle, "-");
+                minusButton.Anchor = Anchor.CenterLeft;
+                minusButton.Offset.X.SetPixels(-GetPadding().Left);
+                minusButton.Events.OnClick = (Entity entity) =>
+                {
+                    var value = NumericValue - ButtonsStepSize;
+                    if (value < MinValue) { value = MinValue.Value; }
+                    if (value > MaxValue) { value = MaxValue.Value; }
+                    NumericValue = value;
+                };
+                AddChildInternal(minusButton);
+                _minusButton = minusButton;
+            }
         }
 
         /// <summary>
         /// Create the numeric text input with default stylesheets.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
-        public NumericInput(UISystem system) : this(system, system.DefaultStylesheets.NumericTextInput ?? system.DefaultStylesheets.TextInput)
+        /// <param name="addPlusButton">If true, will add a plus button to increase value.</param>
+        /// <param name="addMinusButton">If true, will add a minus button to decrease value.</param>
+        public NumericInput(UISystem system, bool addPlusButton = true, bool addMinusButton = true)
+            : this(system, system.DefaultStylesheets.NumericTextInput ?? system.DefaultStylesheets.TextInput, addPlusButton, addMinusButton)
         {
+        }
+
+        /// <inheritdoc/>
+        protected override int GetInputMaxWidth()
+        {
+            return base.GetInputMaxWidth() - (_plusButton != null ? _plusButton.LastBoundingRect.Width : 0);
         }
     }
 }

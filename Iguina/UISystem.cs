@@ -67,6 +67,7 @@ namespace Iguina
             public StyleSheet? VerticalScrollbarsHandle;
             public StyleSheet? TextInput;
             public StyleSheet? NumericTextInput;
+            public StyleSheet? NumericTextInputButton;
             public StyleSheet? HorizontalProgressBars;
             public StyleSheet? HorizontalProgressBarsFill;
             public StyleSheet? VerticalProgressBars;

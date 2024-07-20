@@ -44,6 +44,7 @@
         "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
         "TextInput": "Styles/text_input.json",
         "NumericTextInput": "Styles/numeric_input.json",
+        "NumericTextInputButton": "Styles/numeric_input_button.json",
         "HorizontalProgressBars": "Styles/progress_bar_horizontal.json",
         "HorizontalProgressBarsFill": "Styles/progress_bar_horizontal_fill.json"
     }

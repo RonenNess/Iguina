@@ -1206,6 +1206,10 @@ If defined, will add a min value limit to the Numeric Input.
 
 If defined, will add a max value limit to the Numeric Input.
 
+### `ButtonsStepSize`
+
+How much to increase / decrease value when clicking on the plus / minus buttons of the numeric input field.
+
 ## RowsSpacer
 
 An empty entity that creates an extra space between rows of entities, with constant space unit that can be defined by the UI system stylesheet `RowSpaceHeight` property.
@@ -1253,6 +1257,7 @@ An empty entity that creates an extra space between rows of entities, with const
 - Small improvements to Message Boxes.
 - Added `MaskingCharacter` to `TextInput`.
 - Added small extra margin to scissor region to make sure text outline don't get cut off.
+- Made `TextInput` less "sticky" to be kept focused.
 
 # License
 

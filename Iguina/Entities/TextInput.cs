@@ -78,7 +78,7 @@ namespace Iguina.Entities
 
         /// <inheritdoc/>
         internal override bool LockFocusOnSelf => _lockSelf;
-        bool _lockSelf = true;
+        internal bool _lockSelf = true;
 
         /// <summary>
         /// Max lines limit, when multiline input is true.
@@ -275,7 +275,7 @@ namespace Iguina.Entities
             if (MaxLength.HasValue && Value.Length > MaxLength.Value) { return 0; }
 
             // check max width
-            if (!Multiline && ((_valueParagraph.LastBoundingRect.Right + _valueParagraph.MeasureText(" ").X * 2) >= (LastInternalBoundingRect.Right - GetPadding().Right)))
+            if (!Multiline && ((_valueParagraph.LastBoundingRect.Right + _valueParagraph.MeasureText(" ").X * 2) >= GetInputMaxWidth()))
             {
                 return 0;
             }
@@ -293,6 +293,14 @@ namespace Iguina.Entities
             // update caret
             CaretOffset++;
             return 1;
+        }
+
+        /// <summary>
+        /// Get max width for text input.
+        /// </summary>
+        protected virtual int GetInputMaxWidth()
+        {
+            return (LastInternalBoundingRect.Right - GetPadding().Right);
         }
 
         /// <summary>
@@ -327,6 +335,13 @@ namespace Iguina.Entities
             if (_isEditing && !IsTargeted) 
             { 
                 _isEditing = false; 
+            }
+
+            // if clicked outside, release lock
+            if (_isEditing && inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
+            {
+                _isEditing = false;
+                _lockSelf = false;
             }
 
             // if editing, calculate some useful values
