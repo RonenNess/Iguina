@@ -1250,7 +1250,7 @@ An empty entity that creates an extra space between rows of entities, with const
 - Renamed `FillColor` stylesheet property.
 - Updated stylesheet.
 
-## 1.0.5 [WIP]
+## 1.0.5
 
 - Added `NumericInput` entity.
 - Added index property when adding child.
