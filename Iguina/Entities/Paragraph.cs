@@ -425,12 +425,20 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Get current font size.
+        /// </summary>
+        int GetFontSize()
+        {
+            return StyleSheet.GetProperty<int>("FontSize", State, 24, OverrideStyles);
+        }
+
+        /// <summary>
         /// Measure text line height, in pixels.
         /// </summary>
         public int MeasureTextLineHeight()
         {
+            var fontSize = GetFontSize();
             var font = StyleSheet.GetProperty<string?>("FontIdentifier", State, null, OverrideStyles);
-            var fontSize = StyleSheet.GetProperty<int>("FontSize", State, 24, OverrideStyles);
             return UISystem.Renderer.GetTextLineHeight(font, fontSize);
         }
 
@@ -439,8 +447,8 @@ namespace Iguina.Entities
         /// </summary>
         public Point MeasureText(string txt)
         {
+            var fontSize = GetFontSize();
             var font = StyleSheet.GetProperty<string?>("FontIdentifier", State, null, OverrideStyles);
-            var fontSize = StyleSheet.GetProperty<int>("FontSize", State, 24, OverrideStyles);
             return UISystem.Renderer.MeasureText(txt, font, fontSize, 1f);
         }
 
@@ -458,8 +466,8 @@ namespace Iguina.Entities
 
                 // calculate text params
                 var state = State;
+                var fontSize = GetFontSize();
                 var font = StyleSheet.GetProperty<string?>("FontIdentifier", state, null, OverrideStyles);
-                var fontSize = StyleSheet.GetProperty<int>("FontSize", state, 24, OverrideStyles);
                 var alignment = StyleSheet.GetProperty("TextAlignment", state, TextAlignment.Left, OverrideStyles)!;
                 var spacing = StyleSheet.GetProperty<float>("TextSpacing", state, 1f, OverrideStyles);
 
