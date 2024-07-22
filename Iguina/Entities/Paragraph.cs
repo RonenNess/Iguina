@@ -59,7 +59,7 @@ namespace Iguina.Entities
         ///     FC:RRGGBBAA                         Change fill color. RRGGBBAA is the color components in hex. AA is optional.
         ///     OC:RRGGBBAA                         Change outline color. RRGGBBAA is the color components in hex. AA is optional.
         ///     OW:Width                            Change outline width. Width is the new outline width.
-        ///     ICO:Texture,sx,sy,sw,sh,scale       Embed an icon inside the text. Texture = texture id, sx,sy,sw,sh = source rectangle, scale = icon scale, based on source rect.
+        ///     ICO:Texture|sx|sy|sw|sh|scale|utc   Embed an icon inside the text. Texture = texture id, sx,sy,sw,sh = source rectangle, scale = icon scale based on source rect, utc = use text color - if true, will use text color for the icon. 
         ///     RESET                               Reset all previously-set style command properties.
         /// </remarks>
         /// <example>
@@ -134,6 +134,11 @@ namespace Iguina.Entities
             /// Icon to embed in text.
             /// </summary>
             public IconTexture? Icon;
+
+            /// <summary>
+            /// If true, will use text current color for icon (if icon is set).
+            /// </summary>
+            public bool IconUseTextColor;
 
             /// <summary>
             /// Reset all style commands.
@@ -254,6 +259,21 @@ namespace Iguina.Entities
                                     SourceRect = new Rectangle(int.Parse(iconParams[1]), int.Parse(iconParams[2]), int.Parse(iconParams[3]), int.Parse(iconParams[4])),
                                     TextureScale = (iconParams.Length == 5) ? 1f : float.Parse(iconParams[5])
                                 };
+                                if (iconParams.Length == 7)
+                                {
+                                    if (iconParams[6] == "y")
+                                    {
+                                        currCommand.IconUseTextColor = true;
+                                    }
+                                    else if (iconParams[6] == "n")
+                                    {
+                                        currCommand.IconUseTextColor = false;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Icon 'use text color' flag must be either 'y' or 'n'");
+                                    }
+                                }
                                 break;
 
                             default:
@@ -623,7 +643,8 @@ namespace Iguina.Entities
                                         (int)(newStyleCommand.Icon.SourceRect.Width * newStyleCommand.Icon.TextureScale), 
                                         (int)(newStyleCommand.Icon.SourceRect.Height * newStyleCommand.Icon.TextureScale));
                                     dest.Y -= dest.Height / 2;
-                                    DrawUtils.Draw(UISystem.Renderer, effectId, newStyleCommand.Icon, dest, Color.White);
+                                    var color = (newStyleCommand.IconUseTextColor) ? (currTextStyle.FillColor ?? fillColor) : (currTextStyle.FillColor ?? Color.White);
+                                    DrawUtils.Draw(UISystem.Renderer, effectId, newStyleCommand.Icon, dest, color);
                                 }
 
                                 // get range and segment to render

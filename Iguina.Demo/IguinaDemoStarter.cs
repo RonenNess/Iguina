@@ -422,10 +422,10 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                 {
                     panel.AddChild(new Label(_system, @"Select Race:"));
                     var listbox = panel.AddChild(new ListBox(_system));
-                    listbox.AddItem("Human");
-                    listbox.AddItem("Elf");
-                    listbox.AddItem("Orc");
-                    listbox.AddItem("Dwarf");
+                    listbox.AddItem("Human",    "${ICO:Textures/Icons.png|0|0|32|32|1|y}       Human");
+                    listbox.AddItem("Elf",      "${ICO:Textures/Icons.png|32|0|32|32|1|y}       Elf");
+                    listbox.AddItem("Orc",      "${ICO:Textures/Icons.png|64|0|32|32|1|y}       Orc");
+                    listbox.AddItem("Dwarf",    "${ICO:Textures/Icons.png|96|0|32|32|1|y}       Dwarf");
                     listbox.AutoHeight = true;
                     listbox.AllowDeselect = false;
                 }
@@ -458,12 +458,12 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                     panel.AddChild(new Label(_system, @"Select Race:"));
                     var dropdown = panel.AddChild(new DropDown(_system));
                     dropdown.DefaultSelectedText = "< Select Race >";
-                    dropdown.AddItem("Human");
-                    dropdown.AddItem("Elf");
-                    dropdown.AddItem("Orc");
-                    dropdown.AddItem("Dwarf");
-                    dropdown.AddItem("Gnome");
-                    dropdown.AddItem("Tiefling");
+                    dropdown.AddItem("Human",   "${ICO:Textures/Icons.png|0|0|32|32|1|y}       Human");
+                    dropdown.AddItem("Elf",     "${ICO:Textures/Icons.png|32|0|32|32|1|y}       Elf");
+                    dropdown.AddItem("Orc",     "${ICO:Textures/Icons.png|64|0|32|32|1|y}       Orc");
+                    dropdown.AddItem("Dwarf",   "${ICO:Textures/Icons.png|96|0|32|32|1|y}       Dwarf");
+                    dropdown.AddItem("Gnome",   "${ICO:Textures/Icons.png|128|0|32|32|1|y}       Gnome");
+                    dropdown.AddItem("Tiefling", "${ICO:Textures/Icons.png|160|0|32|32|1|y}       Tiefling");
                     dropdown.AllowDeselect = false;
                     dropdown.AutoHeight = true;
                 }

@@ -1058,11 +1058,11 @@ If true, will enable paragraph style commands.
 Style commands are special flags you can set inside the text to change paragraph colors and outline mid-sentence.
 A style command is defined between `${}`. The following commands are supported:
 
-* **FC:RRGGBBAA**                       Change fill color. RRGGBBAA is the color components in hex. AA is optional.
-* **OC:RRGGBBAA**                       Change outline color. RRGGBBAA is the color components in hex. AA is optional.
-* **OW:Width**                          Change outline width. Width is the new outline width.
-* **ICO:Texture|sx|sy|sw|sh|scale**     Embed an icon inside the text, with texture id, source rect, and scale.
-* **RESET**                             Reset all previously-set style command properties.
+* **FC:RRGGBBAA**                           Change fill color. RRGGBBAA is the color components in hex. AA is optional.
+* **OC:RRGGBBAA**                           Change outline color. RRGGBBAA is the color components in hex. AA is optional.
+* **OW:Width**                              Change outline width. Width is the new outline width.
+* **ICO:Texture|sx|sy|sw|sh|scale|utc**     Embed an icon inside the text, with texture id, source rect, and scale. Utc is an optional flag (can be 'y' or 'n') if to use text color for icon.
+* **RESET**                                 Reset all previously-set style command properties.
 
 For example, the following code:
 
@@ -1275,7 +1275,7 @@ An empty entity that creates an extra space between rows of entities, with const
 - Added small extra margin to scissor region to make sure text outline don't get cut off.
 - Made `TextInput` less "sticky" to be kept focused.
 
-## 1.0.6 [WIP]
+## 1.0.6
 
 - Added stylesheet inheritance and changed default theme to utilize it.
 - Added `VerticalLine` entity.
