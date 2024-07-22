@@ -1,4 +1,5 @@
 ﻿using Iguina.Defs;
+using Iguina.Utils;
 using System.Text.RegularExpressions;
 
 
@@ -55,10 +56,11 @@ namespace Iguina.Entities
         /// </summary>
         /// <remarks>
         /// Supported commands:
-        ///     FC:RRGGBBAA     Change fill color. RRGGBBAA is the color components in hex. AA is optional.
-        ///     OC:RRGGBBAA     Change outline color. RRGGBBAA is the color components in hex. AA is optional.
-        ///     OW:Width        Change outline width. Width is the new outline width.
-        ///     RESET           Reset all previously-set style command properties.
+        ///     FC:RRGGBBAA                         Change fill color. RRGGBBAA is the color components in hex. AA is optional.
+        ///     OC:RRGGBBAA                         Change outline color. RRGGBBAA is the color components in hex. AA is optional.
+        ///     OW:Width                            Change outline width. Width is the new outline width.
+        ///     ICO:Texture,sx,sy,sw,sh,scale       Embed an icon inside the text. Texture = texture id, sx,sy,sw,sh = source rectangle, scale = icon scale, based on source rect.
+        ///     RESET                               Reset all previously-set style command properties.
         /// </remarks>
         /// <example>
         /// paragraph.Text = "Hello, ${FC:00FF00}Hero${RESET}! Welcome to my ${OC:FF00FF,OW:2}cave${RESET}."
@@ -127,6 +129,11 @@ namespace Iguina.Entities
             /// Outline width to set.
             /// </summary>
             public int? OutlineWidth;
+
+            /// <summary>
+            /// Icon to embed in text.
+            /// </summary>
+            public IconTexture? Icon;
 
             /// <summary>
             /// Reset all style commands.
@@ -237,8 +244,23 @@ namespace Iguina.Entities
                                 currCommand.OutlineColor = Color.Parse(value!);
                                 expectedValuesCount = 1;
                                 break;
+
+                            case "ICO":
+                                expectedValuesCount = 1;
+                                var iconParams = value!.Split('|').Select(x => x.Trim()).ToArray();
+                                currCommand.Icon = new IconTexture()
+                                {
+                                    TextureId = iconParams[0],
+                                    SourceRect = new Rectangle(int.Parse(iconParams[1]), int.Parse(iconParams[2]), int.Parse(iconParams[3]), int.Parse(iconParams[4])),
+                                    TextureScale = (iconParams.Length == 5) ? 1f : float.Parse(iconParams[5])
+                                };
+                                break;
+
+                            default:
+                                throw new Exception("Unknown style command!");
                         }
                     }
+                    // make sure its a valid command
                     catch (Exception e)
                     {
                         if (ExceptionOnInvalidStyleCommands)
@@ -429,7 +451,8 @@ namespace Iguina.Entities
         /// </summary>
         int GetFontSize()
         {
-            return StyleSheet.GetProperty<int>("FontSize", State, 24, OverrideStyles);
+            var scale = StyleSheet.GetProperty<float>("TextScale", State, 1f, OverrideStyles);
+            return (int)((float)StyleSheet.GetProperty<int>("FontSize", State, 24, OverrideStyles) * scale * UISystem.TextsScale);
         }
 
         /// <summary>
@@ -590,6 +613,19 @@ namespace Iguina.Entities
                                 // merge styles
                                 currTextStyle.MergeSelfWith(newStyleCommand);
 
+                                // calculate text segment position
+                                var segmentPosition = new Point(position.X + offsetX, position.Y);
+
+                                // draw style command icon
+                                if (newStyleCommand.Icon != null)
+                                {
+                                    var dest = new Rectangle(segmentPosition.X, segmentPosition.Y + _lineHeight / 2, 
+                                        (int)(newStyleCommand.Icon.SourceRect.Width * newStyleCommand.Icon.TextureScale), 
+                                        (int)(newStyleCommand.Icon.SourceRect.Height * newStyleCommand.Icon.TextureScale));
+                                    dest.Y -= dest.Height / 2;
+                                    DrawUtils.Draw(UISystem.Renderer, effectId, newStyleCommand.Icon, dest, Color.White);
+                                }
+
                                 // get range and segment to render
                                 var toIndex = (i + 1) < styleCommands.Count ? (styleCommands[i + 1].Index - newStyleCommand.Index) : -1;
                                 var segment = toIndex >= 0 ? line.Line.Substring(newStyleCommand.Index, toIndex) : line.Line.Substring(newStyleCommand.Index);
@@ -600,8 +636,7 @@ namespace Iguina.Entities
                                     continue; 
                                 }
 
-                                // calculate position and render
-                                var segmentPosition = new Point(position.X + offsetX, position.Y);
+                                // render text!
                                 UISystem.Renderer.DrawText(effectId, segment, font, fontSize, segmentPosition, currTextStyle.FillColor ?? fillColor, currTextStyle.OutlineColor ?? outlineColor, currTextStyle.OutlineWidth ?? outlineWidth, spacing);
                                 offsetX += UISystem.Renderer.MeasureText(segment, font, fontSize, spacing).X;
 
