@@ -199,6 +199,24 @@ namespace Iguina.Entities
         Button? _plusButton;
 
         /// <summary>
+        /// Set / get the minus button text.
+        /// </summary>
+        public string? MinusButtonText
+        {
+            get => _minusButton?.Paragraph?.Text ?? null;
+            set { if (_minusButton != null) { _minusButton.Paragraph.Text = value ?? string.Empty; } }
+        }
+
+        /// <summary>
+        /// Set / get the plus button text.
+        /// </summary>
+        public string? PlusButtonText
+        {
+            get => _plusButton?.Paragraph?.Text ?? null;
+            set { if (_plusButton != null) { _plusButton.Paragraph.Text = value ?? string.Empty; } }
+        }
+
+        /// <summary>
         /// Create the numeric text input.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
@@ -214,7 +232,7 @@ namespace Iguina.Entities
             {
                 var plusButton = new Button(system, buttonStyle, "+");
                 plusButton.Anchor = Anchor.CenterRight;
-                plusButton.Offset.X.SetPixels(-GetPadding().Right);
+                plusButton.Offset.X.SetPixels(-GetPadding().Right + plusButton.GetMarginAfter().X);
                 plusButton.Events.OnClick = (Entity entity) =>
                 {
                     var value = NumericValue + ButtonsStepSize;
@@ -231,7 +249,7 @@ namespace Iguina.Entities
             {
                 var minusButton = new Button(system, buttonStyle, "-");
                 minusButton.Anchor = Anchor.CenterLeft;
-                minusButton.Offset.X.SetPixels(-GetPadding().Left);
+                minusButton.Offset.X.SetPixels(-GetPadding().Left + minusButton.GetMarginBefore().X);
                 minusButton.Events.OnClick = (Entity entity) =>
                 {
                     var value = NumericValue - ButtonsStepSize;
