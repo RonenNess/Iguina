@@ -42,13 +42,17 @@ namespace Iguina.Entities
         Panel _selectedValuePanel;
         Paragraph _selectedValueParagraph;
 
+        // icon entity, if stylesheet is defined for it
+        Entity _icon = null!;
+
         /// <summary>
         /// Create the drop down.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Drop down panel stylesheet.</param>
         /// <param name="itemsStylesheet">Drop down box items stylesheet. If not set, will use the same as base stylesheet.</param>
-        public DropDown(UISystem system, StyleSheet? stylesheet, StyleSheet? itemsStylesheet = null) : base(system, stylesheet, itemsStylesheet)
+        /// <param name="arrowIconStylesheet">Stylesheet for an arrow icon to add to the dropdown to reflect its state. If null, will not add this entity.</param>
+        public DropDown(UISystem system, StyleSheet? stylesheet, StyleSheet? itemsStylesheet = null, StyleSheet? arrowIconStylesheet = null) : base(system, stylesheet, itemsStylesheet)
         {
             // set as auto-height by default
             AutoHeight = true;
@@ -67,11 +71,44 @@ namespace Iguina.Entities
             _selectedValuePanel.ExtraMarginForInteractions = new Sides(padding.Left, padding.Right, padding.Top, 0);
             AddChildInternal(_selectedValuePanel);
 
+            // create dropdown icon
+            if (arrowIconStylesheet != null)
+            {
+                _icon = new Entity(UISystem, arrowIconStylesheet);
+                _icon.CopyStateFrom = this;
+                _icon.IgnoreInteractions = true;
+                _icon.IgnoreScrollOffset = true;
+                AddChildInternal(_icon);
+            }
+
             // clicking on selected value panel will open / close dropdown
             _selectedValuePanel.Events.OnClick += (Entity entity) =>
             {
                 ToggleList();
             };
+        }
+
+        /// <summary>
+        /// Show / hide arrow icon.
+        /// </summary>
+        /// <param name="show">Should we show or hide the dropdown arrow icon.</param>
+        public void ShowArrowIcon(bool show)
+        {
+            if (_icon != null)
+            {
+                _icon.Visible = show;
+            }
+        }
+
+        /// <summary>
+        /// Create the drop down with default stylesheets.
+        /// </summary>
+        /// <param name="system">Parent UI system.</param>
+        public DropDown(UISystem system) : this(system,
+            system.DefaultStylesheets.DropDownPanels ?? system.DefaultStylesheets.ListPanels ?? system.DefaultStylesheets.Panels,
+            system.DefaultStylesheets.DropDownItems ?? system.DefaultStylesheets.ListItems ?? system.DefaultStylesheets.Paragraphs,
+            system.DefaultStylesheets.DropDownIcon)
+        {
         }
 
         /// <inheritdoc/>
@@ -85,16 +122,6 @@ namespace Iguina.Entities
             {
                 Size.Y.SetPixels(ItemHeight * (ItemsCount + 3)); // +3 to compensate top panel
             }
-        }
-
-        /// <summary>
-        /// Create the drop down with default stylesheets.
-        /// </summary>
-        /// <param name="system">Parent UI system.</param>
-        public DropDown(UISystem system) : this(system,
-            system.DefaultStylesheets.DropDownPanels ?? system.DefaultStylesheets.ListPanels ?? system.DefaultStylesheets.Panels,
-            system.DefaultStylesheets.DropDownItems ?? system.DefaultStylesheets.ListItems ?? system.DefaultStylesheets.Paragraphs)
-        {
         }
 
 
@@ -157,7 +184,6 @@ namespace Iguina.Entities
             if (IsOpened)
             {
                 // move the scrollbar under the selected value box
-                //if (ShowSelectedValueBoxWhenOpened)
                 {
                     if (VerticalScrollbar != null)
                     {
@@ -266,6 +292,12 @@ namespace Iguina.Entities
             // update selected value text
             _selectedValueParagraph.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
             _selectedValueParagraph.UseEmptyValueTextColor = (SelectedValue == null);
+
+            // set icon state
+            if (_icon != null)
+            {
+                _icon.LockedState = IsOpened ? EntityState.Interacted : null;
+            }
 
             // if opened and click outside, close the list
             if (IsOpened && inputState.LeftMousePressedNow)
