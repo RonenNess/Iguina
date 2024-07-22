@@ -1,6 +1,7 @@
 ﻿using Iguina.Defs;
 using Iguina.Drivers;
 
+
 namespace Iguina.Utils
 {
     /// <summary>
@@ -8,6 +9,76 @@ namespace Iguina.Utils
     /// </summary>
     internal static class DrawUtils
     {
+        /// <summary>
+        /// Draw a horizontal strip texture with sides.
+        /// </summary>
+        static void DrawHorizontal(IRenderer renderer, string textureId, float textureScale, string? effectId, Rectangle leftSrc, Rectangle centerSrc, Rectangle rightSrc, float width, Point position, Color color)
+        {
+            // left and right dest rects
+            var leftDest = new Rectangle(position.X, position.Y, (int)(leftSrc.Width * textureScale), (int)(leftSrc.Height * textureScale));
+            var rightDest = new Rectangle(position.X + (int)(width - (rightSrc.Width * textureScale)), position.Y, (int)(rightSrc.Width * textureScale), (int)(rightSrc.Height * textureScale));
+
+            // draw center parts
+            var centerDest = new Rectangle(position.X + leftDest.Width, position.Y, (int)(centerSrc.Width * textureScale), (int)(centerSrc.Height * textureScale));
+            bool didFinish = false;
+            while (!didFinish)
+            {
+                var cutOff = (centerDest.X + centerDest.Width) - (rightDest.X);
+                if (cutOff > 0)
+                {
+                    centerDest.Width -= cutOff;
+                    centerSrc.Width -= (int)((float)cutOff / textureScale);
+                    didFinish = true;
+                }
+                if (centerDest.Width > 0)
+                {
+                    renderer.DrawTexture(effectId, textureId, centerDest, centerSrc, color);
+                    centerDest.X += centerDest.Width;
+                }
+            }
+
+            // draw left side
+            renderer.DrawTexture(effectId, textureId, leftDest, leftSrc, color);
+
+            // draw right side
+            renderer.DrawTexture(effectId, textureId, rightDest, rightSrc, color);
+        }
+
+        /// <summary>
+        /// Draw a vertical strip texture with sides.
+        /// </summary>
+        static void DrawVertical(IRenderer renderer, string textureId, float textureScale, string? effectId, Rectangle topSrc, Rectangle centerSrc, Rectangle bottomSrc, float height, Point position, Color color)
+        {
+            // top and bottom dest rects
+            var topDest = new Rectangle(position.X, position.Y, (int)(topSrc.Width * textureScale), (int)(topSrc.Height * textureScale));
+            var bottomDest = new Rectangle(position.X, position.Y + (int)(height - (bottomSrc.Height * textureScale)), (int)(bottomSrc.Width * textureScale), (int)(bottomSrc.Height * textureScale));
+
+            // draw center parts
+            var centerDest = new Rectangle(position.X, position.Y + topDest.Height, (int)(centerSrc.Width * textureScale), (int)(centerSrc.Height * textureScale));
+            bool didFinish = false;
+            while (!didFinish)
+            {
+                var cutOff = (centerDest.Y + centerDest.Height) - (bottomDest.Y);
+                if (cutOff > 0)
+                {
+                    centerDest.Height -= cutOff;
+                    centerSrc.Height -= (int)((float)cutOff / textureScale);
+                    didFinish = true;
+                }
+                if (centerDest.Height > 0)
+                {
+                    renderer.DrawTexture(effectId, textureId, centerDest, centerSrc, color);
+                    centerDest.Y += centerDest.Height;
+                }
+            }
+
+            // draw top side
+            renderer.DrawTexture(effectId, textureId, topDest, topSrc, color);
+
+            // draw bottom side
+            renderer.DrawTexture(effectId, textureId, bottomDest, bottomSrc, color);
+        }
+
         /// <summary>
         /// Render framed texture.
         /// </summary>
@@ -28,6 +99,19 @@ namespace Iguina.Utils
 
             // is this a horizontal strip only?
             bool isHorizontalStrip = texture.InternalSourceRect.Height == texture.ExternalSourceRect.Height;
+            if (isHorizontalStrip)
+            {
+                DrawHorizontal(renderer, texture.TextureId, texture.TextureScale, effectId, texture.LeftSourceRect, texture.InternalSourceRect, texture.RightSourceRect, dest.Width, new Point(dest.X, dest.Y), color);
+                return;
+            }
+
+            // is this a vertical strip only
+            bool isVerticalStrip = texture.InternalSourceRect.Width == texture.ExternalSourceRect.Width;
+            if (isVerticalStrip)
+            {
+                DrawVertical(renderer, texture.TextureId, texture.TextureScale, effectId, texture.TopSourceRect, texture.InternalSourceRect, texture.BottomSourceRect, dest.Height, new Point(dest.X, dest.Y), color);
+                return;
+            }
 
             // calculate all dest rects
             var topLeftDest = new Rectangle(dest.X, dest.Y, (int)(topLeftSrc.Width * texture.TextureScale), (int)(topLeftSrc.Height * texture.TextureScale));
@@ -40,7 +124,7 @@ namespace Iguina.Utils
                 var srcRect = texture.InternalSourceRect;
                 var destRect = new Rectangle(topLeftDest.Right, topLeftDest.Bottom, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
 
-                bool lastRow = isHorizontalStrip;
+                bool lastRow = false;
                 while (true)
                 {
                     // end of row?
@@ -88,7 +172,7 @@ namespace Iguina.Utils
             // top frame
             {
                 bool keepDrawing = true;
-                var srcRect = isHorizontalStrip ? texture.InternalSourceRect : texture.TopSourceRect;
+                var srcRect = texture.TopSourceRect;
                 var destRect = new Rectangle(topLeftDest.Right, dest.Top, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
                 while (keepDrawing)
                 {
@@ -104,7 +188,6 @@ namespace Iguina.Utils
                     destRect.X += destRect.Width;
                 }
             }
-            if (!isHorizontalStrip)
             {
                 // bottom frame
                 {
@@ -166,23 +249,11 @@ namespace Iguina.Utils
             }
 
             // render corners
-            if (!isHorizontalStrip)
             {
                 renderer.DrawTexture(effectId, texture.TextureId, topLeftDest, topLeftSrc, color);
                 renderer.DrawTexture(effectId, texture.TextureId, topRightDest, topRightSrc, color);
                 renderer.DrawTexture(effectId, texture.TextureId, bottomLeftDest, bottomLeftSrc, color);
                 renderer.DrawTexture(effectId, texture.TextureId, bottomRightDest, bottomRightSrc, color);
-            }
-            // render sides for horizontal strip
-            else
-            {
-                topLeftSrc.Height = texture.InternalSourceRect.Height;
-                topLeftDest.Height = (int)(topLeftSrc.Height * texture.TextureScale);
-                renderer.DrawTexture(effectId, texture.TextureId, topLeftDest, topLeftSrc, color);
-
-                topRightSrc.Height = texture.InternalSourceRect.Height;
-                topRightDest.Height = (int)(topRightSrc.Height * texture.TextureScale);
-                renderer.DrawTexture(effectId, texture.TextureId, topRightDest, topRightSrc, color);
             }
         }
 
