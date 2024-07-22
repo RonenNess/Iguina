@@ -51,7 +51,7 @@ Miscs:
 	* Drop Down List.
 	* Text Input.
     * Numeric Input.
-	* Horizontal Lines.
+	* Horizontal / Vertical Lines.
     * Message Boxes.
 * Extensive Stylesheet system to load an entire UI theme from files.
 * Smooth transitions and animations.
@@ -672,28 +672,28 @@ The map of default stylesheets to load is a simple dictionary of <string, string
 
 ```json
 "LoadDefaultStylesheets": {
-	"Panels": "Styles/panel.json",
-	"Paragraphs": "Styles/paragraph.json",
-	"Titles": "Styles/title.json",
-	"Buttons": "Styles/button.json",
-	"HorizontalLines": "Styles/horizontal_line.json",
+    "Panels": "Styles/panel.json",
+    "Paragraphs": "Styles/paragraph.json",
+    "Titles": "Styles/title.json",
+    "Buttons": "Styles/button.json",
+    "HorizontalLines": "Styles/horizontal_line.json",
     "VerticalLines": "Styles/vertical_line.json",
-	"CheckBoxes": "Styles/checkbox.json",
-	"RadioButtons": "Styles/radio_button.json",
-	"HorizontalSliders": "Styles/slider_horizontal.json",
-	"VerticalSliders": "Styles/slider_vertical.json",
-	"HorizontalSlidersHandle": "Styles/slider_handle.json",
-	"VerticalSlidersHandle": "Styles/slider_handle.json",
-	"ListPanels": "Styles/list_panel.json",
-	"ListItems": "Styles/list_item.json",
-	"DropDownPanels": "Styles/list_panel.json",
-	"DropDownItems": "Styles/list_item.json",
+    "CheckBoxes": "Styles/checkbox.json",
+    "RadioButtons": "Styles/radio_button.json",
+    "HorizontalSliders": "Styles/slider_horizontal.json",
+    "VerticalSliders": "Styles/slider_vertical.json",
+    "HorizontalSlidersHandle": "Styles/slider_handle.json",
+    "VerticalSlidersHandle": "Styles/slider_handle.json",
+    "ListPanels": "Styles/list_panel.json",
+    "ListItems": "Styles/list_item.json",
+    "DropDownPanels": "Styles/list_panel.json",
+    "DropDownItems": "Styles/list_item.json",
     "DropDownIcon": "Styles/dropdown_icon.json",
-	"VerticalScrollbars": "Styles/scrollbar_vertical.json",
-	"VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
-	"TextInput": "Styles/text_input.json",
-	"HorizontalProgressBars": "Styles/progress_bar_horizontal.json",
-	"HorizontalProgressBarsFill": "Styles/progress_bar_horizontal_fill.json"
+    "VerticalScrollbars": "Styles/scrollbar_vertical.json",
+    "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
+    "TextInput": "Styles/text_input.json",
+    "HorizontalProgressBars": "Styles/progress_bar_horizontal.json",
+    "HorizontalProgressBarsFill": "Styles/progress_bar_horizontal_fill.json"
 }
 ```
 
