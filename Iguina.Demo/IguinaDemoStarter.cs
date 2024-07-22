@@ -1,6 +1,7 @@
 ﻿using Iguina.Defs;
 using Iguina.Entities;
 using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace Iguina.Demo
@@ -315,9 +316,13 @@ They can be used as labels for buttons, titles, or long texts like the one you r
 
 ${FC:00FF00}Paragraphs${RESET} support special ${OC:FF0000}style changing commands${RESET}, so you can easily ${OC:00FFFF,FC:000000,OW:2}highlight specific words${RESET} within the paragraph.
 
-You can change ${FC:00FF00}Fill Color${RESET}, ${OC:AA0000}Outline Color${RESET}, and ${OW:0}Outline Width${RESET}. To learn more, check out the source code of this demo project, or read the ${FC:FF00FF}official docs${RESET}.
+You can change ${FC:00FF00}Fill Color${RESET}, ${OC:AA0000}Outline Color${RESET}, and ${OW:0}Outline Width${RESET}. 
 
-Another thing to keep in mind about paragraphs is that you can change the way they wrap when exceeding the parent width. They can either wrap with breaking words, wrap while keeping words intact, or overflow without wrapping."));
+And you can even embed icons ${ICO:Textures/UI.png|0|64|16|16|2}      inside text paragraphs!
+
+To learn more, check out the source code of this demo project, or read the ${FC:FF00FF}official docs${RESET}.
+
+PS. you can also change the way words wrap when exceeding the parent width."));
                 
             }
 

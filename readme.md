@@ -677,6 +677,7 @@ The map of default stylesheets to load is a simple dictionary of <string, string
 	"Titles": "Styles/title.json",
 	"Buttons": "Styles/button.json",
 	"HorizontalLines": "Styles/horizontal_line.json",
+    "VerticalLines": "Styles/vertical_line.json",
 	"CheckBoxes": "Styles/checkbox.json",
 	"RadioButtons": "Styles/radio_button.json",
 	"HorizontalSliders": "Styles/slider_horizontal.json",
@@ -687,6 +688,7 @@ The map of default stylesheets to load is a simple dictionary of <string, string
 	"ListItems": "Styles/list_item.json",
 	"DropDownPanels": "Styles/list_panel.json",
 	"DropDownItems": "Styles/list_item.json",
+    "DropDownIcon": "Styles/dropdown_icon.json",
 	"VerticalScrollbars": "Styles/scrollbar_vertical.json",
 	"VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
 	"TextInput": "Styles/text_input.json",
@@ -700,6 +702,8 @@ The map of default stylesheets to load is a simple dictionary of <string, string
 In addition to the cursor styles and the default stylesheets to load, the global ui system stylesheet also have the following properties:
 
 * **ThemeIdentifier** (string): optional name you can give to your UI theme. this has no actual affect on anything, its for documentation only.
+* **TextScale** (float): a factor to scale all texts in the UI system by. defaults to 1.
+* **CursorScale** (float): a factor to scale all cursor icons in the UI system by. default to 1.
 * **TimeToLockInteractiveState** (float): for how long, in seconds, to keep entities in "interactive" state once the mouse points on them even if the mouse immediately leaves. This is useful to prevent flickering if the user constantly point on and off an entity and it has animations.
 * **RowSpaceHeight** (int): define the size, in pixels, of a single `RowsSpacer` row.
 
@@ -711,6 +715,7 @@ Entities stylesheet have general properties, and per-state properties.
 
 Lets begin with the general properties:
 
+* **InheritFrom** (string): If defined, will inherit all properties that are not set from a parent stylesheet file with this name. Only works when loading from files.
 * **DefaultWidth** (Measurement): Entity default width.
 * **DefaultHeight** (Measurement): Entity default height.
 * **MinWidth** (int): Entity min width, in pixels.
@@ -743,6 +748,7 @@ For each state, we can define the following properties:
 * **TextOutlineWidth** (int): Text outline width.
 * **TextSpacing** (float): Optional text spacing factor.
 * **FontSize** (int): Font size, when drawing text.
+* **TextScale** (float): Optional factor to scale text by.
 * **EffectIdentifier** (string): Optional effect identifier to use. If not set, will use default effect.
 * **Padding** (Sides): Optional padding to add to the internal sides of this entity region. Will decrease internal region for child entities.
 * **ExtraSize** (Sides): Optional extra size to add to the sides of this entity.
@@ -751,6 +757,7 @@ For each state, we can define the following properties:
 * **BoxOutlineWidth** (Sides): Optional outline width to add around the bounding rectangle of the entity.
 * **BoxOutlineOffset** (Point): Bounding rectangle outline offset, in pixels.
 * **BoxOutlineColor** (Color): Bounding rectangle outline color.
+ 
 
 # Iguina Setup
 
@@ -1020,6 +1027,12 @@ Its a way to take less space for lists.
 
 This entity is just a graphical horizontal line to separate between sections.
 
+## VerticalLines
+
+![Button Image](ReadmeAssets/entity-vl.png)
+
+This entity is just a graphical vertical line to separate between sections.
+
 ## Panel
 
 ![Button Image](ReadmeAssets/entity-panel.png)
@@ -1045,10 +1058,11 @@ If true, will enable paragraph style commands.
 Style commands are special flags you can set inside the text to change paragraph colors and outline mid-sentence.
 A style command is defined between `${}`. The following commands are supported:
 
-* **FC:RRGGBBAA**     Change fill color. RRGGBBAA is the color components in hex. AA is optional.
-* **OC:RRGGBBAA**     Change outline color. RRGGBBAA is the color components in hex. AA is optional.
-* **OW:Width**        Change outline width. Width is the new outline width.
-* **RESET**           Reset all previously-set style command properties.
+* **FC:RRGGBBAA**                       Change fill color. RRGGBBAA is the color components in hex. AA is optional.
+* **OC:RRGGBBAA**                       Change outline color. RRGGBBAA is the color components in hex. AA is optional.
+* **OW:Width**                          Change outline width. Width is the new outline width.
+* **ICO:Texture|sx|sy|sw|sh|scale**     Embed an icon inside the text, with texture id, source rect, and scale.
+* **RESET**                             Reset all previously-set style command properties.
 
 For example, the following code:
 
@@ -1180,6 +1194,8 @@ Useful for stuff like passwords input field, where you want the password hidden.
 
 ## NumericInput
 
+![Button Image](ReadmeAssets/entity-numericinput.png)
+
 `NumericInput` entity is a derived class of `TextInput`, but it only accept numbers as input.
 
 ### `NumericValue`
@@ -1258,6 +1274,19 @@ An empty entity that creates an extra space between rows of entities, with const
 - Added `MaskingCharacter` to `TextInput`.
 - Added small extra margin to scissor region to make sure text outline don't get cut off.
 - Made `TextInput` less "sticky" to be kept focused.
+
+## 1.0.6 [WIP]
+
+- Added stylesheet inheritance and changed default theme to utilize it.
+- Added `VerticalLine` entity.
+- Added global text scale factor.
+- Added global cursor scale factor.
+- Added TextScale stylesheet property.
+- Added option to set Minus / Plus buttons text in a Numeric Input.
+- Made Minus / Plus buttons in Numeric Input use the `MarginBefore` and `MarginAfter` properties for positioning.
+- Improved the way we render framed textures.
+- Added arrow icon to `DropDown` entities.
+- Added the ability to embed icons inside texts using style commands.
 
 # License
 
