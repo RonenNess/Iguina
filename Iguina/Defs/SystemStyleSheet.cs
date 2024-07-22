@@ -14,6 +14,16 @@ namespace Iguina.Defs
         public string ThemeIdentifier { get; set; } = null!;
 
         /// <summary>
+        /// Will scale all fonts in the UI system by this value.
+        /// </summary>
+        public float TextScale { get; set; } = 1f;
+
+        /// <summary>
+        /// Will scale all the cursor textures by this value.
+        /// </summary>
+        public float CursorScale { get; set; } = 1f;
+
+        /// <summary>
         /// Cursor to render in default state.
         /// </summary>
         public CursorProperties? CursorDefault { get; set; }

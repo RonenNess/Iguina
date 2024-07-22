@@ -1,14 +1,6 @@
 {
-	"Default": {
-		"TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255},
-        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
-        "FontSize": 26,
-        "TextSpacing": 2,
-        "TextOutlineWidth": 2,
-        "TextAlignment": "Left",
+	"InheritFrom": "paragraph_base_style.json",
+    "Default": {
         "MarginAfter": {"X": 0, "Y": 6}
-	},
-	"Disabled": {
-		"EffectIdentifier": "disabled"
-	}
+    }
 }

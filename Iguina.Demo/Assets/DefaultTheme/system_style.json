@@ -21,6 +21,8 @@
         "SourceRect": {"X": 0, "Y": 32, "Width": 16, "Height": 16}
     },
 	"RowSpaceHeight": 14,
+    "TextScale": 1,
+    "CursorScale": 1,
 	"TimeToLockInteractiveState": 0.135,
     "LoadDefaultStylesheets": {
         "Panels": "Styles/panel.json",
@@ -30,6 +32,7 @@
         "Labels": "Styles/label.json",
         "Buttons": "Styles/button.json",
         "HorizontalLines": "Styles/horizontal_line.json",
+        "VerticalLines": "Styles/vertical_line.json",
         "CheckBoxes": "Styles/checkbox.json",
         "RadioButtons": "Styles/radio_button.json",
         "HorizontalSliders": "Styles/slider_horizontal.json",
@@ -40,6 +43,7 @@
         "ListItems": "Styles/list_item.json",
         "DropDownPanels": "Styles/list_panel.json",
         "DropDownItems": "Styles/list_item.json",
+        "DropDownIcon": "Styles/dropdown_icon.json",
         "VerticalScrollbars": "Styles/scrollbar_vertical.json",
         "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
         "TextInput": "Styles/text_input.json",

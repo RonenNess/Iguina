@@ -1,14 +1,8 @@
 {
+    "InheritFrom": "paragraph_base_style.json",
 	"Default": {
 		"TextFillColor": {"R": 220, "G": 220, "B": 220, "A": 255},
-        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
-        "FontSize": 24,
-        "TextSpacing": 2,
-        "TextOutlineWidth": 2,
-        "TextAlignment": "Left",
+        "TextScale": 0.85,
         "MarginAfter": {"X": 0, "Y": 2}
-	},
-	"Disabled": {
-		"EffectIdentifier": "disabled"
 	}
 }

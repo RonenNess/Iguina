@@ -1,47 +1,8 @@
 {
+    "InheritFrom": "button.json",
 	"Default": {
-		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
-			"InternalSourceRect": {"X": 116, "Y": 4, "Width": 72, "Height": 24},
-			"ExternalSourceRect": {"X": 112, "Y": 0, "Width": 80, "Height": 32},
-			"TextureScale": 3
-		},
-        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255},
-        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
-        "FontSize": 24,
-        "TextSpacing": 2,
-        "TextOutlineWidth": 2,
-        "TextAlignment": "Center",
-        "Padding": {"Left": 8, "Right": 8, "Top": 8, "Bottom": 8}
+		"MarginBefore": {"X": 6, "Y": 0},
+        "MarginAfter": {"X": 6, "Y": 0}
 	},
-    "Targeted": {
-		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
-			"InternalSourceRect": {"X": 116, "Y": 36, "Width": 72, "Height": 24},
-			"ExternalSourceRect": {"X": 112, "Y": 32, "Width": 80, "Height": 32},
-			"TextureScale": 3
-		},
-        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
-	},
-    "Interacted": {
-		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
-			"InternalSourceRect": {"X": 116, "Y": 68, "Width": 72, "Height": 24},
-			"ExternalSourceRect": {"X": 112, "Y": 64, "Width": 80, "Height": 32},
-			"TextureScale": 3
-		},
-        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
-	},
-    "TargetedChecked": {
-        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
-	},
-    "Checked": {
-        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
-	},
-	"Disabled": {
-		"EffectIdentifier": "disabled"
-	},
-    "DefaultWidth": {"Units": "Pixels", "Value": 55},
-    "DefaultTextAnchor": "Center",
-	"InterpolateStatesSpeed": 5
+    "DefaultWidth": {"Units": "Pixels", "Value": 55}
 }

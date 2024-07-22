@@ -1,0 +1,19 @@
+{
+    "Default": {
+        "Icon": {
+            "TextureId": "Textures/UI.png",
+			"SourceRect": {"X": 160, "Y": 96, "Width": 16, "Height": 16},
+			"TextureScale": 3
+        }
+    },
+    "Interacted": {
+        "Icon": {
+            "TextureId": "Textures/UI.png",
+			"SourceRect": {"X": 176, "Y": 96, "Width": 16, "Height": 16},
+			"TextureScale": 3
+        }
+    },
+    "DefaultAnchor": "TopRight",
+    "DefaultWidth": {"Value": 48, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 48, "Units": "Pixels"}
+}

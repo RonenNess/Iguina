@@ -53,6 +53,7 @@ namespace Iguina
             public StyleSheet? Labels;
             public StyleSheet? Buttons;
             public StyleSheet? HorizontalLines;
+            public StyleSheet? VerticalLines;
             public StyleSheet? CheckBoxes;
             public StyleSheet? RadioButtons;
             public StyleSheet? HorizontalSliders;
@@ -63,6 +64,7 @@ namespace Iguina
             public StyleSheet? ListItems;
             public StyleSheet? DropDownPanels;
             public StyleSheet? DropDownItems;
+            public StyleSheet? DropDownIcon;
             public StyleSheet? VerticalScrollbars;
             public StyleSheet? VerticalScrollbarsHandle;
             public StyleSheet? TextInput;
@@ -101,6 +103,11 @@ namespace Iguina
         /// These events will trigger for any entity in the system.
         /// </summary>
         public EntityEvents Events;
+
+        /// <summary>
+        /// Scale all the texts in this UI system.
+        /// </summary>
+        public float TextsScale => SystemStyleSheet.TextScale;
 
         /// <summary>
         /// Root entity.
@@ -423,11 +430,12 @@ namespace Iguina
             // render cursor
             if (ShowCursor && cursor != null)
             {
+                var scale = cursor.Scale * SystemStyleSheet.CursorScale;
                 var destRect = cursor.SourceRect;
-                destRect.X = Input.GetMousePosition().X + (int)(cursor.Offset.X * cursor.Scale);
-                destRect.Y = Input.GetMousePosition().Y + (int)(cursor.Offset.Y * cursor.Scale);
-                destRect.Width = (int)(destRect.Width * cursor.Scale);
-                destRect.Height = (int)(destRect.Height * cursor.Scale);
+                destRect.X = Input.GetMousePosition().X + (int)(cursor.Offset.X * scale);
+                destRect.Y = Input.GetMousePosition().Y + (int)(cursor.Offset.Y * scale);
+                destRect.Width = (int)(destRect.Width * scale);
+                destRect.Height = (int)(destRect.Height * scale);
                 Renderer.DrawTexture(cursor.EffectIdentifier, cursor.TextureId, destRect, cursor.SourceRect, cursor.FillColor);
             }
         }

@@ -77,6 +77,12 @@ namespace Iguina.Defs
         public int? FontSize { get; set; }
 
         /// <summary>
+        /// If defined, will scale texts by this factor.
+        /// This is useful combined with inheritance - you can define font size in one place, and use scale to adjust size for specific entity types based on it.
+        /// </summary>
+        public float? TextScale { get; set; }
+
+        /// <summary>
         /// Effect to use while rendering this entity.
         /// This can be used by the host application as actual shader name, a flag identifier to change rendering, or any other purpose.
         /// </summary>
@@ -106,12 +112,12 @@ namespace Iguina.Defs
         /// <summary>
         /// Outline width, in pixels, around the bounding rectangle borders of the entity.
         /// </summary>
-        public Sides BoxOutlineWidth { get; set; }
+        public Sides? BoxOutlineWidth { get; set; }
 
         /// <summary>
         /// Box outline offset, in pixels.
         /// </summary>
-        public Point BoxOutlineOffset { get; set; }
+        public Point? BoxOutlineOffset { get; set; }
 
         /// <summary>
         /// Outline color for the bounding rectangle outlines, if set.
@@ -126,6 +132,12 @@ namespace Iguina.Defs
     {
         // cached property getters
         static Dictionary<string, PropertyInfo> _cachedProperties = new();
+
+        /// <summary>
+        /// Inherit properties from another stylesheet file.
+        /// Only works when loading from files.
+        /// </summary>
+        public string? InheritFrom { get; set; }
 
         /// <summary>
         /// Default entity width.
@@ -330,7 +342,62 @@ namespace Iguina.Defs
         /// <returns>Loaded stylesheet.</returns>
         public static StyleSheet LoadFromJsonFile(string filename)
         {
-            return LoadFromJsonMemory(File.ReadAllText(filename));
+            var ret = LoadFromJsonMemory(File.ReadAllText(filename));
+            if (ret.InheritFrom != null)
+            {
+                var folder = Path.GetDirectoryName(filename)!;
+                var parent = LoadFromJsonFile(Path.Combine(folder, ret.InheritFrom));
+                ret.InterpolateOffsetsSpeed = ret.InterpolateOffsetsSpeed ?? parent.InterpolateOffsetsSpeed;
+                ret.InterpolateStatesSpeed = ret.InterpolateStatesSpeed ?? parent.InterpolateStatesSpeed;
+                ret.DefaultTextAnchor = ret.DefaultTextAnchor ?? parent.DefaultTextAnchor;
+                ret.DefaultAnchor = ret.DefaultAnchor ?? parent.DefaultAnchor;
+                ret.MinHeight = ret.MinHeight ?? parent.MinHeight;
+                ret.MinWidth = ret.MinWidth ?? parent.MinWidth;
+                ret.DefaultWidth = ret.DefaultWidth ?? parent.DefaultWidth;
+                ret.DefaultHeight = ret.DefaultHeight ?? parent.DefaultHeight;
+                ret.Default = InheritStylesheetState(parent.Default, ret.Default);
+                ret.Targeted = InheritStylesheetState(parent.Targeted, ret.Targeted);
+                ret.TargetedChecked = InheritStylesheetState(parent.TargetedChecked, ret.TargetedChecked);
+                ret.DisabledChecked = InheritStylesheetState(parent.DisabledChecked, ret.DisabledChecked);
+                ret.Checked = InheritStylesheetState(parent.Checked, ret.Checked);
+                ret.Interacted = InheritStylesheetState(parent.Interacted, ret.Interacted);
+                ret.Disabled = InheritStylesheetState(parent.Disabled, ret.Disabled);
+            }
+            return ret;
+        }
+
+        /// <summary>
+        /// Combine parent and derived entity stylesheet state.
+        /// </summary>
+        public static StyleSheetState? InheritStylesheetState(StyleSheetState? parent, StyleSheetState? derived)
+        {
+            // if both are null, return null
+            if ((parent == null) && (derived == null))
+            {
+                return null;
+            }
+
+            // if one of them is null, return the other
+            if ((parent == null) || (derived == null))
+            {
+                return derived ?? parent;
+            }
+
+            // perform merge of all stylesheet properties
+            var ret = new StyleSheetState();
+            PropertyInfo[] properties = typeof(StyleSheetState).GetProperties();
+            foreach (PropertyInfo property in properties)
+            {
+                if (property.CanRead && property.CanWrite)
+                {
+                    object? value = property.GetValue(derived) ?? property.GetValue(parent);
+                    if (value != null)
+                    {
+                        property.SetValue(ret, value);
+                    }
+                }
+            }
+            return ret;
         }
 
         /// <summary>

@@ -1,0 +1,26 @@
+{
+	"Default": {
+		"TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
+        "NoValueTextFillColor": {"R": 175, "G": 175, "B": 175, "A": 255},
+        "FontSize": 24,
+        "TextSpacing": 2,
+        "TextOutlineWidth": 2,
+        "TextAlignment": "Left"
+	},
+    "Targeted": {
+        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
+	},
+    "Interacted": {
+        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
+	},
+    "TargetedChecked": {
+        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
+	},
+    "Checked": {
+        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	}
+}

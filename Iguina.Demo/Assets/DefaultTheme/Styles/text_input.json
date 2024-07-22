@@ -1,4 +1,5 @@
 {
+    "InheritFrom": "paragraph_base_style.json",
 	"Default": {
 		"FillTextureFramed": {
 			"TextureId": "Textures/UI.png",
@@ -6,18 +7,14 @@
 			"ExternalSourceRect": {"X": 0, "Y": 128, "Width": 96, "Height": 96},
 			"TextureScale": 3
 		},
-        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255},
-        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
-        "NoValueTextFillColor": {"R": 175, "G": 175, "B": 175, "A": 255},
-        "FontSize": 26,
-        "TextSpacing": 2,
-        "TextOutlineWidth": 2,
-        "TextAlignment": "Left",
         "Padding": {"Left": 10, "Right": 10, "Top": 10, "Bottom": 10}
 	},
-	"Disabled": {
-		"EffectIdentifier": "disabled"
-	},
+    "Targeted": {
+        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
+    },
+    "Interacted": {
+        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
+    },
     "DefaultHeight": {"Value": 64, "Units": "Pixels"},
 	"InterpolateStatesSpeed": 5
 }
