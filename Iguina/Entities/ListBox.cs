@@ -362,6 +362,16 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Change the label of an item in the list, without changing its value.
+        /// </summary>
+        /// <param name="valueToSet">Value to set label for (must exist in list).</param>
+        /// <param name="label">New label to set, or null to remove label and use the item value as label.</param>
+        public void SetItemLabel(string valueToSet, string? label)
+        {
+            ReplaceItem(valueToSet, valueToSet, label);
+        }
+
+        /// <summary>
         /// Get item index, or -1 if not found.
         /// </summary>
         public int GetIndexOfValue(string value)
