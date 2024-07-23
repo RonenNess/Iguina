@@ -1288,6 +1288,10 @@ An empty entity that creates an extra space between rows of entities, with const
 - Added arrow icon to `DropDown` entities.
 - Added the ability to embed icons inside texts using style commands.
 
+## 1.0.8
+
+- Upgraded .net version to `8.0`.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 
