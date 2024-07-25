@@ -59,7 +59,7 @@ namespace Iguina.Entities
         ///     FC:RRGGBBAA                         Change fill color. RRGGBBAA is the color components in hex. AA is optional.
         ///     OC:RRGGBBAA                         Change outline color. RRGGBBAA is the color components in hex. AA is optional.
         ///     OW:Width                            Change outline width. Width is the new outline width.
-        ///     ICO:Texture|sx|sy|sw|sh|scale|utc   Embed an icon inside the text. Texture = texture id, sx,sy,sw,sh = source rectangle, scale = icon scale based on source rect, utc = use text color - if true, will use text color for the icon. 
+        ///     ICO:Texture|sx|sy|sw|sh|scale|utc   Embed an icon inside the text. Texture = texture id, sx,sy,sw,sh = source rectangle, scale = icon scale based on source rect, utc = use text color: if true, will use text color for the icon. 
         ///     RESET                               Reset all previously-set style command properties.
         /// </remarks>
         /// <example>
@@ -640,8 +640,8 @@ namespace Iguina.Entities
                                 if (newStyleCommand.Icon != null)
                                 {
                                     var dest = new Rectangle(segmentPosition.X, segmentPosition.Y + _lineHeight / 2, 
-                                        (int)(newStyleCommand.Icon.SourceRect.Width * newStyleCommand.Icon.TextureScale), 
-                                        (int)(newStyleCommand.Icon.SourceRect.Height * newStyleCommand.Icon.TextureScale));
+                                        (int)(newStyleCommand.Icon.SourceRect.Width * newStyleCommand.Icon.TextureScale * UISystem.TextsScale), 
+                                        (int)(newStyleCommand.Icon.SourceRect.Height * newStyleCommand.Icon.TextureScale * UISystem.TextsScale));
                                     dest.Y -= dest.Height / 2;
                                     var color = (newStyleCommand.IconUseTextColor) ? (currTextStyle.FillColor ?? fillColor) : (currTextStyle.FillColor ?? Color.White);
                                     DrawUtils.Draw(UISystem.Renderer, effectId, newStyleCommand.Icon, dest, color);
