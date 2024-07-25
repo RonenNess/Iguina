@@ -215,7 +215,7 @@ namespace Iguina.Entities
             // create new item paragraphs
             while (_paragraphs.Count < paragraphsCount)
             {
-                var p = new Paragraph(UISystem, _itemsStylesheet, "", false);
+                var p = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
                 p.TextOverflowMode = TextOverflowMode.Overflow;
                 p.ShrinkWidthToMinimalSize = false;
                 p._overrideInteractableState = true;
@@ -369,6 +369,33 @@ namespace Iguina.Entities
         public void SetItemLabel(string valueToSet, string? label)
         {
             ReplaceItem(valueToSet, valueToSet, label);
+        }
+
+        /// <summary>
+        /// Change the label of an item in the list, without changing its value, and add icon to the beginning of the label.
+        /// </summary>
+        /// <param name="valueToSet">Value to set label for (must exist in list).</param>
+        /// <param name="label">New label to set, or null to remove label and use the item value as label.</param>
+        /// <param name="icon">Icon to set.</param>
+        /// <param name="iconUseTextColor">If true, icon will use the same tint color as the text.</param>
+        public void SetItemLabel(string valueToSet, string label, IconTexture icon, bool iconUseTextColor)
+        {
+            var iconWidth = icon.SourceRect.Width * icon.TextureScale;
+            var tempParagraph = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
+            var spacesCount = (int)(Math.Ceiling(iconWidth / tempParagraph.MeasureText(" ").X) + 1);
+            var iconUseTextureColorVal = iconUseTextColor ? "y" : "n";
+            SetItemLabel(valueToSet, $"${{ICO:{icon.TextureId}|{icon.SourceRect.X}|{icon.SourceRect.Y}|{icon.SourceRect.Width}|{icon.SourceRect.Height}|{icon.TextureScale}|{iconUseTextureColorVal}}}" + new string(' ', spacesCount) + label);
+        }
+
+        /// <summary>
+        /// Change the label of an item in the list, without changing its value, to be an icon + the value itself.
+        /// </summary>
+        /// <param name="valueToSet">Value to set label for (must exist in list).</param>
+        /// <param name="icon">Icon to set.</param>
+        /// <param name="iconUseTextColor">If true, icon will use the same tint color as the text.</param>
+        public void SetItemLabel(string valueToSet, IconTexture icon, bool iconUseTextColor)
+        {
+            SetItemLabel(valueToSet, valueToSet, icon, iconUseTextColor);
         }
 
         /// <summary>
