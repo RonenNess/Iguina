@@ -245,7 +245,7 @@ namespace Iguina
                 (TargetedEntity.LockFocusOnSelf && TargetedEntity.IsCurrentlyVisible() && !TargetedEntity.IsCurrentlyLocked() && !TargetedEntity.IsCurrentlyDisabled()) 
                 : false;
 
-            // if dragging an entity, we can't lose the target
+            // also lock target if mouse is held down and target entity is set to lock focus while mouse is down
             if (Input.IsMouseButtonDown(MouseButton.Left) && (TargetedEntity != null) && TargetedEntity.LockFocusWhileMouseDown)
             {
                 keepTargetEntity = true;

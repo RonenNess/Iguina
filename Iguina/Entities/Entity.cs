@@ -1,5 +1,6 @@
 ﻿using Iguina.Defs;
 using Iguina.Utils;
+using System;
 using System.Numerics;
 
 namespace Iguina.Entities
@@ -152,6 +153,11 @@ namespace Iguina.Entities
         protected float _interpolateToNextState = 0f;
         protected EntityState _lastState = EntityState.Default;
         protected EntityState _prevState = EntityState.Default;
+
+        // to protect against exception while adding / removing children from events that could occur while iterating children list
+        int _childrenListLocked;
+        List<(Entity Entity, int? InsertAt)> _entitiesToAdd = new();
+        List<Entity> _entitiesToRemove = new();
 
         // to prevent 'flickering' with interaction state in case user perform quick clicks, we "lock" state to active when we switch to it for few ms
         float _timeToRemainInteractedState = 0f;
@@ -581,14 +587,26 @@ namespace Iguina.Entities
         {
             if (child.Parent != null) { throw new Exception("Entity to add as child already have a parent entity! Remove it first."); }
             if (child.UISystem != UISystem) { throw new Exception("Entity to add belongs to a different UI system!"); }
-            if (index.HasValue)
+
+            // if children list is locked, add later
+            if (_childrenListLocked > 0)
             {
-                _children.Insert(index.Value, child);
+                _entitiesToAdd.Add((child, index));
+                _entitiesToRemove.Remove(child);
             }
+            // add to children list
             else
             {
-                _children.Add(child);
+                if (index.HasValue)
+                {
+                    _children.Insert(index.Value, child);
+                }
+                else
+                {
+                    _children.Add(child);
+                }
             }
+
             child.Parent = this;
             return child;
         }
@@ -601,8 +619,77 @@ namespace Iguina.Entities
         public void RemoveChild(Entity child)
         {
             if (child.Parent != this) { throw new Exception("Entity to remove is not a child of this parent entity!"); }
-            _children.Remove(child);
+
+            // if children list is locked, remove later
+            if (_childrenListLocked > 0)
+            {
+                _entitiesToRemove.Add(child);
+                _entitiesToAdd.RemoveAll(x => x.Entity == child);
+            }
+            // remove from children list
+            else
+            {
+                _children.Remove(child);
+            }
+
             child.Parent = null!;
+        }
+
+        /// <summary>
+        /// Bring this entity to the top-most position of its parent.
+        /// </summary>
+        public void BringToFront()
+        {
+            var parent = Parent;
+            if ((parent != null) && (parent._children[parent._children.Count - 1] != this))
+            {
+                RemoveSelf();
+                parent.AddChild(this);
+            }
+        }
+
+        /// <summary>
+        /// Push this entity to the back position of its parent.
+        /// </summary>
+        public void PushToBack()
+        {
+            var parent = Parent;
+            if ((parent != null) && (parent._children[0] != this))
+            {
+                RemoveSelf();
+                parent.AddChild(this, 0);
+            }
+        }
+
+        /// <summary>
+        /// Add / remove entities that are delayed because children list was locked.
+        /// </summary>
+        void AddAndRemoveDelayedEntities()
+        {
+            if (_entitiesToRemove.Count > 0)
+            {
+                foreach (var entity in _entitiesToRemove)
+                {
+                    _children.Remove(entity);
+                }
+                _entitiesToRemove.Clear();
+            }
+
+            if (_entitiesToAdd.Count > 0)
+            {
+                foreach (var entity in _entitiesToAdd)
+                {
+                    if (entity.InsertAt.HasValue)
+                    {
+                        _children.Insert(entity.InsertAt.Value, entity.Entity);
+                    }
+                    else
+                    {
+                        _children.Add(entity.Entity);
+                    }
+                }
+                _entitiesToAdd.Clear();
+            }
         }
 
         /// <summary>
@@ -745,10 +832,12 @@ namespace Iguina.Entities
             // debug draw children
             if (debugDrawChildren)
             {
+                _childrenListLocked++;
                 foreach (var child in _children)
                 {
                     child.DebugDraw(debugDrawChildren);
                 }
+                _childrenListLocked--;
             }
 
             // debug draw drag position
@@ -863,6 +952,7 @@ namespace Iguina.Entities
             siblingDrawResult = null;
             int maxWidth = 0;
             int maxHeight = 0;
+            _childrenListLocked++;
             foreach (var child in _children)
             {
                 if (child.Visible)
@@ -882,6 +972,7 @@ namespace Iguina.Entities
                     }
                 }
             }
+            _childrenListLocked--;
 
             // draw top internal children
             siblingDrawResult = null;
@@ -1143,6 +1234,7 @@ namespace Iguina.Entities
         /// <param name="inputState">Current input state.</param>
         internal virtual void PostUpdate(InputState inputState)
         {
+            AddAndRemoveDelayedEntities();
         }
 
         /// <summary>
@@ -1248,6 +1340,7 @@ namespace Iguina.Entities
                     {
                         _dragHandlePosition = inputState.MousePosition;
                         _dragHandleOffset = new Point(LastBoundingRect.X - inputState.MousePosition.X, LastBoundingRect.Y - inputState.MousePosition.Y);
+                        BringToFront();
                     }
                 }
                 // stop dragging
@@ -1559,10 +1652,12 @@ namespace Iguina.Entities
             {
                 child._DoUpdate(dt);
             }
+            _childrenListLocked++;
             foreach (var child in _children)
             {
                 child._DoUpdate(dt);
             }
+            _childrenListLocked--;
 
             // post update event
             Events.AfterUpdate?.Invoke(this);
@@ -1578,6 +1673,7 @@ namespace Iguina.Entities
             _lockedState = null;
             _disabledState = null;
             _visibilityState = null;
+            AddAndRemoveDelayedEntities();
         }
 
         /// <summary>
@@ -1634,10 +1730,12 @@ namespace Iguina.Entities
         /// <param name="callback">Callback to trigger per entity. Return false to break iteration.</param>
         public void IterateChildren(Func<Entity, bool> callback)
         {
+            _childrenListLocked++;
             foreach (var child in _children)
             {
                 if (!callback(child)) { return; }
             }
+            _childrenListLocked--;
         }
 
         /// <summary>
@@ -1676,11 +1774,13 @@ namespace Iguina.Entities
                 }
             }
 
+            _childrenListLocked++;
             foreach (var child in _children)
             {
                 child._WalkInt(callback, ref cont);
                 if (!cont) { return; }
             }
+            _childrenListLocked--;
 
             if (WalkInternalChildren)
             {

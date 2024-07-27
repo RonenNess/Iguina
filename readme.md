@@ -1297,6 +1297,9 @@ An empty entity that creates an extra space between rows of entities, with const
 - Fixed Paragraph icons to use text scale global factor.
 - Added another fallback to Paragraph stylesheet for ListBox items, just in case a user accidentally provided null in the constructor.
 - Added method to set ListBox label with icon.
+- Added methods to push entity to back or front.
+- Made it safe to add / remove entities while iterating them, to prevent exceptions if changing entities tree from events.
+- Made entities bring themselves to front when they are being dragged.
 
 # License
 
