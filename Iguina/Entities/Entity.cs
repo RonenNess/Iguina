@@ -51,6 +51,11 @@ namespace Iguina.Entities
         public bool IsDraggable => DraggableMode != DraggableMode.NotDraggable;
 
         /// <summary>
+        /// If true and entity is being dragged, will automatically bring it to front.
+        /// </summary>
+        public bool BringToFrontIfDragged = true;
+
+        /// <summary>
         /// If true, once this entity becomes the active target it will lock itself as active until this flag turns false.
         /// </summary>
         internal virtual bool LockFocusOnSelf => false;
@@ -1340,7 +1345,10 @@ namespace Iguina.Entities
                     {
                         _dragHandlePosition = inputState.MousePosition;
                         _dragHandleOffset = new Point(LastBoundingRect.X - inputState.MousePosition.X, LastBoundingRect.Y - inputState.MousePosition.Y);
-                        BringToFront();
+                        if (BringToFrontIfDragged)
+                        {
+                            BringToFront();
+                        }
                     }
                 }
                 // stop dragging
