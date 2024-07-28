@@ -1292,7 +1292,7 @@ An empty entity that creates an extra space between rows of entities, with const
 
 - Upgraded .net version to `8.0`.
 
-## 1.0.9 [WIP]
+## 1.0.9
 
 - Fixed Paragraph icons to use text scale global factor.
 - Added another fallback to Paragraph stylesheet for ListBox items, just in case a user accidentally provided null in the constructor.
