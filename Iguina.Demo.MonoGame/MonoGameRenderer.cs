@@ -270,6 +270,10 @@ namespace Iguina.Demo.MonoGame
         {
             var texture = GetTexture(textureId);
             var pixelData = new Microsoft.Xna.Framework.Color[1];
+            if (sourcePosition.X < 0) sourcePosition.X = 0;
+            if (sourcePosition.Y < 0) sourcePosition.Y = 0;
+            if (sourcePosition.X >= texture.Width) sourcePosition.X = texture.Width - 1;
+            if (sourcePosition.Y >= texture.Height) sourcePosition.Y = texture.Height - 1;
             texture.GetData(0, new Microsoft.Xna.Framework.Rectangle(sourcePosition.X, sourcePosition.Y, 1, 1), pixelData, 0, 1);
             var pixelColor = pixelData[0];
             return new Color(pixelColor.R, pixelColor.G, pixelColor.B, pixelColor.A);
@@ -287,6 +291,13 @@ namespace Iguina.Demo.MonoGame
                 matrix.M22 = scale;
                 matrix.M41 = 0;
                 matrix.M42 = 0;
+            }
+
+            // fix a bug in measuring just a single space
+            if (text.Length == 1) 
+            {
+                var singleRet = spriteFont.MeasureString(text);
+                return new Point((int)Math.Ceiling(singleRet.X * scale), (int)Math.Ceiling(singleRet.Y * scale));
             }
 
             bool flag3 = true;

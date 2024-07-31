@@ -1342,6 +1342,10 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added `ColorSlider` entity.
 - Added `ColorPicker` entity.
 
+## 1.0.11
+
+- Fixed bug with list / dropdown label icons with `MonoGame` renderer.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 

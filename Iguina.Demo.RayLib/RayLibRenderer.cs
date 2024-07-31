@@ -256,6 +256,10 @@ namespace Iguina.Demo.RayLib
         {
             var texture = GetTexture(textureId);
             Raylib_cs.Image image;
+            if (sourcePosition.X < 0) sourcePosition.X = 0;
+            if (sourcePosition.Y < 0) sourcePosition.Y = 0;
+            if (sourcePosition.X >= texture.Width) sourcePosition.X = texture.Width - 1;
+            if (sourcePosition.Y >= texture.Height) sourcePosition.Y = texture.Height - 1;
             if (!_cachedImageData.TryGetValue(textureId, out image))
             { 
                 image = Raylib_cs.Raylib.LoadImageFromTexture(texture);

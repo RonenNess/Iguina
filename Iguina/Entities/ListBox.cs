@@ -382,7 +382,8 @@ namespace Iguina.Entities
         {
             var iconWidth = icon.SourceRect.Width * icon.TextureScale;
             var tempParagraph = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
-            var spacesCount = (int)(Math.Ceiling(iconWidth / tempParagraph.MeasureText(" ").X) + 1);
+            var spaceWidth = tempParagraph.MeasureText(" ").X;
+            var spacesCount = (int)(Math.Ceiling(iconWidth / spaceWidth) + 1);
             var iconUseTextureColorVal = iconUseTextColor ? "y" : "n";
             SetItemLabel(valueToSet, $"${{ICO:{icon.TextureId}|{icon.SourceRect.X}|{icon.SourceRect.Y}|{icon.SourceRect.Width}|{icon.SourceRect.Height}|{icon.TextureScale}|{iconUseTextureColorVal}}}" + new string(' ', spacesCount) + label);
         }
