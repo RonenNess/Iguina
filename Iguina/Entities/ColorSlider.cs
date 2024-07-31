@@ -53,14 +53,19 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Get source stretch texture.
+        /// </summary>
+        StretchedTexture? SourceTextureData => StyleSheet.GetProperty<StretchedTexture>("FillTextureStretched", State, null, OverrideStyles);
+
+        /// <summary>
         /// Get slider source rectangle.
         /// </summary>
-        Rectangle SourceRectangle => StyleSheet?.Default?.FillTextureStretched?.SourceRect ?? StyleSheet?.Default?.Icon?.SourceRect ?? Rectangle.Empty;
+        Rectangle SourceRectangle => SourceTextureData?.SourceRect ?? Rectangle.Empty;
 
         /// <summary>
         /// Get slider source texture.
         /// </summary>
-        string SourceTextureId => StyleSheet?.Default?.FillTextureStretched?.TextureId ?? StyleSheet?.Default?.Icon?.TextureId ?? string.Empty;
+        string SourceTextureId => SourceTextureData?.TextureId ?? string.Empty;
 
         /// <inheritdoc/>
         protected override void SetAutoRange()
@@ -68,11 +73,11 @@ namespace Iguina.Entities
             MinValue = 0;
             if (Orientation == Orientation.Horizontal)
             {
-                MaxValue = Math.Max(StyleSheet?.Default?.FillTextureStretched?.SourceRect.Width ?? StyleSheet?.Default?.Icon?.SourceRect.Width ?? LastBoundingRect.Width, 10);
+                MaxValue = Math.Max(SourceTextureData?.SourceRect.Width ?? LastBoundingRect.Width, 10);
             }
             else
             {
-                MaxValue = Math.Max(StyleSheet?.Default?.FillTextureStretched?.SourceRect.Height ?? StyleSheet?.Default?.Icon?.SourceRect.Height ?? LastBoundingRect.Height, 10);
+                MaxValue = Math.Max(SourceTextureData?.SourceRect.Height ?? LastBoundingRect.Height, 10);
             }
             StepsCount = (uint)MaxValue;
         }

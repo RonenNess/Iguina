@@ -500,8 +500,9 @@ PS. you can also change the way words wrap when exceeding the parent width."));
             // color inputs
             {
                 var panel = CreateDemoContainer("Color Pickers", new Point(650, 350));
-                panel.AutoHeight = false;
+                panel.AutoHeight = true;
 
+                // color slider
                 {
                     panel.AddChild(new Paragraph(_system, @"Iguina provides Color Slider entities, which are used to get a color value from a range, using a slider and a source texture:"));
                     var slider = panel.AddChild(new ColorSlider(_system));
@@ -513,6 +514,22 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                         value.OverrideStyles.TextFillColor = color;
                     };
                     slider.Value = 0;
+                }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new HorizontalLine(_system));
+
+                // color picker
+                {
+                    panel.AddChild(new Paragraph(_system, @"Iguina also provides Color Picker entities, which are used to get a color value from a rectangle region, by picking pixels off a source texture:"));
+                    var picker = panel.AddChild(new ColorPicker(_system));
+                    var value = panel.AddChild(new Label(_system));
+                    picker.Events.OnValueChanged = (Entity entity) =>
+                    {
+                        var color = picker.ColorValue;
+                        value.Text = $"Color value: {color.R}, {color.G}, {color.B}, {color.A}";
+                        value.OverrideStyles.TextFillColor = color;
+                    };
                 }
             }
 

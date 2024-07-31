@@ -52,6 +52,8 @@
         "HorizontalProgressBars": "Styles/progress_bar_horizontal.json",
         "HorizontalProgressBarsFill": "Styles/progress_bar_horizontal_fill.json",
         "HorizontalColorSliders": "Styles/color_slider_horizontal.json",
-        "HorizontalColorSlidersHandle": "Styles/color_slider_horizontal_handle.json"
+        "HorizontalColorSlidersHandle": "Styles/color_slider_horizontal_handle.json",
+        "ColorPickers": "Styles/color_picker.json",
+        "ColorPickersHandle": "Styles/color_picker_handle.json"
     }
 }

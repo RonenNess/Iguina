@@ -9,7 +9,7 @@ namespace Iguina.Entities
     public class Slider : Entity
     {
         /// <summary>
-        /// The entity used as slider handle.
+        /// The entity used as the slider handle.
         /// </summary>
         public Entity Handle { get; private set; }
 

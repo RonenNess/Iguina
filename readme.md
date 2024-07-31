@@ -53,7 +53,7 @@ Miscs:
     * Numeric Input.
 	* Horizontal / Vertical Lines.
     * Message Boxes.
-    * Color Slider.
+    * Color Slider and Color Picker.
 * Extensive Stylesheet system to load an entire UI theme from files.
 * Smooth transitions and animations.
 * Cursor styles and handling.
@@ -1247,7 +1247,24 @@ With Colors slider you don't need to set Min, Max, or Step Counts properties. Th
 
 ### `ColorValue`
 
-Return the color value, as extracted from source texture.
+Return the color value, as extracted from the source texture.
+
+## ColorPicker
+
+![Color Picker Image](ReadmeAssets/entity-colorpicker.png)
+
+`ColorPicker` is used to pick a source color from a texture, by dragging a handle over it.
+The default UI theme comes with a texture that covers all basic colors, effectively creating a color picker similar to painting software. However, you can replace this picker with a palette of your choice.
+
+Color picker must have a stretched texture in its stylesheet, which is used as its source texture.
+
+### `ColorValue`
+
+Return the color value, as extracted from the source texture.
+
+### `SetHandleOffset()`
+
+Set handle offset, in pixels, from top-left corner of the entity.
 
 # Changelist
 
@@ -1320,9 +1337,10 @@ Return the color value, as extracted from source texture.
 - Made it safe to add / remove entities while iterating them, to prevent exceptions if changing entities tree from events.
 - Made entities bring themselves to front when they are being dragged.
 
-## 1.0.10 [WIP]
+## 1.0.10
 
 - Added `ColorSlider` entity.
+- Added `ColorPicker` entity.
 
 # License
 

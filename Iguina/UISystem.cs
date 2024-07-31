@@ -78,6 +78,8 @@ namespace Iguina
             public StyleSheet? HorizontalProgressBarsFill;
             public StyleSheet? VerticalProgressBars;
             public StyleSheet? VerticalProgressBarsFill;
+            public StyleSheet? ColorPickers;
+            public StyleSheet? ColorPickersHandle;
         }
         public _DefaultStylesheets DefaultStylesheets = new();
 
