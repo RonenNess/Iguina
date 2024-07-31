@@ -60,6 +60,10 @@ namespace Iguina
             public StyleSheet? HorizontalSlidersHandle;
             public StyleSheet? VerticalSliders;
             public StyleSheet? VerticalSlidersHandle;
+            public StyleSheet? HorizontalColorSliders;
+            public StyleSheet? HorizontalColorSlidersHandle;
+            public StyleSheet? VerticalColorSliders;
+            public StyleSheet? VerticalColorSlidersHandle;
             public StyleSheet? ListPanels;
             public StyleSheet? ListItems;
             public StyleSheet? DropDownPanels;

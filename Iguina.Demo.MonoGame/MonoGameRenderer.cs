@@ -265,6 +265,16 @@ namespace Iguina.Demo.MonoGame
             BeginBatch();
         }
 
+        /// <inheritdoc/>
+        public Color GetPixelFromTexture(string textureId, Point sourcePosition)
+        {
+            var texture = GetTexture(textureId);
+            var pixelData = new Microsoft.Xna.Framework.Color[1];
+            texture.GetData(0, new Microsoft.Xna.Framework.Rectangle(sourcePosition.X, sourcePosition.Y, 1, 1), pixelData, 0, 1);
+            var pixelColor = pixelData[0];
+            return new Color(pixelColor.R, pixelColor.G, pixelColor.B, pixelColor.A);
+        }
+
         /// <summary>
         /// MonoGame measure string sucks and return wrong result.
         /// So I copied the code that render string and changed it to measure instead.

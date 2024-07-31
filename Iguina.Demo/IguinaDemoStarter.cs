@@ -497,6 +497,25 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                 }
             }
 
+            // color inputs
+            {
+                var panel = CreateDemoContainer("Color Pickers", new Point(650, 350));
+                panel.AutoHeight = false;
+
+                {
+                    panel.AddChild(new Paragraph(_system, @"Iguina provides Color Slider entities, which are used to get a color value from a range, using a slider and a source texture:"));
+                    var slider = panel.AddChild(new ColorSlider(_system));
+                    var value = panel.AddChild(new Label(_system));
+                    slider.Events.OnValueChanged = (Entity entity) =>
+                    {
+                        var color = slider.ColorValue;
+                        value.Text = $"Color value: {color.R}, {color.G}, {color.B}, {color.A}";
+                        value.OverrideStyles.TextFillColor = color;
+                    };
+                    slider.Value = 0;
+                }
+            }
+
             // scrollbars
             {
                 var panel = CreateDemoContainer("Scrollbars", new Point(780, 350));

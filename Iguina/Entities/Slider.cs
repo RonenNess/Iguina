@@ -38,7 +38,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Slider min value.
         /// </summary>
-        public int MinValue
+        public virtual int MinValue
         {
             get => _minValue;
             set
@@ -59,7 +59,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Slider max value.
         /// </summary>
-        public int MaxValue
+        public virtual int MaxValue
         {
             get => _maxValue;
             set
@@ -150,10 +150,16 @@ namespace Iguina.Entities
         public int ValueRange => MaxValue - MinValue;
 
         /// <summary>
+        /// If true, this slider will set its range (min, max, and steps count) automatically, based on the entity size.
+        /// </summary>
+        public bool AutoSetRange = false;
+
+        /// <summary>
         /// Create the slider.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Slider stylesheet.</param>
+        /// <param name="stylesheet">Slider handle stylesheet.</param>
         /// <param name="orientation">Slider orientation.</param>
         public Slider(UISystem system, StyleSheet? stylesheet, StyleSheet? handleStylesheet, Orientation orientation = Orientation.Horizontal) : base(system, stylesheet)
         {
@@ -241,7 +247,28 @@ namespace Iguina.Entities
         protected override void Update(float dt)
         {
             base.Update(dt);
+            if (AutoSetRange)
+            {
+                SetAutoRange();
+            }
             UpdateHandle(dt);
+        }
+
+        /// <summary>
+        /// Auto set slider min, max, and steps count.
+        /// </summary>
+        protected virtual void SetAutoRange()
+        {
+            MinValue = 0;
+            if (Orientation == Orientation.Horizontal)
+            {
+                MaxValue = Math.Max(LastBoundingRect.Width, 10);
+            }
+            else
+            {
+                MaxValue = Math.Max(LastBoundingRect.Height, 10);
+            }
+            StepsCount = (uint)MaxValue;
         }
 
         /// <summary>

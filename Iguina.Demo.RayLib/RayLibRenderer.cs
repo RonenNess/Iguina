@@ -250,5 +250,20 @@ namespace Iguina.Demo.RayLib
         {
             return _currentScissorRegion;
         }
+
+        /// <inheritdoc/>
+        public Color GetPixelFromTexture(string textureId, Point sourcePosition)
+        {
+            var texture = GetTexture(textureId);
+            Raylib_cs.Image image;
+            if (!_cachedImageData.TryGetValue(textureId, out image))
+            { 
+                image = Raylib_cs.Raylib.LoadImageFromTexture(texture);
+                _cachedImageData[textureId] = image;
+            }
+            var pixelColor = Raylib_cs.Raylib.GetImageColor(image, sourcePosition.X, sourcePosition.Y);
+            return new Color(pixelColor.R, pixelColor.G, pixelColor.B, pixelColor.A);
+        }
+        Dictionary<string, Raylib_cs.Image> _cachedImageData = new();
     }
 }

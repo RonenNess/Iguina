@@ -44,7 +44,7 @@ Miscs:
 	* Sliders.
 	* Progress Bars.
 	* Scrollbars.
-	* Paragraphs, Titles, Labels.
+	* Paragraphs, Titles, and Labels.
 	* Checkboxes.
 	* Radio Buttons.
 	* List Box.
@@ -53,6 +53,7 @@ Miscs:
     * Numeric Input.
 	* Horizontal / Vertical Lines.
     * Message Boxes.
+    * Color Slider.
 * Extensive Stylesheet system to load an entire UI theme from files.
 * Smooth transitions and animations.
 * Cursor styles and handling.
@@ -422,6 +423,11 @@ Get the currently set scissor region, or null if no limit is set.
 ### `void ClearScissorRegion();`
 
 Clear previously set scissor region, allowing us to render on the entire visible screen.
+
+### `Color GetPixelFromTexture(string textureId, Point sourcePosition);`
+
+Return pixel color from a texture id and source offset in texture.
+This method is used by color picker entities. If you don't use them, you can just return a constant value from this method.
 
 ## Input Provider
 
@@ -956,7 +962,7 @@ Buttons inherit from the `CheckedEntity` base class, which means you can make bu
 
 ## Checkbox
 
-![Button Image](ReadmeAssets/entity-checkbox.png)
+![Checkbox Image](ReadmeAssets/entity-checkbox.png)
 
 A toggleable checkbox, with a box to indicate state and a label.
 
@@ -971,7 +977,7 @@ This entity is like a `Checkbox`, but it uses different default stylesheets, and
 
 ## ListBox
 
-![Button Image](ReadmeAssets/entity-list.png)
+![List Box Image](ReadmeAssets/entity-list.png)
 
 A list of string items that users can select items from.
 
@@ -1016,32 +1022,32 @@ Remove all values from list.
 
 ## DropDown
 
-![Button Image](ReadmeAssets/entity-dropdown.png)
+![Drop Down Image](ReadmeAssets/entity-dropdown.png)
 
 `DropDown` entity is a derived class of `ListBox`, that collapses into a single line when not interacted with.
 Its a way to take less space for lists.
 
 ## HorizontalLine
 
-![Button Image](ReadmeAssets/entity-hl.png)
+![Horizontal Line Image](ReadmeAssets/entity-hl.png)
 
 This entity is just a graphical horizontal line to separate between sections.
 
 ## VerticalLines
 
-![Button Image](ReadmeAssets/entity-vl.png)
+![Vertical Line Image](ReadmeAssets/entity-vl.png)
 
 This entity is just a graphical vertical line to separate between sections.
 
 ## Panel
 
-![Button Image](ReadmeAssets/entity-panel.png)
+![Panel Image](ReadmeAssets/entity-panel.png)
 
 Panels are graphical containers of entities, like a windows form or a group box.
 
 ## Paragraph
 
-![Button Image](ReadmeAssets/entity-paragraph.png)
+![Paragraph Image](ReadmeAssets/entity-paragraph.png)
 
 An entity used to render text.
 
@@ -1094,7 +1100,7 @@ Determine how to handle a text that overflows the parent entity width:
 
 ## Slider
 
-![Button Image](ReadmeAssets/entity-sliders.png)
+![Slider Image](ReadmeAssets/entity-sliders.png)
 
 A slider to pick numeric integer values, using a draggable handle confined to a track it drags on.
 It can be Vertical or Horizontal (determined in constructor).
@@ -1147,13 +1153,13 @@ Value range (max - min).
 
 ## ProgressBar
 
-![Button Image](ReadmeAssets/entity-progressbars.png)
+![Progressbar Image](ReadmeAssets/entity-progressbars.png)
 
 `ProgressBar` entity is a derived class of `Slider`, but instead of dragging an handle it 'fills' an internal entity based on value.
 
 ## TextInput
 
-![Button Image](ReadmeAssets/entity-textinput.png)
+![Text Input Image](ReadmeAssets/entity-textinput.png)
 
 An entity to get free text input from users.
 
@@ -1194,7 +1200,7 @@ Useful for stuff like passwords input field, where you want the password hidden.
 
 ## NumericInput
 
-![Button Image](ReadmeAssets/entity-numericinput.png)
+![Numeric Input Image](ReadmeAssets/entity-numericinput.png)
 
 `NumericInput` entity is a derived class of `TextInput`, but it only accept numbers as input.
 
@@ -1229,6 +1235,19 @@ How much to increase / decrease value when clicking on the plus / minus buttons 
 ## RowsSpacer
 
 An empty entity that creates an extra space between rows of entities, with constant space unit that can be defined by the UI system stylesheet `RowSpaceHeight` property.
+
+## ColorSlider
+
+![Color Slider Image](ReadmeAssets/entity-colorslider.png)
+
+`ColorSlider` entity is a derived class of `Slider`, but used to pick a color value from a range.
+The returned color is based on the source texture and source rectangle used to render the slider itself.
+
+With Colors slider you don't need to set Min, Max, or Step Counts properties. They are set automatically.
+
+### `ColorValue`
+
+Return the color value, as extracted from source texture.
 
 # Changelist
 
@@ -1300,6 +1319,10 @@ An empty entity that creates an extra space between rows of entities, with const
 - Added methods to push entity to back or front.
 - Made it safe to add / remove entities while iterating them, to prevent exceptions if changing entities tree from events.
 - Made entities bring themselves to front when they are being dragged.
+
+## 1.0.10 [WIP]
+
+- Added `ColorSlider` entity.
 
 # License
 

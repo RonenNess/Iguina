@@ -1,0 +1,30 @@
+{
+	"Default": {
+		"Icon": {
+			"TextureId": "Textures/UI.png",
+			"SourceRect": {"X": 123, "Y": 144, "Width": 10, "Height": 12},
+			"TextureScale": 3
+		}
+	},
+    "Targeted": {
+		"Icon": {
+			"TextureId": "Textures/UI.png",
+			"SourceRect": {"X": 123, "Y": 156, "Width": 10, "Height": 12},
+			"TextureScale": 3
+		}
+	},
+    "Interacted": {
+		"Icon": {
+			"TextureId": "Textures/UI.png",
+			"SourceRect": {"X": 123, "Y": 168, "Width": 10, "Height": 12},
+			"TextureScale": 3
+		}
+	},
+    "Disabled": {
+		"EffectIdentifier": "disabled"
+	},
+    "DefaultWidth": {"Value": 30, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 36, "Units": "Pixels"},
+	"InterpolateStatesSpeed": 5,
+	"InterpolateOffsetsSpeed": 10
+}

@@ -81,5 +81,13 @@ namespace Iguina.Drivers
         /// Clear scissor region, if set.
         /// </summary>
         void ClearScissorRegion();
+
+        /// <summary>
+        /// Get pixel color from texture and offset.
+        /// </summary>
+        /// <param name="textureId">Texture id to get pixel color from.</param>
+        /// <param name="sourcePosition">Source position in texture.</param>
+        /// <returns>Pixel color in source texture.</returns>
+        Color GetPixelFromTexture(string textureId, Point sourcePosition);
     }
 }
