@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 
 namespace Iguina.Demo.MonoGame
@@ -277,6 +278,37 @@ namespace Iguina.Demo.MonoGame
             texture.GetData(0, new Microsoft.Xna.Framework.Rectangle(sourcePosition.X, sourcePosition.Y, 1, 1), pixelData, 0, 1);
             var pixelColor = pixelData[0];
             return new Color(pixelColor.R, pixelColor.G, pixelColor.B, pixelColor.A);
+        }
+
+        /// <inheritdoc/>
+        public Point? FindPixelOffsetInTexture(string textureId, Rectangle sourceRect, Color color, bool returnNearestColor)
+        {
+            var texture = GetTexture(textureId);
+            var pixelData = new Microsoft.Xna.Framework.Color[sourceRect.Width * sourceRect.Height];
+            texture.GetData(0, new Microsoft.Xna.Framework.Rectangle(sourceRect.X, sourceRect.Y, sourceRect.Width, sourceRect.Height), pixelData, 0, pixelData.Length);
+            Point? ret = null;
+            float nearestDistance = 255f * 255f * 255f * 255f;
+            for (int x = 0; x < sourceRect.Width; x++)
+            {
+                for (int y = 0; y < sourceRect.Height; y++)
+                {
+                    var curr = pixelData[x + y * sourceRect.Width];
+                    if (curr.R == color.R && curr.G == color.G && curr.B == color.B && curr.A == color.A)
+                    {
+                        return new Point(x, y);
+                    }
+                    else if (returnNearestColor)
+                    {
+                        float distance = Vector4.Distance(new Vector4(curr.R, curr.G, curr.B, curr.A), new Vector4(color.R, color.G, color.B, color.A));
+                        if (distance <  nearestDistance)
+                        {
+                            nearestDistance = distance;
+                            ret = new Point(x, y);
+                        }
+                    }
+                }
+            }
+            return ret;
         }
 
         /// <summary>

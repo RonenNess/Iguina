@@ -89,5 +89,15 @@ namespace Iguina.Drivers
         /// <param name="sourcePosition">Source position in texture.</param>
         /// <returns>Pixel color in source texture.</returns>
         Color GetPixelFromTexture(string textureId, Point sourcePosition);
+
+        /// <summary>
+        /// Locate an offset in a given texture and source region that has a specific color.
+        /// </summary>
+        /// <param name="textureId">Texture id to find pixel color from.</param>
+        /// <param name="sourceRect">Source region to search in.</param>
+        /// <param name="color">Color to find.</param>
+        /// <param name="returnNearestColor">If true and exact color is not found, will return nearest color offset instead.</param>
+        /// <returns>Pixel offset, from source rect top-left corner. If color is not found, will return null.</returns>
+        Point? FindPixelOffsetInTexture(string textureId, Rectangle sourceRect, Color color, bool returnNearestColor);
     }
 }

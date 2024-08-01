@@ -1,6 +1,5 @@
 ﻿using Iguina.Defs;
 using Iguina.Utils;
-using System;
 using System.Numerics;
 
 namespace Iguina.Entities

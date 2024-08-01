@@ -1,5 +1,6 @@
 ﻿using Iguina.Defs;
 using Iguina.Drivers;
+using System.Numerics;
 
 
 namespace Iguina.Demo.RayLib
@@ -251,23 +252,61 @@ namespace Iguina.Demo.RayLib
             return _currentScissorRegion;
         }
 
-        /// <inheritdoc/>
-        public Color GetPixelFromTexture(string textureId, Point sourcePosition)
+        /// <summary>
+        /// Get image from texture.
+        /// </summary>
+        Raylib_cs.Image GetImageFromTexture(string textureId)
         {
-            var texture = GetTexture(textureId);
             Raylib_cs.Image image;
-            if (sourcePosition.X < 0) sourcePosition.X = 0;
-            if (sourcePosition.Y < 0) sourcePosition.Y = 0;
-            if (sourcePosition.X >= texture.Width) sourcePosition.X = texture.Width - 1;
-            if (sourcePosition.Y >= texture.Height) sourcePosition.Y = texture.Height - 1;
+            var texture = GetTexture(textureId);
             if (!_cachedImageData.TryGetValue(textureId, out image))
-            { 
+            {
                 image = Raylib_cs.Raylib.LoadImageFromTexture(texture);
                 _cachedImageData[textureId] = image;
             }
+            return image;
+        }
+        Dictionary<string, Raylib_cs.Image> _cachedImageData = new();
+
+        /// <inheritdoc/>
+        public Color GetPixelFromTexture(string textureId, Point sourcePosition)
+        {
+            var image = GetImageFromTexture(textureId);
+            if (sourcePosition.X < 0) sourcePosition.X = 0;
+            if (sourcePosition.Y < 0) sourcePosition.Y = 0;
+            if (sourcePosition.X >= image.Width) sourcePosition.X = image.Width - 1;
+            if (sourcePosition.Y >= image.Height) sourcePosition.Y = image.Height - 1;
             var pixelColor = Raylib_cs.Raylib.GetImageColor(image, sourcePosition.X, sourcePosition.Y);
             return new Color(pixelColor.R, pixelColor.G, pixelColor.B, pixelColor.A);
         }
-        Dictionary<string, Raylib_cs.Image> _cachedImageData = new();
+
+        /// <inheritdoc/>
+        public Point? FindPixelOffsetInTexture(string textureId, Rectangle sourceRect, Color color, bool returnNearestColor)
+        {
+            Point? ret = null;
+            float nearestDistance = 255f * 255f * 255f * 255f;
+            var image = GetImageFromTexture(textureId);
+            for (int x = 0; x < sourceRect.Width; x++)
+            {
+                for (int y = 0; y < sourceRect.Height; y++)
+                {
+                    var pixelColor = Raylib_cs.Raylib.GetImageColor(image, x + sourceRect.Left, y + sourceRect.Top);
+                    if ((pixelColor.R == color.R) && (pixelColor.G == color.G) && (pixelColor.B == color.B) && (pixelColor.A == color.A))
+                    {
+                        return new Point(x, y);
+                    }
+                    else if (returnNearestColor)
+                    {
+                        float distance = Vector4.DistanceSquared(new Vector4(pixelColor.R, pixelColor.G, pixelColor.B, pixelColor.A), new Vector4(color.R, color.G, color.B, color.A));
+                        if (distance < nearestDistance)
+                        {
+                            nearestDistance = distance;
+                            ret = new Point(x, y);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
     }
 }

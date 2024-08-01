@@ -429,6 +429,11 @@ Clear previously set scissor region, allowing us to render on the entire visible
 Return pixel color from a texture id and source offset in texture.
 This method is used by color picker entities. If you don't use them, you can just return a constant value from this method.
 
+### `Point? FindPixelOffsetInTexture(string textureId, Rectangle sourceRect, Color color, bool returnNearestColor)`
+
+Return pixel offset from a texture id and source rectangle that matches the given color.
+This method is used by color picker entities to set value from Color. If you don't need it, you can just return null from this method.
+
 ## Input Provider
 
 The Input Provider class (`Iguina.Drivers.IInputProvider`) is responsible to pass user input to the UI system. This includes mouse, keyboard, and text typing input.
@@ -1345,6 +1350,12 @@ Set handle offset, in pixels, from top-left corner of the entity.
 ## 1.0.11
 
 - Fixed bug with list / dropdown label icons with `MonoGame` renderer.
+
+## 1.0.12 [WIP]
+
+- Improved the way `ColorPicker` and `ColorSlider` works internally, now its possible to set their starting value without waiting for an update first.
+- Added the ability to set `ColorSlider` and `ColorPicker` values from a given color.
+- Added the `IColorPicker` interface.
 
 # License
 

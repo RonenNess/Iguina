@@ -1,4 +1,5 @@
 ﻿using Iguina.Defs;
+using System.Numerics;
 
 namespace Iguina.Entities
 {
@@ -6,7 +7,7 @@ namespace Iguina.Entities
     /// Color picker lets the user pick a color from a 2d source texture, with X and Y axes.
     /// This is useful for color pickers that have a combination of hue and brightness.
     /// </summary>
-    public class ColorPicker : Entity
+    public class ColorPicker : Entity, IColorPicker
     {
         /// <summary>
         /// The entity used as the color picker handle.
@@ -14,35 +15,48 @@ namespace Iguina.Entities
         public Entity Handle { get; private set; }
 
         // last handle offset
-        Point _lastHandleOffset = new Point(0, 0);
+        Point _lastHandleOffset = new Point(-1, -1);
 
         /// <summary>
-        /// Get color picker value, as a color extracted from the source texture.
+        /// Get / set color picker value, as a color extracted from the source texture.
         /// </summary>
-        public Color ColorValue => UISystem.Renderer.GetPixelFromTexture(StyleSheet.Default?.FillTextureStretched?.TextureId ?? string.Empty, GetOffsetInTexture());
+        public Color ColorValue
+        {
+            get => _colorValue;
+            set
+            {
+                _colorValue = value;
+                var srcTexture = SourceTextureData;
+                var offset = UISystem.Renderer.FindPixelOffsetInTexture(srcTexture!.TextureId, srcTexture.SourceRect, value, false);
+                if (offset.HasValue)
+                {
+                    SetHandleOffsetFromSource(offset.Value);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public void SetColorValueApproximate(Color value)
+        {
+            _colorValue = value;
+            var srcTexture = SourceTextureData;
+            var offset = UISystem.Renderer.FindPixelOffsetInTexture(srcTexture!.TextureId, srcTexture.SourceRect, value, true);
+            if (offset.HasValue)
+            {
+                SetHandleOffsetFromSource(offset.Value);
+            }
+        }
+
+        // current color value
+        Color _colorValue;
+
+        // offset in source texture, from source rectangle top-left corner
+        Point _offsetInSource;
 
         /// <summary>
         /// Get source stretch texture.
         /// </summary>
         StretchedTexture? SourceTextureData => StyleSheet.GetProperty<StretchedTexture>("FillTextureStretched", State, null, OverrideStyles);
-
-        /// <summary>
-        /// Get offset in texture based on current offset.
-        /// </summary>
-        Point GetOffsetInTexture()
-        {
-            var srcTexture = SourceTextureData;
-            var srcX = (srcTexture?.SourceRect.X ?? 1f);
-            var srcY = (srcTexture?.SourceRect.Y ?? 1f);
-            var srcWidth = (srcTexture?.SourceRect.Width ?? 1f);
-            var srcHeight = (srcTexture?.SourceRect.Height ?? 1f);
-            float factorX = srcWidth / (float)Math.Max(1, LastBoundingRect.Width);
-            float factorY = srcHeight / (float)Math.Max(1, LastBoundingRect.Height);
-            return new Point(
-                (int)Math.Floor(srcX + _lastHandleOffset.X * factorX),
-                (int)Math.Floor(srcY + _lastHandleOffset.Y * factorY)
-            );
-        }
 
         /// <summary>
         /// Create the color picker.
@@ -77,14 +91,25 @@ namespace Iguina.Entities
         {
             base.Update(dt);
 
-            int offsetX = (int)Handle.Offset.X.Value + Handle.LastBoundingRect.Width / 2;
-            int offsetY = (int)Handle.Offset.Y.Value + Handle.LastBoundingRect.Height / 2;
-            if ((_lastHandleOffset.X != offsetX) || (_lastHandleOffset.Y != offsetY))
+            if ((_lastHandleOffset.X != _offsetInSource.X) || (_lastHandleOffset.Y != _offsetInSource.Y))
             {
-                _lastHandleOffset.X = offsetX;
-                _lastHandleOffset.Y = offsetY;
+                _lastHandleOffset = _offsetInSource;
+                UpdateValueFromHandle();
                 Events.OnValueChanged?.Invoke(this);
             }
+        }
+
+        /// <summary>
+        /// Get factor from destination size to source size.
+        /// </summary>
+        Vector2 GetDestToSourceFactor()
+        {
+            var srcTexture = SourceTextureData;
+            var srcWidth = (srcTexture?.SourceRect.Width ?? 1f);
+            var srcHeight = (srcTexture?.SourceRect.Height ?? 1f);
+            float factorX = srcWidth / (float)Math.Max(1, LastBoundingRect.Width);
+            float factorY = srcHeight / (float)Math.Max(1, LastBoundingRect.Height);
+            return new Vector2(factorX, factorY);
         }
 
         /// <summary>
@@ -93,8 +118,27 @@ namespace Iguina.Entities
         /// <param name="offset">Color picker offset, in pixels, from top-left corner.</param>
         public void SetHandleOffset(Point offset)
         {
-            Handle.Offset.X.Value = offset.X - Handle.LastBoundingRect.Width / 2;
-            Handle.Offset.Y.Value = offset.Y - Handle.LastBoundingRect.Height / 2;
+            var factor = GetDestToSourceFactor();
+            _offsetInSource.X = (int)Math.Ceiling((float)offset.X * factor.X);
+            _offsetInSource.Y = (int)Math.Ceiling((float)offset.Y * factor.Y);
+        }
+
+        /// <summary>
+        /// Set the color picker handle offset, with offset representing pixel offset in texture from the picker source rectangle top left corner.
+        /// </summary>
+        /// <param name="offset">Color picker offset, in pixels, from top-left corner of the texture source rectangle.</param>
+        public void SetHandleOffsetFromSource(Point offset)
+        {
+            _offsetInSource = offset;
+        }
+
+        /// <summary>
+        /// Update color value from handle offset.
+        /// </summary>
+        void UpdateValueFromHandle()
+        {
+            var srcTexture = SourceTextureData;
+            _colorValue = UISystem.Renderer.GetPixelFromTexture(srcTexture!.TextureId ?? string.Empty, new Point(srcTexture.SourceRect.X + _offsetInSource.X, srcTexture.SourceRect.Y + _offsetInSource.Y));
         }
 
         /// <inheritdoc/>
@@ -108,6 +152,17 @@ namespace Iguina.Entities
             {
                 SetHandleOffset(new Point(inputState.MousePosition.X - LastBoundingRect.X, inputState.MousePosition.Y - LastBoundingRect.Y));
             }
+        }
+
+        /// <inheritdoc/>
+        protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
+        {
+            // update handle offset
+            var factor = GetDestToSourceFactor();
+            Handle.Offset.X.Value = MathF.Ceiling(_offsetInSource.X / factor.X - Handle.LastBoundingRect.Width / 2);
+            Handle.Offset.Y.Value = MathF.Ceiling(_offsetInSource.Y / factor.Y - Handle.LastBoundingRect.Height / 2);
+
+            return base.Draw(parentDrawResult, siblingDrawResult);
         }
     }
 }

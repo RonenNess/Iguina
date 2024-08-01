@@ -513,7 +513,44 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                         value.Text = $"Color value: {color.R}, {color.G}, {color.B}, {color.A}";
                         value.OverrideStyles.TextFillColor = color;
                     };
-                    slider.Value = 0;
+                    slider.Value = 1;
+
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Red"));
+                        colorBtn.Anchor = Anchor.AutoLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            slider.SetColorValueApproximate(new Color(255, 0, 0, 255));
+                        };
+                    }
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Green"));
+                        colorBtn.Anchor = Anchor.AutoInlineLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            slider.SetColorValueApproximate(new Color(0, 255, 0, 255));
+                        };
+                    }
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Blue"));
+                        colorBtn.Anchor = Anchor.AutoInlineLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            slider.SetColorValueApproximate(new Color(0, 0, 255, 255));
+                        };
+                    }
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Purple"));
+                        colorBtn.Anchor = Anchor.AutoInlineLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            slider.SetColorValueApproximate(new Color(255, 0, 255, 255));
+                        };
+                    }
                 }
 
                 panel.AddChild(new RowsSpacer(_system));
@@ -530,6 +567,43 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                         value.Text = $"Color value: {color.R}, {color.G}, {color.B}, {color.A}";
                         value.OverrideStyles.TextFillColor = color;
                     };
+
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Red"));
+                        colorBtn.Anchor = Anchor.AutoLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            picker.SetColorValueApproximate(new Color(255, 0, 0, 255));
+                        };
+                    }
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Green"));
+                        colorBtn.Anchor = Anchor.AutoInlineLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            picker.SetColorValueApproximate(new Color(0, 255, 0, 255));
+                        };
+                    }
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Blue"));
+                        colorBtn.Anchor = Anchor.AutoInlineLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            picker.SetColorValueApproximate(new Color(0, 0, 255, 255));
+                        };
+                    }
+                    {
+                        var colorBtn = panel.AddChild(new Button(_system, "Purple"));
+                        colorBtn.Anchor = Anchor.AutoInlineLTR;
+                        colorBtn.Size.X.SetPercents(24f);
+                        colorBtn.Events.OnClick = (Entity entity) =>
+                        {
+                            picker.SetColorValueApproximate(new Color(255, 0, 255, 255));
+                        };
+                    }
                 }
             }
 
