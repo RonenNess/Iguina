@@ -1351,7 +1351,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 
 - Fixed bug with list / dropdown label icons with `MonoGame` renderer.
 
-## 1.0.12 [WIP]
+## 1.0.12
 
 - Improved the way `ColorPicker` and `ColorSlider` works internally, now its possible to set their starting value without waiting for an update first.
 - Added the ability to set `ColorSlider` and `ColorPicker` values from a given color.
