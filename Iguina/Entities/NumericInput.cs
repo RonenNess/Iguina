@@ -88,8 +88,8 @@ namespace Iguina.Entities
                     }
 
                     // set value
-                    base.Value = value;
                     _valueFloat = result;
+                    base.Value = value;
                 }
 
                 // failed to parse? don't change value!
@@ -244,7 +244,7 @@ namespace Iguina.Entities
                 _plusButton = plusButton;
             }
 
-            // add + button
+            // add - button
             if (addMinusButton)
             {
                 var minusButton = new Button(system, buttonStyle, "-");
