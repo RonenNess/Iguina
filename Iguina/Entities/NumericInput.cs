@@ -244,7 +244,7 @@ namespace Iguina.Entities
                 _plusButton = plusButton;
             }
 
-            // add + button
+            // add - button
             if (addMinusButton)
             {
                 var minusButton = new Button(system, buttonStyle, "-");
