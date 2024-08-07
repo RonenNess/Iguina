@@ -200,7 +200,7 @@ namespace Iguina.Entities
                 UISystem.RunAfterDrawingEntities(() =>
                 {
                     _isCurrentlyDrawingOpenedListTopMost = true;
-                    _DoDraw(parentResults, siblingResults);
+                    _DoDraw(parentResults, siblingResults, false);
                     _isCurrentlyDrawingOpenedListTopMost = false;
                 });
             }

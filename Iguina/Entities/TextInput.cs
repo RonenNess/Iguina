@@ -201,7 +201,7 @@ namespace Iguina.Entities
         }
 
         /// <inheritdoc/>
-        protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
+        protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult, bool dryRun)
         {
             // do we currently have a value?
             var noValue = string.IsNullOrEmpty(Value);
@@ -226,7 +226,7 @@ namespace Iguina.Entities
             _valueParagraph.UseEmptyValueTextColor = noValue;
 
             // call base drawing method
-            var ret = base.Draw(parentDrawResult, siblingDrawResult);
+            var ret = base.Draw(parentDrawResult, siblingDrawResult, dryRun);
             return ret;
         }
 

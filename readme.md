@@ -1357,6 +1357,13 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added the ability to set `ColorSlider` and `ColorPicker` values from a given color.
 - Added the `IColorPicker` interface.
 
+## 1.0.13 [WIP]
+
+- Fixed a bug with `NumericInput` having wrong value during the `OnChange` event call.
+- Added identifiers to message box generated entities.
+- Fixed issue that some panels flicker when they appear for the first time for a single frame.
+
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 

@@ -393,7 +393,7 @@ namespace Iguina
                 BoundingRect = screenRect,
                 InternalBoundingRect = screenRect
             };
-            Root._DoDraw(rootDrawResult, null);
+            Root._DoDraw(rootDrawResult, null, false);
 
             // call post-draw actions
             if (_postDrawActions.Count > 0)

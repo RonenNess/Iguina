@@ -65,6 +65,9 @@ namespace Iguina.Entities
         Point? _dragOffsetFromParent;
         Point _dragHandleOffset;
 
+        // indicating that this entity was never drawn before since it was added to parent / created
+        bool _isFirstDrawCall = true;
+
         /// <summary>
         /// If true, this entity will ignore scrollbar offset.
         /// </summary>
@@ -565,6 +568,7 @@ namespace Iguina.Entities
                 _internalChildren.Add(child);
             }
             child.Parent = this;
+            child._isFirstDrawCall = true;
         }
 
         /// <summary>
@@ -612,6 +616,7 @@ namespace Iguina.Entities
             }
 
             child.Parent = this;
+            child._isFirstDrawCall = true;
             return child;
         }
 
@@ -863,25 +868,46 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="parentDrawResult">Parent entity last rendering results. Root entities will get bounding boxes covering the entire screen.</param>
         /// <param name="siblingDrawResult">Older sibling entity last rendering results. For first entity, it will be null.</param>
+        /// <param name="dryRun">If true, it will perform fake draw just to arrange all entities in place but without actually presenting on screen.</param>
         /// <returns>Calculated bounding rectangles.</returns>
-        internal DrawMethodResult _DoDraw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
+        internal DrawMethodResult _DoDraw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult, bool dryRun)
         {
             // skip if not visible
             if (!Visible) { return new DrawMethodResult(); }
 
+            // if its first draw call, perform dry run first to arrange all entities
+            // note: do dry run twice, so auto-sizing would have opportunity to work
+            if (_isFirstDrawCall && !dryRun)
+            {
+                _isFirstDrawCall = false;
+                _DoDraw(parentDrawResult, siblingDrawResult, true);
+                _DoDraw(parentDrawResult, siblingDrawResult, true);
+            }
+
+            // invoke before draw callbacks
             Events.BeforeDraw?.Invoke(this);
             UISystem.Events.BeforeDraw?.Invoke(this);
 
-            // draw self and get bounding rect
-            var selfRect = Draw(parentDrawResult, siblingDrawResult);
+            // get current scissor region
+            var beforeDrawScissorRegion = UISystem.Renderer.GetScissorRegion();
 
-            // set last bounding rects
+            // special: in dry run we set empty scissor region so nothing will be drawn
+            if (dryRun)
+            {
+                UISystem.Renderer.SetScissorRegion(new Rectangle(0, 0, 1, 1));
+            }
+
+            // draw self and get bounding rect
+            var selfRect = Draw(parentDrawResult, siblingDrawResult, dryRun);
+
+            // set this entity bounding rects
             LastBoundingRect = selfRect.BoundingRect;
             LastInternalBoundingRect = selfRect.InternalBoundingRect;
-            var scissorRegion = UISystem.Renderer.GetScissorRegion();
-            if (scissorRegion.HasValue)
+
+            // calculate visible bounding rect
+            if (beforeDrawScissorRegion.HasValue)
             {
-                LastVisibleBoundingRect = Rectangle.MergeRectangles(LastBoundingRect, scissorRegion.Value);
+                LastVisibleBoundingRect = Rectangle.MergeRectangles(LastBoundingRect, beforeDrawScissorRegion.Value);
             }
             else
             {
@@ -889,7 +915,7 @@ namespace Iguina.Entities
             }
 
             // apply scissor to hide overflow entities
-            bool setScissor = (OverflowMode == OverflowMode.HideOverflow);
+            bool setScissor = !dryRun && (OverflowMode == OverflowMode.HideOverflow);
             bool enqueuedPreviousScissorRegion = false;
             if (setScissor)
             {
@@ -918,7 +944,7 @@ namespace Iguina.Entities
             {
                 if (child.Visible && child.IgnoreScrollOffset)
                 {
-                    var newSiblingDrawResult = child._DoDraw(selfRect, siblingDrawResult);
+                    var newSiblingDrawResult = child._DoDraw(selfRect, siblingDrawResult, dryRun);
                     if (child.IncludeInInternalAutoAnchorCalculation) { siblingDrawResult = newSiblingDrawResult; }
                 }
             }
@@ -947,7 +973,7 @@ namespace Iguina.Entities
             {
                 if (child.Visible && !child.IgnoreScrollOffset)
                 {
-                    var newSiblingDrawResult = child._DoDraw(selfRectScrolled, siblingDrawResult);
+                    var newSiblingDrawResult = child._DoDraw(selfRectScrolled, siblingDrawResult, dryRun);
                     if (child.IncludeInInternalAutoAnchorCalculation) { siblingDrawResult = newSiblingDrawResult; }
                 }
             }
@@ -962,7 +988,7 @@ namespace Iguina.Entities
                 if (child.Visible)
                 {
                     // draw child
-                    siblingDrawResult = child._DoDraw(child.IgnoreScrollOffset ? selfRect : selfRectScrolled, siblingDrawResult);
+                    siblingDrawResult = child._DoDraw(child.IgnoreScrollOffset ? selfRect : selfRectScrolled, siblingDrawResult, dryRun);
                     PostDrawingChild(siblingDrawResult);
 
                     // adjust auto size
@@ -984,8 +1010,21 @@ namespace Iguina.Entities
             {
                 if (child.Visible)
                 {
-                    var newSiblingDrawResult = child._DoDraw(selfRect, siblingDrawResult);
+                    var newSiblingDrawResult = child._DoDraw(selfRect, siblingDrawResult, dryRun);
                     if (child.IncludeInInternalAutoAnchorCalculation) { siblingDrawResult = newSiblingDrawResult; }
+                }
+            }
+
+            // special - clear dryrun fake scissor
+            if (dryRun)
+            {
+                if (beforeDrawScissorRegion != null)
+                {
+                    UISystem.Renderer.SetScissorRegion(beforeDrawScissorRegion.Value);
+                }
+                else
+                {
+                    UISystem.Renderer.ClearScissorRegion();
                 }
             }
 
@@ -1003,7 +1042,10 @@ namespace Iguina.Entities
             }
 
             // set auto size
-            SetAutoSizes(maxWidth, maxHeight);
+            if (AutoHeight || AutoWidth)
+            {
+                SetAutoSizes(maxWidth, maxHeight);
+            }
 
             // trigger event
             Events.AfterDraw?.Invoke(this);
@@ -1056,8 +1098,9 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="parentDrawResult">Parent entity last rendering results. Root entities will get bounding boxes covering the entire screen.</param>
         /// <param name="siblingDrawResult">Older sibling entity last rendering results. For first entity, it will be null.</param>
+        /// <param name="dryRun">If true, it will perform fake draw just to arrange all entities in place but without actually presenting on screen.</param>
         /// <returns>Calculated bounding rectangles.</returns>
-        protected virtual DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
+        protected virtual DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult, bool dryRun)
         {
             // calculate bounding rect
             Rectangle boundingRect = CalculateBoundingRect(parentDrawResult, siblingDrawResult);

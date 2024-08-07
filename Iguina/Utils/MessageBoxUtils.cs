@@ -132,6 +132,7 @@ namespace Iguina.Utils
                 backdrop.Size.SetPercents(100f, 100f);
                 backdrop.Anchor = Anchor.Center;
                 backdrop.Locked = true;
+                backdrop.Identifier = "Message-Box-Backdrop";
                 _uiSystem.Root.AddChild(backdrop);
             }
 
@@ -141,6 +142,7 @@ namespace Iguina.Utils
             panel.Size.SetPixels(size.X, size.Y);
             panel.AutoHeight = options.Value.AutoHeight;
             panel.Anchor = Anchor.Center;
+            panel.Identifier = "Message-Box-Panel";
 
             // make draggable
             if (options.Value.Draggable)
@@ -161,6 +163,7 @@ namespace Iguina.Utils
             contentContainer.Anchor = Anchor.AutoCenter;
             contentContainer.Size.X.SetPercents(100f);
             contentContainer.AutoHeight = true;
+            contentContainer.Identifier = "Message-Box-Content";
 
             // add buttons
             var optionsPanel = panel.AddChild(new Panel(_uiSystem, null!));
@@ -168,6 +171,7 @@ namespace Iguina.Utils
             optionsPanel.AutoWidth = true;
             optionsPanel.Size.X.SetPercents(100f);
             optionsPanel.Anchor = Anchor.AutoCenter;
+            optionsPanel.Identifier = "Message-Box-Options-Panel";
             var buttonWidth = MathF.Floor((float)size.X / buttons.Length) - 20;
             var buttonsList = new List<Button>();
             foreach (var option in buttons)
