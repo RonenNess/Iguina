@@ -269,14 +269,32 @@ namespace Iguina.Entities
             // trim
             value = value.Trim();
 
-            // if empty or a single decimal separator, stop here and set to empty
-            if ((value.Length == 0) || (value.Length == 1 && value[0] == DecimalSeparator))
+            // if empty, stop here and set to empty
+            if (value.Length == 0)
             {
                 baseValue = string.Empty;
                 newValue = null;
                 return true;
             }
-
+            
+            // special case: fraction without leading 0
+            // (attempting to parse this would fail, so we need to check it manually)
+            if (value.Length == 1 && value[0] == DecimalSeparator)
+            {
+                baseValue = "0" + DecimalSeparator + value[(value.IndexOf(DecimalSeparator) + 1)..]; // "." -> "0."
+                newValue = 0;
+                return true;
+            }
+            
+            // special case: negative fraction without leading 0
+            // (attempting to parse this would fail, so we need to check it manually)
+            if (value.Length == 2 && value[0] == NegativeSign && value[1] == DecimalSeparator)
+            {
+                baseValue = NegativeSign + "0" + DecimalSeparator + value[(value.IndexOf(DecimalSeparator) + 1)..]; // "-." -> "-0."
+                newValue = 0;
+                return true;
+            }
+            
             // special case: if the only input is - it might be the begining of a negative number, so we allow it
             if ((MinValue == null || MinValue.Value < 0) && (value.Length == 1 && value[0] == NegativeSign))
             {
@@ -302,21 +320,57 @@ namespace Iguina.Entities
                     value = result.ToString(CultureInfo);
                 }
 
-                // special - if value is 0, make sure input is not 00000...)
-                if (result == 0)
+                // check for redundant or missing zeros 
+                if (value.Contains(DecimalSeparator))
                 {
-                    // unless the input is possibly trying to type a 0-leading decimal 
-                    if (value != "0" + DecimalSeparator && // 0.
-                        value != NegativeSign + "0" &&  // -0
-                        value != NegativeSign + "0" + DecimalSeparator) // -0.
+                    if (value[0] == NegativeSign)
                     {
-                        value = "0";
+                        if (value.Length > 1 && value[1] == DecimalSeparator)
+                        {
+                            value = value.Insert(1, "0"); // "-." -> "-0."
+                        }
+                        else if (value.Length > 3 && value[1] == '0' && value[2] != DecimalSeparator)
+                        {
+                            value = NegativeSign + value[1..].TrimStart('0'); // "-02.0" -> "-2.0"
+                            
+                            // did we overtrim? i.e. was the whole part was all 0s?
+                            if (value[1] == DecimalSeparator)
+                                value = NegativeSign + "0" + value[1..]; // "-.0" -> "-0.0"
+                        }
+                    }
+                    else
+                    {
+                        if (value.Length > 2 && value[0] == '0' && value[1] != DecimalSeparator)
+                        {
+                            value = value.TrimStart('0'); // "01.2" -> "1.2"
+                            
+                            // did we overtrim? i.e. was the whole part was all 0s?
+                            if (value[0] == DecimalSeparator)
+                                value = "0" + value; // ".2" -> "0.2"
+                        }
+                        else if (value[0] == DecimalSeparator)
+                        {
+                            value = "0" + value; // "." -> "0."
+                        }
                     }
                 }
-                // if not 0, trim zeroes from the start
-                else if (value.StartsWith('0'))
+                else
                 {
-                    value = value.TrimStart('0');
+                    // if not 0, trim zeroes from the start
+                    if (value.StartsWith('0') && value.Length > 1)
+                    {
+                        if (result == 0)
+                            value = "0"; // "00" => "0"
+                        else
+                            value = value.TrimStart('0'); // "05" -> "5"
+                    }
+                    else if (value.Length > 2 && value[0] == NegativeSign && value[1] == '0')
+                    {
+                        if (result == 0)
+                            value = NegativeSign + "0" + value[2..].TrimStart('0'); // "-00" -> "-0" 
+                        else
+                            value = NegativeSign + value[1..].TrimStart('0'); // "-05" -> "-5" 
+                    }
                 }
 
                 // set value
