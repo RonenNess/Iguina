@@ -20,7 +20,7 @@ namespace Iguina.Entities
         public override string? PlaceholderText
         {
             get => DefaultValue.ToString(CultureInfo);
-            set => throw new InvalidOperationException("Numeric input fields can't have placeholder text!");
+            set => throw new InvalidOperationException("Numeric input fields can't have custom placeholder text!");
         }
 
         /// <summary>
