@@ -98,7 +98,7 @@ namespace Iguina.Entities
             get => _caretOffset;
             set => _caretOffset = Math.Clamp(value, 0, Value.Length);
         }
-        int _caretOffset;
+        protected int _caretOffset;
 
         // caret actual line index in wrapped text
         int _caretActualLineIndexInWrappedText;

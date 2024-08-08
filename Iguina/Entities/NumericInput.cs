@@ -28,23 +28,52 @@ namespace Iguina.Entities
         /// </summary>
         public decimal ButtonsStepSize = 1;
 
+        /// <summary>
+        /// If true, and the user enter only a decimal point or minus and decimal point, it will convert to 0. or -0.
+        /// </summary>
+        public bool FixPrefixDecimalSeparator = true;
+
         /// <inheritdoc/>
         public override string Value
         {
             get => base.Value;
             set
             {
+                // decimal point character
+                var decChar = DecimalSeparator;
+
                 // remove decimal if not accepted
                 if (!AcceptsDecimal)
                 {
-                    value = value.Split(DecimalSeparator)[0];
+                    value = value.Split(decChar)[0];
                 }
 
                 // trim
                 value = value.Trim();
 
+                // fix input starting with '.' or '-.'
+                if (FixPrefixDecimalSeparator && (value.Length > 0))
+                {
+                    if (value[0] == decChar) 
+                    { 
+                        value = "0" + value;
+                        _caretOffset += 1;
+                    }
+                    else if (value.StartsWith("-" + decChar)) 
+                    { 
+                        value = "-0" + value.Substring(1);
+                        _caretOffset += 2;
+                    }
+                }
+
+                // if ending with minus but already have characters, remove the trailing -
+                if (value.Length > 1 && value.EndsWith('-'))
+                {
+                    value = value.TrimEnd('-');
+                }
+
                 // if empty or a single decimal separator, stop here and set to empty
-                if ((value.Length == 0) || (value.Length == 1 && value[0] == DecimalSeparator))
+                if ((value.Length == 0) || (value.Length == 1 && value[0] == decChar))
                 {
                     base.Value = string.Empty;
                     _valueFloat = null;
@@ -78,7 +107,7 @@ namespace Iguina.Entities
 
                     // normalize inputs that begin with zero
                     {
-                        if (value.StartsWith("0."))
+                        if (value.StartsWith($"0{decChar}"))
                         {
                             value = '0' + value.TrimStart('0');
                         }
@@ -98,19 +127,19 @@ namespace Iguina.Entities
                     }
 
                     // normalize inputs that begin with -0
-                    if (value.StartsWith("-0") && (value.Length > 2) && value[2] != '.')
+                    if (value.StartsWith("-0") && (value.Length > 2) && value[2] != decChar)
                     {
                         value = '-' + value.Substring(1).Trim('0');
                     }
 
                     // normalize inputs that begin with -.
-                    if (value.StartsWith("-."))
+                    if (value.StartsWith($"-{decChar}"))
                     {
                         value = "-0" + value.Substring(1);
                     }
 
                     // if value starts with . add 0
-                    if (value.StartsWith('.')) 
+                    if (value.StartsWith(decChar)) 
                     { 
                         value = '0' + value; 
                     }

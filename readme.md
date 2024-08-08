@@ -1362,6 +1362,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Fixed a bug with `NumericInput` having wrong value during the `OnChange` event call.
 - Fixed a bug with `NumericInput` not being able to accept values that start with '0.'.
 - General improvements to `NumericInput` input normalization.
+- Added `FixPrefixDecimalSeparator ` flag to numeric input.
 - Added identifiers to message box generated entities.
 - Fixed issue that some panels flicker when they appear for the first time for a single frame.
 
