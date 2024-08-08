@@ -46,7 +46,7 @@ namespace Iguina.Entities
                 if (_minValue != value)
                 {
                     _minValue = value;
-                    if (_maxValue < _minValue) { throw new ArgumentOutOfRangeException("Slider min value must be smaller than max value!"); }
+                    if (_maxValue < _minValue) { throw new ArgumentOutOfRangeException(nameof(value), "Slider min value must be smaller than max value!"); }
                     if (_value < _minValue)
                     {
                         _value = _minValue;
@@ -67,7 +67,7 @@ namespace Iguina.Entities
                 if (_maxValue != value)
                 {
                     _maxValue = value;
-                    if (_maxValue < _minValue) { throw new ArgumentOutOfRangeException("Slider max value must be bigger than min value!"); }
+                    if (_maxValue < _minValue) { throw new ArgumentOutOfRangeException(nameof(value), "Slider max value must be bigger than min value!"); }
                     if (_value > _maxValue)
                     {
                         _value = _maxValue;
@@ -87,8 +87,8 @@ namespace Iguina.Entities
             {
                 if (_value != value)
                 {
-                    if (value < MinValue) { throw new ArgumentOutOfRangeException("Slider value can't be smaller than min value!"); }
-                    if (value > MaxValue) { throw new ArgumentOutOfRangeException("Slider value can't be bigger than max value!"); }
+                    if (value < MinValue) { throw new ArgumentOutOfRangeException(nameof(value), "Slider value can't be smaller than min value!"); }
+                    if (value > MaxValue) { throw new ArgumentOutOfRangeException(nameof(value), "Slider value can't be bigger than max value!"); }
                     _value = value;
                     Events.OnValueChanged?.Invoke(this);
                     UISystem.Events.OnValueChanged?.Invoke(this);
@@ -122,7 +122,7 @@ namespace Iguina.Entities
                     _stepsCount = value;
                     if (value > ValueRange)
                     {
-                        throw new ArgumentOutOfRangeException("Slider steps count can't be bigger than ValueRange (max - min) value!");
+                        throw new ArgumentOutOfRangeException(nameof(value), "Slider steps count can't be bigger than ValueRange (max - min) value!");
                     }
                     Value = MinValue;
                 }

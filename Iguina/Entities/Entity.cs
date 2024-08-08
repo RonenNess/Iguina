@@ -128,7 +128,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Interpolation speed for fill textures, if enabled.
         /// </summary>
-        internal float StatesInterpolationSpeed => StyleSheet?.InterpolateStatesSpeed ?? 0f;
+        internal float StatesInterpolationSpeed => StyleSheet.InterpolateStatesSpeed ?? 0f;
 
         /// <summary>
         /// If true will interpolate between offsets of internal entities when rendering this entity.
@@ -139,17 +139,17 @@ namespace Iguina.Entities
         /// <summary>
         /// Interpolation speed for offsets, if enabled.
         /// </summary>
-        internal float HandleInterpolationSpeed => StyleSheet?.InterpolateOffsetsSpeed ?? 0f;
+        internal float HandleInterpolationSpeed => StyleSheet.InterpolateOffsetsSpeed ?? 0f;
 
         /// <summary>
         /// Entity min width.
         /// </summary>
-        internal int MinWidth => StyleSheet?.MinWidth ?? 0;
+        internal int MinWidth => StyleSheet.MinWidth ?? 0;
 
         /// <summary>
         /// Entity min height.
         /// </summary>
-        internal int MinHeight => StyleSheet?.MinHeight ?? 0;
+        internal int MinHeight => StyleSheet.MinHeight ?? 0;
 
         /// <summary>
         /// Extra pixels to add to sides of the entity when checking collision detection for user interactions.
@@ -1888,27 +1888,27 @@ namespace Iguina.Entities
         ///     3. Text input change for text input fields.
         ///     4. Selected item change for lists and dropdowns.
         /// </summary>
-        public EntityEvent OnValueChanged;
+        public EntityEvent? OnValueChanged;
 
         /// <summary>
         /// Called when this entity is checked.
         /// </summary>
-        public EntityEvent OnChecked;
+        public EntityEvent? OnChecked;
 
         /// <summary>
         /// Called when this entity is unchecked.
         /// </summary>
-        public EntityEvent OnUnchecked;
+        public EntityEvent? OnUnchecked;
 
         /// <summary>
         /// Called before rendering the entity.
         /// </summary>
-        public EntityEvent BeforeDraw;
+        public EntityEvent? BeforeDraw;
 
         /// <summary>
         /// Called after rendering the entity.
         /// </summary>
-        public EntityEvent AfterDraw;
+        public EntityEvent? AfterDraw;
 
         /// <summary>
         /// Called before updating the entity.
@@ -1918,13 +1918,13 @@ namespace Iguina.Entities
         /// <summary>
         /// Called after updating the entity.
         /// </summary>
-        public EntityEvent AfterUpdate;
+        public EntityEvent? AfterUpdate;
 
         /// <summary>
         /// Called once when left mouse button is released on the entity.
         /// This is just sugarcoat for 'OnLeftMouseReleased' to make code more readable.
         /// </summary>
-        public EntityEvent OnClick
+        public EntityEvent? OnClick
         { 
             get => OnLeftMouseReleased;
             set => OnLeftMouseReleased = value;
@@ -1933,46 +1933,46 @@ namespace Iguina.Entities
         /// <summary>
         /// Called when mouse wheel scroll up.
         /// </summary>
-        public EntityEvent OnMouseWheelScrollUp;
+        public EntityEvent? OnMouseWheelScrollUp;
 
         /// <summary>
         /// Called when mouse wheel scroll down.
         /// </summary>
-        public EntityEvent OnMouseWheelScrollDown;
+        public EntityEvent? OnMouseWheelScrollDown;
 
         /// <summary>
         /// Called every frame while mouse left button is down over the entity.
         /// </summary>
-        public EntityEvent OnLeftMouseDown;
+        public EntityEvent? OnLeftMouseDown;
 
         /// <summary>
         /// Called once when left mouse button is pressed on the entity.
         /// </summary>
-        public EntityEvent OnLeftMousePressed;
+        public EntityEvent? OnLeftMousePressed;
 
         /// <summary>
         /// Called once when left mouse button is released on the entity.
         /// </summary>
-        public EntityEvent OnLeftMouseReleased;
+        public EntityEvent? OnLeftMouseReleased;
 
         /// <summary>
         /// Called every frame while mouse right button is down over the entity.
         /// </summary>
-        public EntityEvent OnRightMouseDown;
+        public EntityEvent? OnRightMouseDown;
 
         /// <summary>
         /// Called once when right mouse button is pressed on the entity.
         /// </summary>
-        public EntityEvent OnRightMousePressed;
+        public EntityEvent? OnRightMousePressed;
 
         /// <summary>
         /// Called once when right mouse button is released on the entity.
         /// </summary>
-        public EntityEvent OnRightMouseReleased;
+        public EntityEvent? OnRightMouseReleased;
 
         /// <summary>
         /// Called every frame while mouse hovers the entity (even if mouse don't move).
         /// </summary>
-        public EntityEvent WhileMouseHover;
+        public EntityEvent? WhileMouseHover;
     }
 }
