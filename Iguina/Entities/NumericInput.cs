@@ -288,7 +288,11 @@ namespace Iguina.Entities
                 // special - if value is 0, make sure input is not 00000...)
                 if (result == 0)
                 {
-                    value = "0";
+                    // unless the input is possibly trying to type a 0-leading decimal 
+                    if (value != "0" + DecimalSeparator && value != "-0" && value != "-0" + DecimalSeparator)
+                    {
+                        value = "0";
+                    }
                 }
                 // if not 0, trim zeroes from the start
                 else if (value.StartsWith('0'))
