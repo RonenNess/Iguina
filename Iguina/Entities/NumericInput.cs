@@ -302,6 +302,16 @@ namespace Iguina.Entities
                 newValue = null;
                 return true;
             }
+            
+            // special case: negative sign is not leading
+            // (attempting to parse this would succeed, but this isn't desired input)
+            if (value.Length > 1 && value[0] != NegativeSign && value.Contains(NegativeSign))
+            {
+                // could not parse the value
+                newValue = default;
+                baseValue = default!;
+                return false;
+            }
 
             // set float value and base value
             if (decimal.TryParse(value, CultureInfo, out decimal result))
