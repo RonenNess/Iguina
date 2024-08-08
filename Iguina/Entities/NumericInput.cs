@@ -28,19 +28,128 @@ namespace Iguina.Entities
         /// </summary>
         public decimal ButtonsStepSize = 1;
 
+        /// <summary>
+        /// If true, and the user enter only a decimal point or minus and decimal point, it will convert to 0. or -0.
+        /// </summary>
+        public bool FixPrefixDecimalSeparator = true;
+
         /// <inheritdoc/>
         public override string Value
         {
             get => base.Value;
             set
             {
-                if (TryParseValue(value, out decimal? newValue, out string baseValue))
+                // decimal point character
+                var decChar = DecimalSeparator;
+
+                // remove decimal if not accepted
+                if (!AcceptsDecimal)
                 {
-                    _valueFloat = newValue;
-                    base.Value = baseValue;
+                    value = value.Split(decChar)[0];
                 }
 
-                // If failed to parse, don't change current valid value!
+                // trim
+                value = value.Trim();
+
+                // fix input starting with '.' or '-.'
+                if (FixPrefixDecimalSeparator && (value.Length > 0))
+                {
+                    if (value[0] == decChar) 
+                    { 
+                        value = "0" + value;
+                        _caretOffset += 1;
+                    }
+                    else if (value.StartsWith("-" + decChar)) 
+                    { 
+                        value = "-0" + value.Substring(1);
+                        _caretOffset += 2;
+                    }
+                }
+
+                // if ending with minus but already have characters, remove the trailing -
+                if (value.Length > 1 && value.EndsWith('-'))
+                {
+                    value = value.TrimEnd('-');
+                }
+
+                // if empty or a single decimal separator, stop here and set to empty
+                if ((value.Length == 0) || (value.Length == 1 && value[0] == decChar))
+                {
+                    base.Value = string.Empty;
+                    _valueFloat = null;
+                    return;
+                }
+
+                // special case: if the only input is - it might be the begining of a negative number, so we allow it
+                if ((MinValue == null || MinValue.Value < 0) && (value == "-"))
+                {
+                    base.Value = value;
+                    _valueFloat = null;
+                    return;
+                }
+
+                // set float value and base value
+                if (decimal.TryParse(value, CultureInfo, out decimal result))
+                {
+                    // check min value
+                    if (result < MinValue)
+                    {
+                        result = MinValue.Value;
+                        value = result.ToString();
+                    }
+
+                    // check max value
+                    if (result > MaxValue)
+                    {
+                        result = MaxValue.Value;
+                        value = result.ToString();
+                    }
+
+                    // normalize inputs that begin with zero
+                    {
+                        if (value.StartsWith($"0{decChar}"))
+                        {
+                            value = '0' + value.TrimStart('0');
+                        }
+                        else
+                        {
+                            // special - if value is 0, make sure input is not 00000...)
+                            if (result == 0 && !value.StartsWith('-'))
+                            {
+                                value = "0";
+                            }
+                            // if not 0, trim zeroes from the start
+                            else if (value.StartsWith('0'))
+                            {
+                                value = value.TrimStart('0');
+                            }
+                        }
+                    }
+
+                    // normalize inputs that begin with -0
+                    if (value.StartsWith("-0") && (value.Length > 2) && value[2] != decChar)
+                    {
+                        value = '-' + value.Substring(1).Trim('0');
+                    }
+
+                    // normalize inputs that begin with -.
+                    if (value.StartsWith($"-{decChar}"))
+                    {
+                        value = "-0" + value.Substring(1);
+                    }
+
+                    // if value starts with . add 0
+                    if (value.StartsWith(decChar)) 
+                    { 
+                        value = '0' + value; 
+                    }
+
+                    // set value
+                    _valueFloat = result;
+                    base.Value = value;
+                }
+
+                // failed to parse? don't change value!
             }
         }
 
@@ -242,157 +351,6 @@ namespace Iguina.Entities
         protected override int GetInputMaxWidth()
         {
             return base.GetInputMaxWidth() - (_plusButton != null ? _plusButton.LastBoundingRect.Width : 0);
-        }
-
-        /// <inheritdoc/>
-        protected override bool IsValidValue(string value)
-        {
-            return TryParseValue(value, out _, out _);
-        }
-
-
-        /// <summary>
-        /// Try to parse the given value according to our numeric logic.
-        /// Succeeds if the given value is recognized and returns the actual decimal value and the base value to store. 
-        /// </summary>
-        /// <param name="value">The given input value, possibly misformatted</param>
-        /// <param name="newValue">The succcessfully-parsed value to store</param>
-        /// <param name="baseValue">Underlying base value that should be set on success, which may differ from input</param>
-        bool TryParseValue(string value, out decimal? newValue, out string baseValue)
-        {
-            // remove decimal if not accepted
-            if (!AcceptsDecimal)
-            {
-                value = value.Split(DecimalSeparator)[0];
-            }
-
-            // trim
-            value = value.Trim();
-
-            // if empty, stop here and set to empty
-            if (value.Length == 0)
-            {
-                baseValue = string.Empty;
-                newValue = null;
-                return true;
-            }
-            
-            // special case: fraction without leading 0
-            // (attempting to parse this would fail, so we need to check it manually)
-            if (value.Length == 1 && value[0] == DecimalSeparator)
-            {
-                baseValue = "0" + DecimalSeparator + value[(value.IndexOf(DecimalSeparator) + 1)..]; // "." -> "0."
-                newValue = 0;
-                return true;
-            }
-            
-            // special case: negative fraction without leading 0
-            // (attempting to parse this would fail, so we need to check it manually)
-            if (value.Length == 2 && value[0] == NegativeSign && value[1] == DecimalSeparator)
-            {
-                baseValue = NegativeSign + "0" + DecimalSeparator + value[(value.IndexOf(DecimalSeparator) + 1)..]; // "-." -> "-0."
-                newValue = 0;
-                return true;
-            }
-            
-            // special case: if the only input is - it might be the begining of a negative number, so we allow it
-            if ((MinValue == null || MinValue.Value < 0) && (value.Length == 1 && value[0] == NegativeSign))
-            {
-                baseValue = value;
-                newValue = null;
-                return true;
-            }
-            
-            // special case: negative sign is not leading
-            // (attempting to parse this would succeed, but this isn't desired input)
-            if (value.Length > 1 && value[0] != NegativeSign && value.Contains(NegativeSign))
-            {
-                // could not parse the value
-                newValue = default;
-                baseValue = default!;
-                return false;
-            }
-
-            // set float value and base value
-            if (decimal.TryParse(value, CultureInfo, out decimal result))
-            {
-                // check min value
-                if (result < MinValue)
-                {
-                    result = MinValue.Value;
-                    value = result.ToString(CultureInfo);
-                }
-
-                // check max value
-                if (result > MaxValue)
-                {
-                    result = MaxValue.Value;
-                    value = result.ToString(CultureInfo);
-                }
-
-                // check for redundant or missing zeros 
-                if (value.Contains(DecimalSeparator))
-                {
-                    if (value[0] == NegativeSign)
-                    {
-                        if (value.Length > 1 && value[1] == DecimalSeparator)
-                        {
-                            value = value.Insert(1, "0"); // "-." -> "-0."
-                        }
-                        else if (value.Length > 3 && value[1] == '0' && value[2] != DecimalSeparator)
-                        {
-                            value = NegativeSign + value[1..].TrimStart('0'); // "-02.0" -> "-2.0"
-                            
-                            // did we overtrim? i.e. was the whole part was all 0s?
-                            if (value[1] == DecimalSeparator)
-                                value = NegativeSign + "0" + value[1..]; // "-.0" -> "-0.0"
-                        }
-                    }
-                    else
-                    {
-                        if (value.Length > 2 && value[0] == '0' && value[1] != DecimalSeparator)
-                        {
-                            value = value.TrimStart('0'); // "01.2" -> "1.2"
-                            
-                            // did we overtrim? i.e. was the whole part was all 0s?
-                            if (value[0] == DecimalSeparator)
-                                value = "0" + value; // ".2" -> "0.2"
-                        }
-                        else if (value[0] == DecimalSeparator)
-                        {
-                            value = "0" + value; // "." -> "0."
-                        }
-                    }
-                }
-                else
-                {
-                    // if not 0, trim zeroes from the start
-                    if (value.StartsWith('0') && value.Length > 1)
-                    {
-                        if (result == 0)
-                            value = "0"; // "00" => "0"
-                        else
-                            value = value.TrimStart('0'); // "05" -> "5"
-                    }
-                    else if (value.Length > 2 && value[0] == NegativeSign && value[1] == '0')
-                    {
-                        if (result == 0)
-                            value = NegativeSign + "0" + value[2..].TrimStart('0'); // "-00" -> "-0" 
-                        else
-                            value = NegativeSign + value[1..].TrimStart('0'); // "-05" -> "-5" 
-                    }
-                }
-
-                // set value
-                newValue = result;
-                baseValue = value;
-                return true;
-            }
-
-            // could not parse the value
-            newValue = default;
-            baseValue = default!;
-            return false;
         }
     }
 }
