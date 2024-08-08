@@ -300,11 +300,22 @@ namespace Iguina.Entities
 
             if (IsValidValue(proposedValue))
             {
+                var charIncrease = Value.Length; // old length
+                
                 Value = proposedValue;
 
+                charIncrease = Value.Length - charIncrease; // new length - old length = difference
+
                 // update caret
-                CaretOffset++;
-                return 1;
+                if (charIncrease > 0)
+                {
+                    CaretOffset += charIncrease;
+                    return charIncrease;
+                }
+                else
+                {
+                    return 0;
+                }
             }
             else
             {
@@ -505,8 +516,16 @@ namespace Iguina.Entities
                                     var proposedValue = Value.Remove(CaretOffset - 1, 1);
                                     if (IsValidValue(proposedValue))
                                     {
+                                        var charDecrease = Value.Length; // old length
+
                                         Value = proposedValue;
-                                        CaretOffset--;
+                                        
+                                        charDecrease -= Value.Length; // old length - new length = difference
+
+                                        if (charDecrease > 0)
+                                        {
+                                            CaretOffset -= charDecrease;
+                                        }
                                     }
                                 }
                                 catch { }
@@ -522,6 +541,8 @@ namespace Iguina.Entities
                                         if (IsValidValue(proposedValue))
                                         {
                                             Value = proposedValue;
+                                            
+                                            // caret doesn't move, so we don't need to check if the text actually changed
                                         }
                                     }
                                 }
