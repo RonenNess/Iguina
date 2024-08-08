@@ -36,8 +36,8 @@ namespace Iguina.Entities
                     _value = value;
                     
                     // Make sure the caret doesn't overflow if, for example, the value is being directly manipulated while the user is typing (e.g. NumericInput)
-                    if (_caretOffset >= Value.Length)
-                        _caretOffset = Value.Length;
+                    if (_caretOffset > Value.Length)
+                        _caretOffset = Value.Length + 1;
                     
                     Events.OnValueChanged?.Invoke(this);
                     UISystem.Events.OnValueChanged?.Invoke(this);
@@ -522,7 +522,6 @@ namespace Iguina.Entities
                                         if (IsValidValue(proposedValue))
                                         {
                                             Value = proposedValue;
-                                            CaretOffset--;
                                         }
                                     }
                                 }
