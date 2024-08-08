@@ -97,6 +97,18 @@ namespace Iguina.Entities
                         }
                     }
 
+                    // normalize inputs that begin with -0
+                    if (value.StartsWith("-0"))
+                    {
+                        value = '-' + value.Substring(1).Trim('0');
+                    }
+
+                    // normalize inputs that begin with -.
+                    if (value.StartsWith("-."))
+                    {
+                        value = "-0" + value.Substring(1);
+                    }
+
                     // if value starts with . add 0
                     if (value.StartsWith('.')) { value = '0' + value; }
 
