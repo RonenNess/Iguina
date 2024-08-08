@@ -85,7 +85,7 @@ namespace Iguina.Entities
                         else
                         {
                             // special - if value is 0, make sure input is not 00000...)
-                            if (result == 0)
+                            if (result == 0 && !value.StartsWith('-'))
                             {
                                 value = "0";
                             }
@@ -98,7 +98,7 @@ namespace Iguina.Entities
                     }
 
                     // normalize inputs that begin with -0
-                    if (value.StartsWith("-0"))
+                    if (value.StartsWith("-0") && (value.Length > 2) && value[2] != '.')
                     {
                         value = '-' + value.Substring(1).Trim('0');
                     }
@@ -110,7 +110,10 @@ namespace Iguina.Entities
                     }
 
                     // if value starts with . add 0
-                    if (value.StartsWith('.')) { value = '0' + value; }
+                    if (value.StartsWith('.')) 
+                    { 
+                        value = '0' + value; 
+                    }
 
                     // set value
                     _valueFloat = result;
