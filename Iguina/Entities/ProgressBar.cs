@@ -20,7 +20,7 @@ namespace Iguina.Entities
         public ProgressBar(UISystem system, StyleSheet? stylesheet, StyleSheet? fillStylesheet, Orientation orientation = Orientation.Horizontal) : base(system, stylesheet, fillStylesheet, orientation)
         {
             Handle.IgnoreInteractions = IgnoreInteractions = true;
-            Handle.Anchor = Handle.StyleSheet?.DefaultAnchor ?? stylesheet?.DefaultAnchor ?? ((orientation == Orientation.Horizontal) ? Anchor.CenterLeft : Anchor.TopCenter);
+            Handle.Anchor = Handle.StyleSheet.DefaultAnchor ?? stylesheet?.DefaultAnchor ?? ((orientation == Orientation.Horizontal) ? Anchor.CenterLeft : Anchor.TopCenter);
         }
 
         /// <summary>

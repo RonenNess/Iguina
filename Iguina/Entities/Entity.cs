@@ -128,7 +128,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Interpolation speed for fill textures, if enabled.
         /// </summary>
-        internal float StatesInterpolationSpeed => StyleSheet?.InterpolateStatesSpeed ?? 0f;
+        internal float StatesInterpolationSpeed => StyleSheet.InterpolateStatesSpeed ?? 0f;
 
         /// <summary>
         /// If true will interpolate between offsets of internal entities when rendering this entity.
@@ -139,17 +139,17 @@ namespace Iguina.Entities
         /// <summary>
         /// Interpolation speed for offsets, if enabled.
         /// </summary>
-        internal float HandleInterpolationSpeed => StyleSheet?.InterpolateOffsetsSpeed ?? 0f;
+        internal float HandleInterpolationSpeed => StyleSheet.InterpolateOffsetsSpeed ?? 0f;
 
         /// <summary>
         /// Entity min width.
         /// </summary>
-        internal int MinWidth => StyleSheet?.MinWidth ?? 0;
+        internal int MinWidth => StyleSheet.MinWidth ?? 0;
 
         /// <summary>
         /// Entity min height.
         /// </summary>
-        internal int MinHeight => StyleSheet?.MinHeight ?? 0;
+        internal int MinHeight => StyleSheet.MinHeight ?? 0;
 
         /// <summary>
         /// Extra pixels to add to sides of the entity when checking collision detection for user interactions.

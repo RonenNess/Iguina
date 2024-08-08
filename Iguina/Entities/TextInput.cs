@@ -364,7 +364,7 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         protected override int CalculateMaxScrollbarValue()
         {
-            return Math.Max(1, (_valueParagraph.LastBoundingRect.Height + _valueParagraph?.StyleSheet?.Default?.FontSize ?? 20) - LastInternalBoundingRect.Height);
+            return Math.Max(1, (_valueParagraph.LastBoundingRect.Height + _valueParagraph?.StyleSheet.Default?.FontSize ?? 20) - LastInternalBoundingRect.Height);
         }
 
         /// <summary>
