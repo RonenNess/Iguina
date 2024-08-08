@@ -126,7 +126,7 @@ namespace Iguina.Entities
                 if (_minValue != value)
                 {
                     _minValue = value;
-                    if (_maxValue <= _minValue) { throw new ArgumentOutOfRangeException("Numeric Input min value must be smaller than max value!"); }
+                    if (_maxValue <= _minValue) { throw new ArgumentOutOfRangeException(nameof(value), "Numeric Input min value must be smaller than max value!"); }
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace Iguina.Entities
                 if (_maxValue != value)
                 {
                     _maxValue = value;
-                    if (_maxValue <= _minValue) { throw new ArgumentOutOfRangeException("Numeric Input max value must be bigger than min value!"); }
+                    if (_maxValue <= _minValue) { throw new ArgumentOutOfRangeException(nameof(value), "Numeric Input max value must be bigger than min value!"); }
                 }
             }
         }
@@ -162,8 +162,8 @@ namespace Iguina.Entities
                     throw new InvalidOperationException("Can't set NumericInput float value while not accepting decimal point!");
                 }
 
-                if (value < MinValue) { throw new ArgumentOutOfRangeException("Numeric Input value can't be smaller than min value!"); }
-                if (value > MaxValue) { throw new ArgumentOutOfRangeException("Numeric Input value can't be bigger than max value!"); }
+                if (value < MinValue) { throw new ArgumentOutOfRangeException(nameof(value), "Numeric Input value can't be smaller than min value!"); }
+                if (value > MaxValue) { throw new ArgumentOutOfRangeException(nameof(value), "Numeric Input value can't be bigger than max value!"); }
 
                 Value = value.ToString(CultureInfo);
             }
