@@ -129,7 +129,19 @@ namespace Iguina.Entities
         /// Culture info to use when parsing floats.
         /// This will affect the decimal point character.
         /// </summary>
-        public CultureInfo CultureInfo = CultureInfo.InvariantCulture;
+        public CultureInfo CultureInfo
+        {
+            get => _cultureInfo;
+            set
+            {
+                if (value.NumberFormat.NumberDecimalSeparator.Length > 1) throw new Exception("Culture must have a single decimal separator character");
+                if (value.NumberFormat.NegativeSign.Length > 1) throw new Exception("Culture must have a single negative sign character");
+                
+                _cultureInfo = value;
+            }
+        }
+
+        private CultureInfo _cultureInfo = CultureInfo.InvariantCulture;
 
         /// <summary>
         /// Return the character used as decimal point.
