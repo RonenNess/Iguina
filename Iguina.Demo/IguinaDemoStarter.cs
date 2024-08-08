@@ -1,6 +1,7 @@
 ﻿using Iguina.Defs;
 using Iguina.Entities;
 using System.Diagnostics;
+using System.Globalization;
 using static System.Net.Mime.MediaTypeNames;
 
 
@@ -672,13 +673,13 @@ Use the scrollbar on the right to see more of it."));
             {
                 var panel = CreateDemoContainer("Numeric Input", new Point(680, 1));
 
-                panel.AddChild(new Paragraph(_system, @"Numeric text input get float or integer value from the user in a form similar to a text input. For example, with decimal point:"));
+                panel.AddChild(new Paragraph(_system, @"Numeric text input gets a float or integer value from the user in a form similar to a text input. For example, with a decimal point:"));
                 {
                     var textInput = panel.AddChild(new NumericInput(_system));
                 }
 
                 panel.AddChild(new RowsSpacer(_system));
-                panel.AddChild(new Paragraph(_system, @"This Numeric Input don't accept a decimal point:"));
+                panel.AddChild(new Paragraph(_system, @"This Numeric Input doesn't accept a decimal point:"));
                 {
                     var textInput = panel.AddChild(new NumericInput(_system));
                     textInput.AcceptsDecimal = false;
@@ -696,6 +697,25 @@ Use the scrollbar on the right to see more of it."));
                 panel.AddChild(new Paragraph(_system, @"You can also create a Numeric Input entity without the buttons:"));
                 {
                     var textInput = panel.AddChild(new NumericInput(_system, false, false));
+                }
+                
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"Numeric Input can also have a different culture:"));
+                {
+                    string[] exampleCultures = ["en-US", "de-DE"];
+
+                    foreach (var cultureName in exampleCultures)
+                    {
+                        var textInput = panel.AddChild(new NumericInput(_system));
+                        textInput.Anchor = Anchor.AutoInlineLTR;
+                        textInput.Size.X = new Measurement() { Units = MeasureUnit.PercentOfParent, Value = 80f };
+                        textInput.CultureInfo = CultureInfo.GetCultureInfo(cultureName);
+                        textInput.DefaultValue = (decimal)5.67f;
+                        //textInput.NumericValue = (decimal)1.23f;
+                        var label = panel.AddChild(new Paragraph(_system, $" ({cultureName})"));
+                        label.Anchor = Anchor.AutoInlineLTR;
+                        panel.AddChild(new RowsSpacer(_system));
+                    }
                 }
             }
 

@@ -19,7 +19,7 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         public override string? PlaceholderText
         {
-            get => DefaultValue.ToString();
+            get => DefaultValue.ToString(CultureInfo);
             set => throw new InvalidOperationException("Numeric input fields can't have placeholder text!");
         }
 
@@ -66,14 +66,14 @@ namespace Iguina.Entities
                     if (result < MinValue)
                     {
                         result = MinValue.Value;
-                        value = result.ToString();
+                        value = result.ToString(CultureInfo);
                     }
 
                     // check max value
                     if (result > MaxValue)
                     {
                         result = MaxValue.Value;
-                        value = result.ToString();
+                        value = result.ToString(CultureInfo);
                     }
 
                     // special - if value is 0, make sure input is not 00000...)
