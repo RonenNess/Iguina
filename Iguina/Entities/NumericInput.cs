@@ -367,12 +367,6 @@ namespace Iguina.Entities
         }
         
 #if ALT_VERSION
-        /// <inheritdoc/>
-        protected override bool IsValidValue(string value)
-        {
-            return TryParseValue(value, out _, out _);
-        }
-
         /// <summary>
         /// Try to parse the given value according to our numeric logic.
         /// Succeeds if the given value is recognized and returns the actual decimal value and the base value to store. 
