@@ -50,6 +50,8 @@ namespace Iguina.Tests
         [TestCase("-.23", -0.23, "-0.23")]
         [TestCase("-2.", -2, "-2.")]
         [TestCase("-", 0, "-")]
+        [TestCase("-01.00", -1.0, "-1.00")]
+        [TestCase("-001.00", -1.0, "-1.00")]
         [TestCase("0.", 0, "0.")]
         [TestCase("0.0", 0, "0.0")]
         [TestCase("0.000", 0, "0.000")]
