@@ -76,16 +76,29 @@ namespace Iguina.Entities
                         value = result.ToString();
                     }
 
-                    // special - if value is 0, make sure input is not 00000...)
-                    if (result == 0)
+                    // normalize inputs that begin with zero
                     {
-                        value = "0";
+                        if (value.StartsWith("0."))
+                        {
+                            value = '0' + value.TrimStart('0');
+                        }
+                        else
+                        {
+                            // special - if value is 0, make sure input is not 00000...)
+                            if (result == 0)
+                            {
+                                value = "0";
+                            }
+                            // if not 0, trim zeroes from the start
+                            else if (value.StartsWith('0'))
+                            {
+                                value = value.TrimStart('0');
+                            }
+                        }
                     }
-                    // if not 0, trim zeroes from the start
-                    else if (value.StartsWith('0'))
-                    {
-                        value = value.TrimStart('0');
-                    }
+
+                    // if value starts with . add 0
+                    if (value.StartsWith('.')) { value = '0' + value; }
 
                     // set value
                     _valueFloat = result;
