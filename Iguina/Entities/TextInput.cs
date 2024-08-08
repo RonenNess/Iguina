@@ -286,18 +286,31 @@ namespace Iguina.Entities
             }
 
             // add value
+
+            string proposedValue;
+
             if (CaretOffset == Value.Length)
             {
-                Value += characters;
+                proposedValue = Value + characters;
             }
             else
             {
-                Value = Value.Insert(CaretOffset, characters);
+                proposedValue = Value.Insert(CaretOffset, characters);
             }
 
-            // update caret
-            CaretOffset++;
-            return 1;
+            if (IsValidValue(proposedValue))
+            {
+                Value = proposedValue;
+
+                // update caret
+                CaretOffset++;
+                return 1;
+            }
+            else
+            {
+                // Did not modify the value
+                return 0;
+            }
         }
 
         /// <summary>
@@ -307,6 +320,13 @@ namespace Iguina.Entities
         {
             return (LastInternalBoundingRect.Right - GetPadding().Right);
         }
+
+        /// <summary>
+        /// Checks if the implementing child control would accept the proposed modified value.
+        /// If not, input interaction will not react to it, such as moving the caret.
+        /// </summary>
+        /// <param name="value">The proposed value we want to set</param>
+        protected virtual bool IsValidValue(string value) => true;
 
         /// <summary>
         /// Insert character at caret position, from unicode value.
@@ -482,8 +502,12 @@ namespace Iguina.Entities
                             {
                                 try
                                 {
-                                    Value = Value.Remove(CaretOffset - 1, 1);
-                                    CaretOffset--;
+                                    var proposedValue = Value.Remove(CaretOffset - 1, 1);
+                                    if (IsValidValue(proposedValue))
+                                    {
+                                        Value = proposedValue;
+                                        CaretOffset--;
+                                    }
                                 }
                                 catch { }
                             }
@@ -494,7 +518,12 @@ namespace Iguina.Entities
                                 {
                                     if (CaretOffset < Value.Length)
                                     {
-                                        Value = Value.Remove(CaretOffset, 1);
+                                        var proposedValue = Value.Remove(CaretOffset, 1);
+                                        if (IsValidValue(proposedValue))
+                                        {
+                                            Value = proposedValue;
+                                            CaretOffset--;
+                                        }
                                     }
                                 }
                                 catch { }

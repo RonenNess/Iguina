@@ -5,7 +5,7 @@ using System.Globalization;
 namespace Iguina.Entities
 {
     /// <summary>
-    /// Text input that accept only numbers, and have a - and + buttons.
+    /// Text input that accepts only numbers, and has a - and + buttons.
     /// </summary>
     public class NumericInput : TextInput
     {
@@ -34,65 +34,13 @@ namespace Iguina.Entities
             get => base.Value;
             set
             {
-                // remove decimal if not accepted
-                if (!AcceptsDecimal)
+                if (TryParseValue(value, out decimal? newValue, out string baseValue))
                 {
-                    value = value.Split(DecimalSeparator)[0];
+                    _valueFloat = newValue;
+                    base.Value = baseValue;
                 }
 
-                // trim
-                value = value.Trim();
-
-                // if empty or a single decimal separator, stop here and set to empty
-                if ((value.Length == 0) || (value.Length == 1 && value[0] == DecimalSeparator))
-                {
-                    base.Value = string.Empty;
-                    _valueFloat = null;
-                    return;
-                }
-
-                // special case: if the only input is - it might be the begining of a negative number, so we allow it
-                if ((MinValue == null || MinValue.Value < 0) && (value == "-"))
-                {
-                    base.Value = value;
-                    _valueFloat = null;
-                    return;
-                }
-
-                // set float value and base value
-                if (decimal.TryParse(value, CultureInfo, out decimal result))
-                {
-                    // check min value
-                    if (result < MinValue)
-                    {
-                        result = MinValue.Value;
-                        value = result.ToString(CultureInfo);
-                    }
-
-                    // check max value
-                    if (result > MaxValue)
-                    {
-                        result = MaxValue.Value;
-                        value = result.ToString(CultureInfo);
-                    }
-
-                    // special - if value is 0, make sure input is not 00000...)
-                    if (result == 0)
-                    {
-                        value = "0";
-                    }
-                    // if not 0, trim zeroes from the start
-                    else if (value.StartsWith('0'))
-                    {
-                        value = value.TrimStart('0');
-                    }
-
-                    // set value
-                    _valueFloat = result;
-                    base.Value = value;
-                }
-
-                // failed to parse? don't change value!
+                // If failed to parse, don't change current valid value!
             }
         }
 
@@ -277,6 +225,87 @@ namespace Iguina.Entities
         protected override int GetInputMaxWidth()
         {
             return base.GetInputMaxWidth() - (_plusButton != null ? _plusButton.LastBoundingRect.Width : 0);
+        }
+
+        /// <inheritdoc/>
+        protected override bool IsValidValue(string value)
+        {
+            return TryParseValue(value, out _, out _);
+        }
+
+
+        /// <summary>
+        /// Try to parse the given value according to our numeric logic.
+        /// Succeeds if the given value is recognized and returns the actual decimal value and the base value to store. 
+        /// </summary>
+        /// <param name="value">The given input value, possibly misformatted</param>
+        /// <param name="newValue">The succcessfully-parsed value to store</param>
+        /// <param name="baseValue">Underlying base value that should be set on success, which may differ from input</param>
+        bool TryParseValue(string value, out decimal? newValue, out string baseValue)
+        {
+            // remove decimal if not accepted
+            if (!AcceptsDecimal)
+            {
+                value = value.Split(DecimalSeparator)[0];
+            }
+
+            // trim
+            value = value.Trim();
+
+            // if empty or a single decimal separator, stop here and set to empty
+            if ((value.Length == 0) || (value.Length == 1 && value[0] == DecimalSeparator))
+            {
+                baseValue = string.Empty;
+                newValue = null;
+                return true;
+            }
+
+            // special case: if the only input is - it might be the begining of a negative number, so we allow it
+            if ((MinValue == null || MinValue.Value < 0) && (value == "-"))
+            {
+                baseValue = value;
+                newValue = null;
+                return true;
+            }
+
+            // set float value and base value
+            if (decimal.TryParse(value, CultureInfo, out decimal result))
+            {
+                // check min value
+                if (result < MinValue)
+                {
+                    result = MinValue.Value;
+                    value = result.ToString(CultureInfo);
+                }
+
+                // check max value
+                if (result > MaxValue)
+                {
+                    result = MaxValue.Value;
+                    value = result.ToString(CultureInfo);
+                }
+
+                // special - if value is 0, make sure input is not 00000...)
+                if (result == 0)
+                {
+                    value = "0";
+                }
+                // if not 0, trim zeroes from the start
+                else if (value.StartsWith('0'))
+                {
+                    value = value.TrimStart('0');
+                }
+
+                // set value
+                newValue = result;
+                baseValue = value;
+                return true;
+            }
+
+            // could not parse the value
+            newValue = default;
+            baseValue = default!;
+            return false;
         }
     }
 }
