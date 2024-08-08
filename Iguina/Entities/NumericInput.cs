@@ -137,6 +137,11 @@ namespace Iguina.Entities
         public char DecimalSeparator => CultureInfo.NumberFormat.NumberDecimalSeparator[0];
 
         /// <summary>
+        /// Return the character used as the negative sign.
+        /// </summary>
+        public char NegativeSign => CultureInfo.NumberFormat.NegativeSign[0];
+
+        /// <summary>
         /// If true, this numeric input accepts a decimal point.
         /// If false it will not support it.
         /// </summary>
@@ -261,7 +266,7 @@ namespace Iguina.Entities
             }
 
             // special case: if the only input is - it might be the begining of a negative number, so we allow it
-            if ((MinValue == null || MinValue.Value < 0) && (value == "-"))
+            if ((MinValue == null || MinValue.Value < 0) && (value.Length == 1 && value[0] == NegativeSign))
             {
                 baseValue = value;
                 newValue = null;
@@ -289,7 +294,9 @@ namespace Iguina.Entities
                 if (result == 0)
                 {
                     // unless the input is possibly trying to type a 0-leading decimal 
-                    if (value != "0" + DecimalSeparator && value != "-0" && value != "-0" + DecimalSeparator)
+                    if (value != "0" + DecimalSeparator && // 0.
+                        value != NegativeSign + "0" &&  // -0
+                        value != NegativeSign + "0" + DecimalSeparator) // -0.
                     {
                         value = "0";
                     }
