@@ -1,4 +1,4 @@
-﻿#define ALT_VERSION
+﻿//#define ALT_VERSION
 
 using Iguina.Defs;
 using System.Globalization;
@@ -107,14 +107,14 @@ namespace Iguina.Entities
                     if (result < MinValue)
                     {
                         result = MinValue.Value;
-                        value = result.ToString();
+                        value = result.ToString(CultureInfo);
                     }
 
                     // check max value
                     if (result > MaxValue)
                     {
                         result = MaxValue.Value;
-                        value = result.ToString();
+                        value = result.ToString(CultureInfo);
                     }
 
                     // normalize inputs that begin with zero
