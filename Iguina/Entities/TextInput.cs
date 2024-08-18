@@ -34,6 +34,11 @@ namespace Iguina.Entities
                 if (value != _value)
                 {
                     _value = value;
+                    
+                    // Make sure the caret doesn't overflow if, for example, the value is being directly manipulated while the user is typing (e.g. NumericInput)
+                    if (_caretOffset > Value.Length)
+                        _caretOffset = Value.Length + 1;
+                    
                     Events.OnValueChanged?.Invoke(this);
                     UISystem.Events.OnValueChanged?.Invoke(this);
                 }
@@ -356,6 +361,7 @@ namespace Iguina.Entities
         /// </summary>
         void UpdateCachedCaretValues()
         {
+            CaretOffset = CaretOffset; // to make sure caret is within valid range
             _valueBeforeCaret = Value.Substring(0, CaretOffset);
             _valueAfterCaret = Value.Substring(CaretOffset);
             _caretOffsetInLine = _caretOffset - Math.Max(0, Value.Substring(0, _caretOffset).LastIndexOf('\n') + 1);
@@ -364,7 +370,7 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         protected override int CalculateMaxScrollbarValue()
         {
-            return Math.Max(1, (_valueParagraph.LastBoundingRect.Height + _valueParagraph?.StyleSheet?.Default?.FontSize ?? 20) - LastInternalBoundingRect.Height);
+            return Math.Max(1, (_valueParagraph.LastBoundingRect.Height + _valueParagraph?.StyleSheet.Default?.FontSize ?? 20) - LastInternalBoundingRect.Height);
         }
 
         /// <summary>

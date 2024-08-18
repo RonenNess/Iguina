@@ -40,7 +40,7 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="text">Checkbox text.</param>
-        public Checkbox(UISystem system, string text = "New Button") : this(system, system.DefaultStylesheets.CheckBoxes, text)
+        public Checkbox(UISystem system, string text = "New Checkbox") : this(system, system.DefaultStylesheets.CheckBoxes, text)
         {
         }
 
