@@ -361,6 +361,7 @@ namespace Iguina.Entities
         /// </summary>
         void UpdateCachedCaretValues()
         {
+            CaretOffset = CaretOffset; // to make sure caret is within valid range
             _valueBeforeCaret = Value.Substring(0, CaretOffset);
             _valueAfterCaret = Value.Substring(CaretOffset);
             _caretOffsetInLine = _caretOffset - Math.Max(0, Value.Substring(0, _caretOffset).LastIndexOf('\n') + 1);

@@ -1,6 +1,4 @@
-﻿//#define ALT_VERSION
-
-using Iguina.Defs;
+﻿using Iguina.Defs;
 using System.Globalization;
 
 
@@ -30,139 +28,18 @@ namespace Iguina.Entities
         /// </summary>
         public decimal ButtonsStepSize = 1;
 
-        /// <summary>
-        /// If true, and the user enter only a decimal point or minus and decimal point, it will convert to 0. or -0.
-        /// </summary>
-        public bool FixPrefixDecimalSeparator = true;
-
         /// <inheritdoc/>
         public override string Value
         {
             get => base.Value;
             set
             {
-#if ALT_VERSION
                 if (TryParseValue(value, out decimal? newValue, out string baseValue))
                 {
                     _valueFloat = newValue;
                     base.Value = baseValue;
                 }
-
                 // If failed to parse, don't change current valid value!
-#else
-                
-                // decimal point character
-                var decChar = DecimalSeparator;
-
-                // remove decimal if not accepted
-                if (!AcceptsDecimal)
-                {
-                    value = value.Split(decChar)[0];
-                }
-
-                // trim
-                value = value.Trim();
-
-                // fix input starting with '.' or '-.'
-                if (FixPrefixDecimalSeparator && (value.Length > 0))
-                {
-                    if (value[0] == decChar) 
-                    { 
-                        value = "0" + value;
-                        _caretOffset += 1;
-                    }
-                    else if (value.StartsWith("-" + decChar)) 
-                    { 
-                        value = "-0" + value.Substring(1);
-                        _caretOffset += 2;
-                    }
-                }
-
-                // if ending with minus but already have characters, remove the trailing -
-                if (value.Length > 1 && value.EndsWith('-'))
-                {
-                    value = value.TrimEnd('-');
-                }
-
-                // if empty or a single decimal separator, stop here and set to empty
-                if ((value.Length == 0) || (value.Length == 1 && value[0] == decChar))
-                {
-                    base.Value = string.Empty;
-                    _valueFloat = null;
-                    return;
-                }
-
-                // special case: if the only input is - it might be the begining of a negative number, so we allow it
-                if ((MinValue == null || MinValue.Value < 0) && (value == "-"))
-                {
-                    base.Value = value;
-                    _valueFloat = null;
-                    return;
-                }
-
-                // set float value and base value
-                if (decimal.TryParse(value, CultureInfo, out decimal result))
-                {
-                    // check min value
-                    if (result < MinValue)
-                    {
-                        result = MinValue.Value;
-                        value = result.ToString(CultureInfo);
-                    }
-
-                    // check max value
-                    if (result > MaxValue)
-                    {
-                        result = MaxValue.Value;
-                        value = result.ToString(CultureInfo);
-                    }
-
-                    // normalize inputs that begin with zero
-                    {
-                        if (value.StartsWith($"0{decChar}"))
-                        {
-                            value = '0' + value.TrimStart('0');
-                        }
-                        else
-                        {
-                            // special - if value is 0, make sure input is not 00000...)
-                            if (result == 0 && !value.StartsWith('-'))
-                            {
-                                value = "0";
-                            }
-                            // if not 0, trim zeroes from the start
-                            else if (value.StartsWith('0'))
-                            {
-                                value = value.TrimStart('0');
-                            }
-                        }
-                    }
-
-                    // normalize inputs that begin with -0
-                    if (value.StartsWith("-0") && (value.Length > 2) && value[2] != decChar)
-                    {
-                        value = '-' + value.Substring(1).Trim('0');
-                    }
-
-                    // normalize inputs that begin with -.
-                    if (value.StartsWith($"-{decChar}"))
-                    {
-                        value = "-0" + value.Substring(1);
-                    }
-
-                    // if value starts with . add 0
-                    if (value.StartsWith(decChar)) 
-                    { 
-                        value = '0' + value; 
-                    }
-
-                    // set value
-                    _valueFloat = result;
-                    base.Value = value;
-                }
-
-                // failed to parse? don't change value!
-#endif
             }
         }
 
@@ -366,20 +243,30 @@ namespace Iguina.Entities
             return base.GetInputMaxWidth() - (_plusButton != null ? _plusButton.LastBoundingRect.Width : 0);
         }
         
-#if ALT_VERSION
         /// <summary>
         /// Try to parse the given value according to our numeric logic.
         /// Succeeds if the given value is recognized and returns the actual decimal value and the base value to store. 
         /// </summary>
         /// <param name="value">The given input value, possibly misformatted</param>
-        /// <param name="newValue">The succcessfully-parsed value to store</param>
+        /// <param name="newValue">The successfully-parsed value to store</param>
         /// <param name="baseValue">Underlying base value that should be set on success, which may differ from input</param>
         bool TryParseValue(string value, out decimal? newValue, out string baseValue)
         {
             // remove decimal if not accepted
             if (!AcceptsDecimal)
             {
-                value = value.Split(DecimalSeparator)[0];
+                value = value.Replace(DecimalSeparator.ToString(), "");
+            }
+
+            // parsing the following 'x,y' will work with culture that has . as decimal point, but it will treat it as number grouping and return xy.
+            // ie the following: 2,5 will be 25 and not 2.5, when culture has . as decimal point.
+            // check against it
+            var groupsSeparator = CultureInfo.NumberFormat.NumberGroupSeparator[0];
+            if ((DecimalSeparator != groupsSeparator) && (value.Contains(groupsSeparator)))
+            {
+                baseValue = string.Empty;
+                newValue = null;
+                return false;
             }
 
             // trim
@@ -411,7 +298,7 @@ namespace Iguina.Entities
                 return true;
             }
             
-            // special case: if the only input is - it might be the begining of a negative number, so we allow it
+            // special case: if the only input is - it might be the beginning of a negative number, so we allow it
             if ((MinValue == null || MinValue.Value < 0) && (value.Length == 1 && value[0] == NegativeSign))
             {
                 baseValue = value;
@@ -510,6 +397,5 @@ namespace Iguina.Entities
             baseValue = default!;
             return false;
         }
-#endif
     }
 }

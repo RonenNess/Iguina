@@ -2,7 +2,6 @@
 using Iguina.Entities;
 using System.Diagnostics;
 using System.Globalization;
-using static System.Net.Mime.MediaTypeNames;
 
 
 namespace Iguina.Demo
@@ -711,10 +710,9 @@ Use the scrollbar on the right to see more of it."));
                         textInput.Size.X = new Measurement() { Units = MeasureUnit.PercentOfParent, Value = 80f };
                         textInput.CultureInfo = CultureInfo.GetCultureInfo(cultureName);
                         textInput.DefaultValue = (decimal)5.67f;
-                        //textInput.NumericValue = (decimal)1.23f;
-                        var label = panel.AddChild(new Paragraph(_system, $" ({cultureName})"));
+                        var label = panel.AddChild(new Paragraph(_system, $"\n ({cultureName})"));
                         label.Anchor = Anchor.AutoInlineLTR;
-                        panel.AddChild(new RowsSpacer(_system));
+                        panel.AddChild(new RowsSpacer(_system, 2));
                     }
                 }
             }
