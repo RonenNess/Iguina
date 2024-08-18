@@ -1357,7 +1357,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added the ability to set `ColorSlider` and `ColorPicker` values from a given color.
 - Added the `IColorPicker` interface.
 
-## 1.0.13 [WIP]
+## 1.0.13
 
 - Fixed a bug with `NumericInput` having wrong value during the `OnChange` event call.
 - Fixed a bug with `NumericInput` not being able to accept values that start with '0.'.
