@@ -1364,6 +1364,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - General improvements to `NumericInput` input normalization.
 - Added identifiers to message box generated entities.
 - Fixed issue that some panels flicker when they appear for the first time for a single frame.
+- Added some unit tests.
 
 
 # License
