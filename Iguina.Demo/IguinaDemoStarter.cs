@@ -26,6 +26,14 @@ namespace Iguina.Demo
             _system = new UISystem(Path.Combine(uiThemeFolder, "system_style.json"), renderer, input);
             _system.DebugRenderEntities = false;
 
+            // add custom resolver for MeasureVector in Morpheus
+            Morpheus.ObjectsInterpolation.RegisterResolver(typeof(MeasureVector), (object a, object b, float t, Morpheus.InterpolateMethod method) =>
+            {
+                var am = (MeasureVector)a;
+                var bm = (MeasureVector)b;
+                return MeasureVector.FromPixels((int)method(am.X.Value, bm.X.Value, t), (int)method(am.Y.Value, bm.Y.Value, t));
+            });
+
             // load some alt stylesheets that are not loaded by default from the system stylesheet
             var hProgressBarAltStyle = StyleSheet.LoadFromJsonFile(Path.Combine(uiThemeFolder, "Styles", "progress_bar_horizontal_alt.json"));
             var hProgressBarAltFillStyle = StyleSheet.LoadFromJsonFile(Path.Combine(uiThemeFolder, "Styles", "progress_bar_horizontal_alt_fill.json"));
@@ -762,6 +770,28 @@ If you want to just lock items without rendering them with 'disabled' style, you
                 listbox.Size.Y.SetPixels(140);
                 listbox.Enabled = false;
             }
+
+            // animations
+            {
+                var panel = CreateDemoContainer("Animations", new Point(780, 1));
+                panel.AddChild(new Paragraph(_system, @"In addition to Iguina's built-in animations, you can effortlessly integrate external animation libraries to bring your GUI to life.
+
+In this demo, we'll use the ${FC:00FFFF}Morpheus${RESET} animation library to enhance this panel with bouncy transitions."));
+
+                panel.AddChild(new Button(_system, "Animate Panel")).Events.OnClick = (Entity entity) =>
+                {
+                    entity.Enabled = false;
+                    Morpheus.Morpheus.Animate(panel)
+                        .Property("Offset")
+                            .From(panel.Offset)
+                            .To(MeasureVector.FromPixels(0, panel.Offset.Y.Value > 0 ? -200 : 200), Morpheus.Interpolation.BounceEaseOut)
+                            .For(TimeSpan.FromSeconds(1f))
+                            .Then(() => entity.Enabled = true)
+                        .Start();
+                };
+
+                panel.AddChild(new RowsSpacer(_system));
+            }
         }
 
         /// <summary>
@@ -770,6 +800,7 @@ If you want to just lock items without rendering them with 'disabled' style, you
         public void Update(float deltaTime)
         {
             _system.Update(deltaTime);
+            Morpheus.Morpheus.Update(deltaTime);
         }
 
         /// <summary>

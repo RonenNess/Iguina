@@ -1366,6 +1366,10 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Fixed issue that some panels flicker when they appear for the first time for a single frame.
 - Added some unit tests.
 
+## 1.0.14 [WIP]
+
+- Added `MeasureVector.FromPixels` and `MeasureVector.FromPercents` methods.
+- Added demo example with external animations (Morpheus).
 
 # License
 

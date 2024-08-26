@@ -1,6 +1,6 @@
 ﻿using Iguina.Defs;
 using Iguina.Utils;
-using System.Runtime.CompilerServices;
+
 
 namespace Iguina.Entities
 {
