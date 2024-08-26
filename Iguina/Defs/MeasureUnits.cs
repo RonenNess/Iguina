@@ -64,7 +64,27 @@ namespace Iguina.Defs
         /// Measure unit on Y axis.
         /// </summary>
         public Measurement Y;
-    
+
+        /// <summary>
+        /// Create and return measure vector with pixel values.
+        /// </summary>
+        public static MeasureVector FromPixels(int x, int y)
+        {
+            var ret = new MeasureVector();
+            ret.SetPixels(x, y);
+            return ret;
+        }
+
+        /// <summary>
+        /// Create and return measure vector with float values.
+        /// </summary>
+        public static MeasureVector FromPercents(float x, float y)
+        {
+            var ret = new MeasureVector();
+            ret.SetPercents(x, y);
+            return ret;
+        }
+
         /// <summary>
         /// Set value as pixels.
         /// </summary>
