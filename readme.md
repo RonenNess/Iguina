@@ -1370,6 +1370,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 
 - Added `MeasureVector.FromPixels` and `MeasureVector.FromPercents` methods.
 - Added demo example with external animations (Morpheus).
+- Added `ShowInfoMessageBox` to message box utility.
 
 # License
 

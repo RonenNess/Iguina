@@ -224,5 +224,22 @@ namespace Iguina.Utils
                 new MessageBoxButtons(cancelText, onCancel)
             }, options);
         }
+
+        /// <summary>
+        /// Show a message box with just OK button.
+        /// </summary>
+        /// <param name="title">Message box title.</param>
+        /// <param name="text">Message box text.</param>
+        /// <param name="onConfirm">Action for confirmation.</param>
+        /// <param name="buttonText">Text to show on confirm button.</param>
+        /// <param name="options">Message box options, or null to use defaults.</param>
+        /// <returns>Newly created message box handle.</returns>
+        public MessageBoxHandle ShowInfoMessageBox(string title, string text, Action? onConfirm = null, string buttonText = "OK", MessageBoxOptions? options = null)
+        {
+            return ShowMessageBox(title, text, new MessageBoxButtons[]
+            {
+                new MessageBoxButtons(buttonText, onConfirm)
+            }, options);
+        }
     }
 }
