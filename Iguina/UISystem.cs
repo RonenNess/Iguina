@@ -2,6 +2,7 @@
 using Iguina.Drivers;
 using Iguina.Entities;
 using Iguina.Utils;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 
@@ -131,6 +132,9 @@ namespace Iguina
         /// <remarks>This property is especially important when there's interpolation on texture change, and switching to interactive state is not immediate.</remarks>
         internal float TimeToLockInteractiveState => SystemStyleSheet.TimeToLockInteractiveState;
 
+        // actions to perform next update call
+        ConcurrentBag<Action> _actionsToPerformNextUpdate = new();
+
         /// <summary>
         /// Create the UI system, with stylesheet, renderer and input manager provided by the host application.
         /// </summary>
@@ -229,6 +233,15 @@ namespace Iguina
         }
 
         /// <summary>
+        /// Add an action to call at the beginning of the next update call, on the UI thread.
+        /// </summary>
+        /// <param name="callback">Callback to execute.</param>
+        public void InvokeOnUIThread(Action callback)
+        {
+            _actionsToPerformNextUpdate.Add(callback);
+        }
+
+        /// <summary>
         /// Perform UI updates.
         /// Must be called every update frame in your game main loop.
         /// </summary>
@@ -242,6 +255,12 @@ namespace Iguina
             // set root to cover entire screen
             var screenBounds = Renderer.GetScreenBounds();
             Root.Size.SetPixels(screenBounds.Width, screenBounds.Height);
+
+            // run methods to execute on update
+            while (_actionsToPerformNextUpdate.TryTake(out Action? cb))
+            {
+                cb?.Invoke();
+            }
 
             // update all entities
             Root._DoUpdate(deltaTime);

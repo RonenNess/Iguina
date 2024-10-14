@@ -1372,6 +1372,10 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added demo example with external animations (Morpheus).
 - Added `ShowInfoMessageBox` to message box utility.
 
+## 1.0.15 [WIP]
+
+- Added `InvokeOnUIThread` to handle concurrency properly.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 
