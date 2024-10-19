@@ -115,9 +115,12 @@ namespace Iguina.Entities
             base.DoFocusedEntityInteractions(inputState);
 
             // implement click via keyboard
-            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.Select)
+            if (ToggleCheckOnClick)
             {
-                ToggleCheckedState();
+                if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.Select)
+                {
+                    ToggleCheckedState();
+                }
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using Iguina.Defs;
-using Iguina.Drivers;
 using Iguina.Utils;
 using System.Numerics;
 
@@ -367,15 +366,18 @@ namespace Iguina.Entities
         /// <summary>
         /// If true, it means this entity is currently being pressed.
         /// </summary>
-        public bool IsBeingPressed => _wasMouseDownLastInteraction && IsTargeted;
+        public bool IsBeingPressed => (_wasMouseDownLastInteraction && IsTargeted) || _isPressedByKeyboard;
 
         /// <summary>
         /// Return if this entity is being targeted right now.
         /// </summary>
         public bool IsTargeted => UISystem.TargetedEntity == this;
 
-        // true if last time the mouse pointed on this entity, left mouse button was down
+        // true if last time the mouse pointed on this entity, left mouse button was down.
         bool _wasMouseDownLastInteraction;
+
+        // true if this entity is focused and select key is down.
+        bool _isPressedByKeyboard;
 
         /// <summary>
         /// Result of drawing method.
@@ -1450,13 +1452,12 @@ namespace Iguina.Entities
         internal virtual void DoFocusedEntityInteractions(InputState inputState)
         {
             // update is being pressed
-            _wasMouseDownLastInteraction = _wasMouseDownLastInteraction || inputState.IsKeyboardSelectPressedDown;
+            _isPressedByKeyboard = inputState.IsKeyboardSelectPressedDown;
 
             // implement click via keyboard
             if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.Select)
             {
                 Events.OnClick?.Invoke(this);
-                _timeToRemainInteractedState = 0.25f;;
             }
         }
 
@@ -1732,6 +1733,9 @@ namespace Iguina.Entities
         internal void _DoUpdate(float dt)
         {
             PreFrameUpdates();
+
+            // if not focused reset _isPressedByKeyboard flag
+            if (_isPressedByKeyboard && !IsFocused) { _isPressedByKeyboard = false; }
 
             // reduce time to be locked in interacted state
             if (_timeToRemainInteractedState > 0f)
