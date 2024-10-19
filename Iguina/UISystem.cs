@@ -324,7 +324,7 @@ namespace Iguina
 
             // check if should lock target entity
             bool keepTargetEntity = (TargetedEntity != null) ? 
-                (TargetedEntity.LockFocusOnSelf && TargetedEntity.IsCurrentlyVisible() && !TargetedEntity.IsCurrentlyLocked() && !TargetedEntity.IsCurrentlyDisabled()) 
+                (TargetedEntity.LockTargetedEntityOnSelf && TargetedEntity.IsCurrentlyVisible() && !TargetedEntity.IsCurrentlyLocked() && !TargetedEntity.IsCurrentlyDisabled()) 
                 : false;
 
             // also lock target if mouse is held down and target entity is set to lock focus while mouse is down
@@ -441,10 +441,15 @@ namespace Iguina
                     }
                 }
             }
-
-            // if we have focused entity that is disabled / locked / invisible, remove it
+            
+            // pass focus to other entity if needed, and also if focused entity is disabled / locked / invisible, remove focused
             if (FocusedEntity != null)
             {
+                while (FocusedEntity.PassFocusTo != null)
+                {
+                    FocusedEntity = FocusedEntity.PassFocusTo;
+                }
+
                 if (!FocusedEntity.IsCurrentlyVisible() || FocusedEntity.IsCurrentlyDisabled() || FocusedEntity.IsCurrentlyLocked() || !FocusedEntity.Interactable)
                 {
                     FocusedEntity = null;

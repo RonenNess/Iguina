@@ -26,6 +26,11 @@ namespace Iguina.Entities
         internal bool IsAutoAnchor => ((int)Anchor >= (int)Anchor.AutoLTR) && ((int)Anchor <= (int)Anchor.AutoCenter);
 
         /// <summary>
+        /// If set and this entity is focused, it will pass focus to the entity set as 'PassFocusTo'.
+        /// </summary>
+        internal Entity? PassFocusTo;
+
+        /// <summary>
         /// Entity offset, based on its anchor in parent entity.
         /// </summary>
         public MeasureVector Offset;
@@ -58,7 +63,7 @@ namespace Iguina.Entities
         /// <summary>
         /// If true, once this entity becomes the active target it will lock itself as active until this flag turns false.
         /// </summary>
-        internal virtual bool LockFocusOnSelf => false;
+        internal virtual bool LockTargetedEntityOnSelf => false;
 
         // for dragging
         Point? _draggedPosition;

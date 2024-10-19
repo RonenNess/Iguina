@@ -219,6 +219,7 @@ namespace Iguina.Entities
                 var p = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
                 p.TextOverflowMode = TextOverflowMode.Overflow;
                 p.ShrinkWidthToMinimalSize = false;
+                p.PassFocusTo = this;
                 p._overrideInteractableState = true;
                 p.Size.X.SetPercents(100f);
 

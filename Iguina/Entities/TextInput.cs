@@ -82,7 +82,7 @@ namespace Iguina.Entities
         internal override bool Interactable => true;
 
         /// <inheritdoc/>
-        internal override bool LockFocusOnSelf => _lockSelf;
+        internal override bool LockTargetedEntityOnSelf => _lockSelf;
         internal bool _lockSelf = true;
 
         /// <summary>
