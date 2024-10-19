@@ -280,6 +280,11 @@ namespace Iguina.Entities
         internal EntityState? LockedState;
 
         /// <summary>
+        /// Return true if this entity is currently focused.
+        /// </summary>
+        public bool IsFocused => UISystem?.FocusedEntity == this;
+
+        /// <summary>
         /// Current entity state.
         /// </summary>
         public EntityState State
@@ -337,7 +342,7 @@ namespace Iguina.Entities
                     _stateCached = _isChecked ? EntityState.TargetedChecked : EntityState.Targeted;
                 }
                 // focused state
-                else if (!_isChecked && IsFocused())
+                else if (!_isChecked && IsFocused)
                 {
                     _stateCached = EntityState.Focused;
                 }
@@ -454,15 +459,6 @@ namespace Iguina.Entities
         public void ResetDraggedOffset()
         {
             _draggedPosition = null;
-        }
-
-        /// <summary>
-        /// Return true if this entity is currently focused.
-        /// </summary>
-        /// <returns>True if this entity is focused.</returns>
-        public bool IsFocused()
-        {
-            return UISystem?.FocusedEntity == this;
         }
 
         /// <summary>
@@ -1087,7 +1083,7 @@ namespace Iguina.Entities
             UISystem.Events.AfterDraw?.Invoke(this);
 
             // draw focused entity overlay
-            if (IsFocused())
+            if (IsFocused)
             {
                 var framedTexture = UISystem.SystemStyleSheet.FocusedEntityOverlay;
                 if (framedTexture != null)
@@ -1453,10 +1449,14 @@ namespace Iguina.Entities
         /// <param name="inputState">Current input state.</param>
         internal virtual void DoFocusedEntityInteractions(InputState inputState)
         {
+            // update is being pressed
+            _wasMouseDownLastInteraction = _wasMouseDownLastInteraction || inputState.IsKeyboardSelectPressedDown;
+
             // implement click via keyboard
             if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.Select)
             {
                 Events.OnClick?.Invoke(this);
+                _timeToRemainInteractedState = 0.25f;;
             }
         }
 

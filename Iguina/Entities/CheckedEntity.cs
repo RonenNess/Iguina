@@ -78,6 +78,21 @@ namespace Iguina.Entities
         {
         }
 
+        /// <summary>
+        /// Toggle this entity checked state.
+        /// </summary>
+        public void ToggleCheckedState()
+        {
+            // disable unchecking
+            if (!CanClickToUncheck && Checked)
+            {
+                return;
+            }
+
+            // toggle checked mode
+            Checked = !Checked;
+        }
+
         /// <inheritdoc/>
         internal override void DoInteractions(InputState inputState)
         {
@@ -89,15 +104,20 @@ namespace Iguina.Entities
             {
                 if (inputState.LeftMouseReleasedNow)
                 {
-                    // disable unchecking
-                    if (!CanClickToUncheck && Checked)
-                    {
-                        return;
-                    }
-
-                    // toggle checked mode
-                    Checked = !Checked;
+                    ToggleCheckedState();
                 }
+            }
+        }
+
+        internal override void DoFocusedEntityInteractions(InputState inputState)
+        {
+            // call base class to trigger events
+            base.DoFocusedEntityInteractions(inputState);
+
+            // implement click via keyboard
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.Select)
+            {
+                ToggleCheckedState();
             }
         }
     }

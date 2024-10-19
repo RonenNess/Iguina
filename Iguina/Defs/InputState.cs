@@ -95,6 +95,11 @@ namespace Iguina.Defs
         public KeyboardInteractions? KeyboardInteraction => (_Current.KeyboardInteraction != _Previous.KeyboardInteraction) ? _Current.KeyboardInteraction : null;
 
         /// <summary>
+        /// Get if keyboard select button is currently held down.
+        /// </summary>
+        public bool IsKeyboardSelectPressedDown => _Current.KeyboardInteraction == KeyboardInteractions.Select;
+
+        /// <summary>
         /// Current screen bounds.
         /// </summary>
         public Rectangle ScreenBounds;
