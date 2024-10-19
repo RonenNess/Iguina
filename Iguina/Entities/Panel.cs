@@ -81,7 +81,7 @@ namespace Iguina.Entities
                     if (maxScrollbarHeight > 1)
                     {
                         VerticalScrollbar.MaxValue = maxScrollbarHeight;
-                        VerticalScrollbar.MouseWheelStep = -Math.Clamp(maxScrollbarHeight / 10, 1, 100);
+                        VerticalScrollbar.KeyboardStep = VerticalScrollbar.MouseWheelStep = -Math.Clamp(maxScrollbarHeight / 10, 1, 100);
                         VerticalScrollbar.Enabled = true;
                     }
                 }
@@ -172,7 +172,7 @@ namespace Iguina.Entities
             VerticalScrollbar.Value = 0;
             VerticalScrollbar.MaxValue = 0;
             VerticalScrollbar.FlippedDirection = true;
-            VerticalScrollbar.MouseWheelStep = -1;
+            VerticalScrollbar.KeyboardStep = VerticalScrollbar.MouseWheelStep = -1;
             VerticalScrollbar.IgnoreScrollOffset = true;
             _autoSetScrollbarMax = autoSetScrollbarMax;
             AddChildInternal(VerticalScrollbar, true);
