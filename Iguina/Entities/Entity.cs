@@ -596,6 +596,9 @@ namespace Iguina.Entities
             if (child.Parent != null) { throw new Exception("Entity to add as child already have a parent entity! Remove it first."); }
             if (child.UISystem != UISystem) { throw new Exception("Entity to add belongs to a different UI system!"); }
 
+            // validate thread id
+            UISystem.ValidateThreadId();
+
             // if children list is locked, add later
             if (_childrenListLocked > 0)
             {
@@ -628,6 +631,9 @@ namespace Iguina.Entities
         public void RemoveChild(Entity child)
         {
             if (child.Parent != this) { throw new Exception("Entity to remove is not a child of this parent entity!"); }
+
+            // validate thread id
+            UISystem.ValidateThreadId();
 
             // if children list is locked, remove later
             if (_childrenListLocked > 0)

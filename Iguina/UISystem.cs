@@ -3,6 +3,7 @@ using Iguina.Drivers;
 using Iguina.Entities;
 using Iguina.Utils;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.Json;
 
 
@@ -135,6 +136,16 @@ namespace Iguina
         // actions to perform next update call
         ConcurrentBag<Action> _actionsToPerformNextUpdate = new();
 
+        // store the thread id the UI system was created on
+        int _ownerThreadId;
+
+        /// <summary>
+        /// If true and the UI system detect access from multiple threads, will assert in debug mode.
+        /// If false will not validate thread ids at all.
+        /// Regardless of this setting, will not assert in release mode.
+        /// </summary>
+        public bool ValidateThreadSafety = true;
+
         /// <summary>
         /// Create the UI system, with stylesheet, renderer and input manager provided by the host application.
         /// </summary>
@@ -144,7 +155,8 @@ namespace Iguina
         /// <param name="styleSheetFilePath">UI System stylesheet file path.</param>
         /// <param name="renderer">Renderer provider, to draw UI elements.</param>
         /// <param name="input">Input provider, to get mouse-like and keyboard input.</param>
-        public UISystem(string styleSheetFilePath, IRenderer renderer, IInputProvider input) : this(renderer, input)
+        public UISystem(string styleSheetFilePath, IRenderer renderer, IInputProvider input) 
+            : this(renderer, input)
         {
             try
             {
@@ -171,7 +183,8 @@ namespace Iguina
         /// <param name="stylesheetsFolder">If the UI stylesheet loads any additional stylesheet files, this will be the folder to load them from. If null, will use current working dir.</param>
         /// <param name="renderer">Renderer provider, to draw UI elements.</param>
         /// <param name="input">Input provider, to get mouse-like and keyboard input.</param>
-        public UISystem(SystemStyleSheet styleSheet, string? stylesheetsFolder, IRenderer renderer, IInputProvider input) : this(renderer, input)
+        public UISystem(SystemStyleSheet styleSheet, string? stylesheetsFolder, IRenderer renderer, IInputProvider input) 
+            : this(renderer, input)
         {
             SystemStyleSheet = styleSheet;
             if (SystemStyleSheet.LoadDefaultStylesheets != null)
@@ -197,8 +210,23 @@ namespace Iguina
             // create root entity
             Root = new Panel(this, new StyleSheet()) { Identifier = "Root" };
 
+            // get owner thread id
+            _ownerThreadId = Thread.CurrentThread.ManagedThreadId;
+
             // create message box utils
             MessageBoxes = new MessageBoxUtils(this);
+        }
+
+        /// <summary>
+        /// Validate current thread id is the same thread that created the UI system.
+        /// If false, raise assert in debug mode.
+        /// </summary>
+        internal void ValidateThreadId()
+        {
+            if (ValidateThreadSafety)
+            {
+                Debug.Assert(_ownerThreadId == Thread.CurrentThread.ManagedThreadId, "Iguina detected multi-thread access! To use the UI system from multiple threads, please use 'InvokeOnUIThread' (or if you sync threads yourself and think this validation is not needed, set 'ValidateThreadSafety' to false).");
+            }
         }
 
         /// <summary>
@@ -248,6 +276,9 @@ namespace Iguina
         /// <param name="deltaTime">Delta time, since last update call, in seconds.</param>
         public void Update(float deltaTime)
         {
+            // validate thread id
+            ValidateThreadId();
+
             // update elapsed time
             LastDeltaTime = deltaTime;
             ElapsedTime += deltaTime;
@@ -401,6 +432,9 @@ namespace Iguina
         /// </remarks>
         public void Draw()
         {
+            // validate thread id
+            ValidateThreadId();
+
             // reset scissors queue
             _scissorRegionQueue.Clear();
             Renderer.ClearScissorRegion();

@@ -850,6 +850,14 @@ Does not affect the default operation system cursor, its up to you to hide / sho
 A utility to generate message boxes.
 This is just an instance of the `MessageBoxUtils` utility for this system.
 
+### `InvokeOnUIThread`
+
+`Iguina` is not thread safe, which means if you work with multiple threads / async calls and try to change entities from a different thread, unexpected behavior may occur.
+
+To solve this, you can use `InvokeOnUIThread` and provide a callback to trigger on the next update call of the UI system, which will execute from the same thread that manage the UI.
+
+When you use `InvokeOnUIThread` you are guaranteed that nothing will break due to multi threading.  
+
 # Iguina UI Entities
 
 Now its time to add UI Entities and actually start building your UI!

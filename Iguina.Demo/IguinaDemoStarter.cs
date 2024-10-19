@@ -728,13 +728,24 @@ Use the scrollbar on the right to see more of it."));
             // message boxes
             {
                 var panel = CreateDemoContainer("Message Boxes", new Point(780, 1));
-                panel.AddChild(new Paragraph(_system, @"Message boxes are useful to get quick input from the user. Iguina comes with a utility to quickly generate common message boxes.
+                panel.AddChild(new Paragraph(_system, @"Message boxes are useful to get quick input from the user. Iguina comes with a utility to generate common message boxes.
 
-Click below to see an example."));
+Click below to see some examples."));
 
-                panel.AddChild(new Button(_system, "Show Message Box")).Events.OnClick = (Entity entity) =>
+                panel.AddChild(new Button(_system, "Show Info Message Box")).Events.OnClick = (Entity entity) =>
                 {
-                    _system.MessageBoxes.ShowConfirmMessageBox("Hi There!", 
+                    _system.MessageBoxes.ShowInfoMessageBox("Info Message Box",
+                        @"This is an info message box with just a confirm button.
+
+Note that message boxes can have their own stylesheets, and you can set their defaults per-system.
+
+This specific message box won't do much.
+You can just close it.");
+                };
+
+                panel.AddChild(new Button(_system, "Show Confirmation Message Box")).Events.OnClick = (Entity entity) =>
+                {
+                    _system.MessageBoxes.ShowConfirmMessageBox("Confirmation Message Box", 
                         @"This is a simple message box with just confirm / cancel options.
 
 Note that message boxes can have their own stylesheets, and you can set their defaults per-system.
