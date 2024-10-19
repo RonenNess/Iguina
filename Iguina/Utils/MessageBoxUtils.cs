@@ -300,7 +300,10 @@ namespace Iguina.Utils
             // create entity to show full path
             Paragraph fullPathLabel = new Paragraph(_uiSystem);
             fullPathLabel.Visible = fileDialogOptions.HasFlag(FileDialogOptions.ShowFullPath);
-            
+
+            // selected file name
+            TextInput selectedFilename = new TextInput(_uiSystem);
+
             // rebuild files list
             void RebuildFilesList()
             {
@@ -394,11 +397,15 @@ namespace Iguina.Utils
                     RebuildFilesList();
                     return;
                 }
+
+                // set selected file
+                selectedFilename.Value = filesList.SelectedText ?? selectedFilename.Value;
             };
 
             // add files list to message box
             ret.ContentContainer.AddChild(fullPathLabel);
             ret.ContentContainer.AddChild(filesList);
+            ret.ContentContainer.AddChild(selectedFilename);
 
             // return message box handle
             return ret;

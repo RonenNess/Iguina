@@ -1402,6 +1402,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Made list paragraphs propagate mouse events to parent list, so list mouse events can be properly used. 
 - Added basic keyboard interactions with focused entity.
 - Added method to set list scrollbar offset to selected item.
+- Added `SelectedTextWithIcon` to `ListBox` and changed `SelectedText` to not include icons data.
 - Updated dependencies.
 
 # License

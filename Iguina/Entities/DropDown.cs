@@ -291,7 +291,7 @@ namespace Iguina.Entities
         internal override void PostUpdate(InputState inputState)
         {
             // update selected value text
-            _selectedValueParagraph.Text = OverrideSelectedText ?? SelectedText ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
+            _selectedValueParagraph.Text = OverrideSelectedText ?? SelectedTextWithIcon ?? SelectedValue ?? DefaultSelectedText ?? string.Empty;
             _selectedValueParagraph.UseEmptyValueTextColor = (SelectedValue == null);
 
             // set icon state

@@ -22,7 +22,12 @@ namespace Iguina.Entities
             /// List item label to show when rendering the list.
             /// If null, will use 'Value' instead.
             /// </summary>
-            public string? Label { get; internal set; }
+            public string? LabelWithIcon { get; internal set; }
+
+            /// <summary>
+            /// List item label text only, without icon codes.
+            /// </summary>
+            public string? LabelTextOnly { get; internal set; }
         }
 
         // list items
@@ -99,16 +104,26 @@ namespace Iguina.Entities
         string? _selectedValue;
 
         /// <summary>
-        /// Get selected item text.
-        /// Can be the item label, if a label is defined, or the value itself if not.
-        /// Will return null if no value is selected.
+        /// Get selected item text, without any icons.
         /// </summary>
         public string? SelectedText
         {
             get
             {
                 if (SelectedValue == null) { return null; }
-                return _items[SelectedIndex].Label ?? SelectedValue;
+                return _items[SelectedIndex].LabelTextOnly ?? SelectedValue;
+            }
+        }
+
+        /// <summary>
+        /// Get selected item text, with icons if any are set.
+        /// </summary>
+        public string? SelectedTextWithIcon
+        {
+            get
+            {
+                if (SelectedValue == null) { return null; }
+                return _items[SelectedIndex].LabelWithIcon ?? SelectedValue;
             }
         }
 
@@ -318,7 +333,7 @@ namespace Iguina.Entities
                 var paragraph = _paragraphs[i];
                 paragraph.Visible = true;
                 paragraph.UserData = item.Value;
-                paragraph.Text = item.Label ?? item.Value;
+                paragraph.Text = item.LabelWithIcon ?? item.Value;
                 bool selected = item.Value == SelectedValue;
                 paragraph.LockedState = selected ? EntityState.Checked : null;
                 OverrideItemStyleByValue.TryGetValue(item.Value, out var perItemStyleValue);
@@ -334,7 +349,7 @@ namespace Iguina.Entities
         /// <param name="index">Index to add this item to.</param>
         public void AddItem(string value, string? label = null, int? index = null)
         {
-            var item = new ListItem() { Value = value, Label = label };
+            var item = new ListItem() { Value = value, LabelWithIcon = label, LabelTextOnly = label };
             if (index.HasValue)
             {
                 _items.Insert(index.Value, item);
@@ -419,7 +434,7 @@ namespace Iguina.Entities
             {
                 _selectedValue = value;
             }
-            _items[index] = new ListItem() { Value = value, Label = label };
+            _items[index] = new ListItem() { Value = value, LabelTextOnly = label, LabelWithIcon = label };
         }
 
         /// <summary>
@@ -428,7 +443,6 @@ namespace Iguina.Entities
         /// <param name="valueToReplace">Value to replace.</param>
         /// <param name="value">Item unique value.</param>
         /// <param name="label">Item text to show (or null to show value instead).</param>
-        /// <param name="index">Index to add this item to.</param>
         public void ReplaceItem(string valueToReplace, string value, string? label = null)
         {
             var index = GetIndexOfValue(valueToReplace);
@@ -437,7 +451,7 @@ namespace Iguina.Entities
             {
                 _selectedValue = value;
             }
-            _items[index] = new ListItem() { Value = value, Label = label };
+            _items[index] = new ListItem() { Value = value, LabelTextOnly = label, LabelWithIcon = label };
         }
 
         /// <summary>
@@ -459,12 +473,19 @@ namespace Iguina.Entities
         /// <param name="iconUseTextColor">If true, icon will use the same tint color as the text.</param>
         public void SetItemLabel(string valueToSet, string label, IconTexture icon, bool iconUseTextColor)
         {
+            // set label + icon
             var iconWidth = icon.SourceRect.Width * icon.TextureScale;
             var tempParagraph = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
             var spaceWidth = tempParagraph.MeasureText(" ").X;
             var spacesCount = (int)(Math.Ceiling(iconWidth / spaceWidth) + 1);
             var iconUseTextureColorVal = iconUseTextColor ? "y" : "n";
             SetItemLabel(valueToSet, $"${{ICO:{icon.TextureId}|{icon.SourceRect.X}|{icon.SourceRect.Y}|{icon.SourceRect.Width}|{icon.SourceRect.Height}|{icon.TextureScale}|{iconUseTextureColorVal}}}" + new string(' ', spacesCount) + label);
+
+            // set just label text
+            var index = GetIndexOfValue(valueToSet);
+            var itemData = _items[index];
+            itemData.LabelTextOnly = label;
+            _items[index] = itemData;
         }
 
         /// <summary>
@@ -476,6 +497,12 @@ namespace Iguina.Entities
         public void SetItemLabel(string valueToSet, IconTexture icon, bool iconUseTextColor)
         {
             SetItemLabel(valueToSet, valueToSet, icon, iconUseTextColor);
+
+            // set just label text
+            var index = GetIndexOfValue(valueToSet);
+            var itemData = _items[index];
+            itemData.LabelTextOnly = valueToSet;
+            _items[index] = itemData;
         }
 
         /// <summary>
