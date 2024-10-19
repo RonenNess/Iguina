@@ -22,7 +22,7 @@
     },
     "FocusedEntityOverlay": {
 			"TextureId": "Textures/UI.png",
-			"InternalSourceRect": {"X": 178, "Y": 130, "Width": 29, "Height": 29},
+			"InternalSourceRect": {"X": 177, "Y": 129, "Width": 30, "Height": 30},
 			"ExternalSourceRect": {"X": 176, "Y": 128, "Width": 32, "Height": 32},
 			"TextureScale": 3
     },
