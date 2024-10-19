@@ -65,9 +65,9 @@ namespace Iguina.Demo.MonoGame
             var mouse =Mouse.GetState();
             switch (btn)
             {
-                case MouseButton.Left: return mouse.LeftButton ==ButtonState.Pressed;
-                case MouseButton.Right: return mouse.RightButton ==ButtonState.Pressed;
-                case MouseButton.Wheel: return mouse.MiddleButton ==ButtonState.Pressed;
+                case MouseButton.Left: return mouse.LeftButton == ButtonState.Pressed;
+                case MouseButton.Right: return mouse.RightButton == ButtonState.Pressed;
+                case MouseButton.Wheel: return mouse.MiddleButton == ButtonState.Pressed;
             }
             return false;
         }
@@ -207,5 +207,32 @@ namespace Iguina.Demo.MonoGame
            Keys.End,
            Keys.Home
         };
+
+        public KeyboardInteractions? GetKeyboardInteraction()
+        {
+            var keyboardState = Keyboard.GetState();
+
+            if (keyboardState.IsKeyDown(Keys.Left))
+            {
+                return KeyboardInteractions.MoveLeft;
+            }
+            if (keyboardState.IsKeyDown(Keys.Right))
+            {
+                return KeyboardInteractions.MoveRight;
+            }
+            if (keyboardState.IsKeyDown(Keys.Up))
+            {
+                return KeyboardInteractions.MoveUp;
+            }
+            if (keyboardState.IsKeyDown(Keys.Down))
+            {
+                return KeyboardInteractions.MoveDown;
+            }
+            if (keyboardState.IsKeyDown(Keys.Space) || keyboardState.IsKeyDown(Keys.Enter))
+            {
+                return KeyboardInteractions.Select;
+            }
+            return null;
+        }
     }
 }

@@ -131,6 +131,9 @@ namespace Iguina.Utils
             // get default options
             options = options ?? DefaultOptions;
 
+            // reset focused entity
+            _uiSystem.FocusedEntity = null;
+
             // create the message box backdrop
             Entity backdrop = null!;
             if (options.Value.AddBackdrop)

@@ -90,6 +90,11 @@ namespace Iguina.Defs
         public TextInputCommands[] TextInputCommands => _Current.TextInputCommands;
 
         /// <summary>
+        /// Get current keyboard interactions.
+        /// </summary>
+        public KeyboardInteractions? KeyboardInteraction => (_Current.KeyboardInteraction != _Previous.KeyboardInteraction) ? _Current.KeyboardInteraction : null;
+
+        /// <summary>
         /// Current screen bounds.
         /// </summary>
         public Rectangle ScreenBounds;
@@ -107,5 +112,6 @@ namespace Iguina.Defs
         public int MouseWheelChange;
         public int[] TextInput;
         public TextInputCommands[] TextInputCommands;
+        public KeyboardInteractions? KeyboardInteraction;
     }
 }

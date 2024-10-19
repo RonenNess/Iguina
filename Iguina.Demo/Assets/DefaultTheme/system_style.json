@@ -20,6 +20,12 @@
         "Scale": 3,
         "SourceRect": {"X": 0, "Y": 32, "Width": 16, "Height": 16}
     },
+    "FocusedEntityOverlay": {
+			"TextureId": "Textures/UI.png",
+			"InternalSourceRect": {"X": 178, "Y": 130, "Width": 29, "Height": 29},
+			"ExternalSourceRect": {"X": 176, "Y": 128, "Width": 32, "Height": 32},
+			"TextureScale": 3
+    },
 	"RowSpaceHeight": 14,
     "TextScale": 1,
     "CursorScale": 1,

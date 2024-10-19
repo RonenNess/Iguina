@@ -29,5 +29,10 @@ namespace Iguina.Tests
         {
             return [];
         }
+
+        public KeyboardInteractions? GetKeyboardInteraction()
+        {
+            return null;
+        }
     }
 }

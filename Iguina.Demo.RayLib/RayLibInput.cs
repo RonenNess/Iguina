@@ -114,5 +114,30 @@ namespace Iguina.Demo.RayLib
             Raylib_cs.KeyboardKey.End,
             Raylib_cs.KeyboardKey.Home
         };
+
+        public KeyboardInteractions? GetKeyboardInteraction()
+        {
+            if (Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Left))
+            {
+                return KeyboardInteractions.MoveLeft;
+            }
+            if (Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Right))
+            {
+                return KeyboardInteractions.MoveRight;
+            }
+            if (Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Up))
+            {
+                return KeyboardInteractions.MoveUp;
+            }
+            if (Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Down))
+            {
+                return KeyboardInteractions.MoveDown;
+            }
+            if (Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Space) || Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Enter))
+            {
+                return KeyboardInteractions.Select;
+            }
+            return null;
+        }
     }
 }

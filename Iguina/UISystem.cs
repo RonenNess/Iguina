@@ -40,6 +40,12 @@ namespace Iguina
         public bool ShowCursor = true;
 
         /// <summary>
+        /// If true, will auto-focus entities the user interacts with.
+        /// If false, entities will never be focused nor respond to keyboard interactions, unless you explicitly set the focused entity via code.
+        /// </summary>
+        public bool AutoFocusEntities = true;
+
+        /// <summary>
         /// Default stylesheets to use for different entity types when no stylesheet is provided.
         /// </summary>
         public class _DefaultStylesheets
@@ -94,6 +100,12 @@ namespace Iguina
         /// Currently-targeted entity (entity we point on with the cursor).
         /// </summary>
         public Entity? TargetedEntity { get; private set; }
+
+        /// <summary>
+        /// Currently focused entity, and the entity that will receive keyboard interactions.
+        /// Will be set to the last entity interacted with.
+        /// </summary>
+        public Entity? FocusedEntity { get; set; }
 
         /// <summary>
         /// System-level stylesheet.
@@ -383,7 +395,8 @@ namespace Iguina
                 WheelMouseButton = Input.IsMouseButtonDown(MouseButton.Wheel),
                 MouseWheelChange = Input.GetMouseWheelChange(),
                 TextInput = Input.GetTextInput(),
-                TextInputCommands = Input.GetTextInputCommands()
+                TextInputCommands = Input.GetTextInputCommands(),
+                KeyboardInteraction = Input.GetKeyboardInteraction()
             };
             var inputState = new InputState()
             {
@@ -398,16 +411,48 @@ namespace Iguina
             // unless its locked or disabled
             if (TargetedEntity != null)
             {
+                // pass interactions forward if needed to
                 if (TargetedEntity.TransferInteractionsTo != null)
                 {
                     TargetedEntity = TargetedEntity.TransferInteractionsTo;
                 }
 
+                // perform interactions and set focused entity
                 if (!TargetedEntity.IsCurrentlyLocked() && !TargetedEntity.IsCurrentlyDisabled())
                 {
                     TargetedEntity.DoInteractions(inputState);
+                    if (AutoFocusEntities)
+                    {
+                        if (inputState.LeftMouseDown || inputState.RightMouseDown || inputState.WheelMouseDown)
+                        {
+                            FocusedEntity = TargetedEntity;
+                        }
+                    }
                 }
             }
+            // no entity we interact with?
+            else
+            {
+                if (AutoFocusEntities)
+                {
+                    if (inputState.LeftMouseDown || inputState.RightMouseDown || inputState.WheelMouseDown)
+                    {
+                        FocusedEntity = null;
+                    }
+                }
+            }
+
+            // if we have focused entity that is disabled / locked / invisible, remove it
+            if (FocusedEntity != null)
+            {
+                if (!FocusedEntity.IsCurrentlyVisible() || FocusedEntity.IsCurrentlyDisabled() || FocusedEntity.IsCurrentlyLocked() || !FocusedEntity.Interactable)
+                {
+                    FocusedEntity = null;
+                }
+            }
+
+            // perform special interactions on focused entity
+            FocusedEntity?.DoFocusedEntityInteractions(inputState);
 
             // do post interactions
             Root.Walk((Entity entity) =>

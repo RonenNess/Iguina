@@ -17,6 +17,8 @@ namespace Iguina.Defs
         /// </summary>
         Targeted,
 
+
+
         /// <summary>
         /// Entity is currently being interacted with, for example text input entity we're currently typing into, or a button that is being pressed.
         /// </summary>
@@ -31,6 +33,11 @@ namespace Iguina.Defs
         /// Entity is currently being targeted, and also checked. For example, the mouse points on the entity.
         /// </summary>
         TargetedChecked,
+
+        /// <summary>
+        /// Entity is currently focused, ie its the last entity the user interacted with, and will accept keyboard interactions.
+        /// </summary>
+        Focused,
 
         /// <summary>
         /// Entity is disabled.

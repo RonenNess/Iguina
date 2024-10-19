@@ -82,7 +82,7 @@ To make `Iguina` framework-agnostic, the host application need to provide 'drive
 
 This is all `Iguina` needs to work. You can use whatever framework you want for rendering and whatever method you want for input, and just provide this functionality to `Iguina` via the drivers.
 
-Note that for gamepad and other input methods, you can simply emulate the mouse and keyboard input and everything will work normally. The API is designed in a way that its not too coupled specifically to a keyboard or a mouse. 
+Note that for gamepad and other input methods that are not mouse / keyboard based, you can emulate mouse move and clicks and the UI would work normally. For example, gamepad sticks can emulate mouse movement, and triggers can emulate mouse clicks.
 
 # Demo Projects
 
@@ -309,6 +309,7 @@ Every entity can have the following states:
 - **Default**: default entity state when its not interacted with.
 - **Targeted**: the entity is currently being targeted by the user, ie mouse points on it.
 - **Interacted**: the user is currently interacting with this entity. for example, in buttons, it means the user is pressing down on the entity.
+- **Focused**: the entity is focused after being the last entity the user interacted with, and accepts keyboard interactions.
 - **Checked**: for entities that have check state (buttons, checkbox, radio buttons), this is the state when the entity is checked.
 - **TargetedChecked**: for entities that are currently checked *and* targeted by the user.
 - **Disabled**: for entities that are currently disabled.
@@ -479,6 +480,10 @@ This method is perheps the most complicated thing to implement for `Iguina`.
 ### `TextInputCommands[] GetTextInputCommands();`
 
 Similar to `GetTextInput`, but handle special typing command, such as line break, delete, backspace, home, end, etc.
+
+### `KeyboardInteractions? GetKeyboardInteraction();`
+
+Return keyboard-based interactions, like arrow keys pressing and toggling with space / enter.
 
 # Writing Stylesheets
 
@@ -717,7 +722,8 @@ In addition to the cursor styles and the default stylesheets to load, the global
 * **CursorScale** (float): a factor to scale all cursor icons in the UI system by. default to 1.
 * **TimeToLockInteractiveState** (float): for how long, in seconds, to keep entities in "interactive" state once the mouse points on them even if the mouse immediately leaves. This is useful to prevent flickering if the user constantly point on and off an entity and it has animations.
 * **RowSpaceHeight** (int): define the size, in pixels, of a single `RowsSpacer` row.
-* **SystemIcons** (dictionary of icons): define built-in icons to use with this UI system. For example, this is where you can define the icon to use for files in files dialog message box.
+* **SystemIcons** (Dictionary<IconTexture>): define built-in icons to use with this UI system. For example, this is where you can define the icon to use for files in files dialog message box.
+* **FocusedEntityOverlay** (FramedTexture): optional framed texture to render over focused entities.
 
 ## Entities Stylesheet
 
@@ -844,6 +850,11 @@ Events you can register callbacks to, which will be called for *any* entity and 
 
 If true (default) will render the UI cursor.
 Does not affect the default operation system cursor, its up to you to hide / show it.
+
+### `AutoFocusEntities`
+
+If true (default) will focus on entities the user interacts with.
+If false there will be no focused entities unless you set them explicitly via code.
 
 ### `MessageBoxes`
 
@@ -1380,13 +1391,16 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added demo example with external animations (Morpheus).
 - Added `ShowInfoMessageBox` to message box utility.
 
-## 1.0.15 [WIP]
+## 1.1.0 [WIP]
 
 - Added `InvokeOnUIThread` to handle concurrency properly.
+- Added focused entities mechanism.
+- Added `Focused` entity style.
 - Added single-thread validations in debug mode.
 - Added system-level UI icons.
-- Updated dependencies.
 - Made list paragraphs propagate mouse events to parent list, so list mouse events can be properly used. 
+- Added basic keyboard interactions with focused entity.
+- Updated dependencies.
 
 # License
 

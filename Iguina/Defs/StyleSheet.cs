@@ -182,6 +182,11 @@ namespace Iguina.Defs
         public StyleSheetState? Targeted { get; set; }
 
         /// <summary>
+        /// Stylesheet for when the entity is the focused entity.
+        /// </summary>
+        public StyleSheetState? Focused { get; set; }
+
+        /// <summary>
         /// Stylesheet for when the entity is interacted with.
         /// </summary>
         public StyleSheetState? Interacted { get; set; }
@@ -236,6 +241,7 @@ namespace Iguina.Defs
                 case EntityState.DisabledChecked: ret = DisabledChecked; break;
                 case EntityState.Interacted: ret = Interacted; break;
                 case EntityState.Targeted: ret = Targeted; break;
+                case EntityState.Focused: ret = Focused; break;
                 case EntityState.TargetedChecked: ret = TargetedChecked; break;
                 case EntityState.Checked: ret = Checked; break;
             }

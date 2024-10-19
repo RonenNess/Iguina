@@ -1,4 +1,5 @@
 ﻿using Iguina.Defs;
+using Iguina.Drivers;
 using Iguina.Utils;
 using System.Numerics;
 
@@ -330,6 +331,11 @@ namespace Iguina.Entities
                 {
                     _stateCached = _isChecked ? EntityState.TargetedChecked : EntityState.Targeted;
                 }
+                // focused state
+                else if (!_isChecked && IsFocused())
+                {
+                    _stateCached = EntityState.Focused;
+                }
                 // default state
                 else
                 {
@@ -446,6 +452,15 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Return true if this entity is currently focused.
+        /// </summary>
+        /// <returns>True if this entity is focused.</returns>
+        public bool IsFocused()
+        {
+            return UISystem?.FocusedEntity == this;
+        }
+
+        /// <summary>
         /// Return true if this entity or any of its parent entities are locked.
         /// </summary>
         /// <returns>True if this entity or one of its parents is locked.</returns>
@@ -501,14 +516,14 @@ namespace Iguina.Entities
         }
         bool? _disabledState;
 
-
         /// <summary>
         /// Return true if this entity is actually visible, ie itself and all its parents are visible..
         /// </summary>
         /// <returns>True if this entity and all of its parents are visible.</returns>
         public bool IsCurrentlyVisible()
         {
-            if (_visibilityState.HasValue) { return _visibilityState.Value; }
+            // return cached state
+           // if (_visibilityState.HasValue) { return _visibilityState.Value; }
 
             // self is not visible?
             if (!Visible)
@@ -520,12 +535,18 @@ namespace Iguina.Entities
             {
                 _visibilityState = false;
             }
+            // not in UI tree?
+            else if (Parent == null && (UISystem.Root != this))
+            {
+                _visibilityState = false;
+            }
             // visible
             else
             {
                 _visibilityState = true;
             }
 
+            // return self state
             return _visibilityState.Value;
         }
         bool? _visibilityState;
@@ -568,6 +589,7 @@ namespace Iguina.Entities
                 _internalChildren.Add(child);
             }
             child.Parent = this;
+            child._visibilityState = null;
             child._isFirstDrawCall = true;
         }
 
@@ -583,6 +605,7 @@ namespace Iguina.Entities
             _internalChildren.Remove(child);
             _internalChildrenTopMost.Remove(child);
             child.Parent = null!;
+            child._visibilityState = null;
         }
 
         /// <summary>
@@ -620,6 +643,7 @@ namespace Iguina.Entities
 
             child.Parent = this;
             child._isFirstDrawCall = true;
+            child._visibilityState = null;
             return child;
         }
 
@@ -648,6 +672,7 @@ namespace Iguina.Entities
             }
 
             child.Parent = null!;
+            child._visibilityState = null;
         }
 
         /// <summary>
@@ -940,8 +965,7 @@ namespace Iguina.Entities
                 }
 
                 // set region
-                UISystem.Renderer.SetScissorRegion(newRegion);
-                
+                UISystem.Renderer.SetScissorRegion(newRegion);        
             }
 
             // draw internal children that are not affected by scrollbar
@@ -1056,6 +1080,16 @@ namespace Iguina.Entities
             // trigger event
             Events.AfterDraw?.Invoke(this);
             UISystem.Events.AfterDraw?.Invoke(this);
+
+            // draw focused entity overlay
+            if (IsFocused())
+            {
+                var framedTexture = UISystem.SystemStyleSheet.FocusedEntityOverlay;
+                if (framedTexture != null)
+                {
+                    DrawUtils.Draw(UISystem.Renderer, null, framedTexture, selfRect.BoundingRect, Color.White);
+                }
+            }
 
             // return self internal bounding rect
             return selfRect;
@@ -1337,7 +1371,6 @@ namespace Iguina.Entities
                     Events.OnLeftMouseReleased?.Invoke(this);
                     UISystem.Events.OnLeftMouseReleased?.Invoke(this);
                 }
-
                 if (inputState.RightMouseDown)
                 {
                     Events.OnRightMouseDown?.Invoke(this);
@@ -1404,6 +1437,21 @@ namespace Iguina.Entities
                 {
                     _dragHandlePosition = null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Do interactions on focused entities that are not necessarily the targeted entity.
+        /// For example, a list box can be focused while you point on a button. If the user press down key, it will change selection
+        /// on the list box, even though we point on a different entity we didn't interact with yet.
+        /// </summary>
+        /// <param name="inputState">Current input state.</param>
+        internal virtual void DoFocusedEntityInteractions(InputState inputState)
+        {
+            // implement click via keyboard
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.Select)
+            {
+                Events.OnClick?.Invoke(this);
             }
         }
 

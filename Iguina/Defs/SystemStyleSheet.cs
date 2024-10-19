@@ -55,6 +55,11 @@ namespace Iguina.Defs
         public float TimeToLockInteractiveState { get; set; }
 
         /// <summary>
+        /// Optional framed texture to render over focused entities.
+        /// </summary>
+        public FramedTexture? FocusedEntityOverlay { get; set; }
+
+        /// <summary>
         /// General system icons. For example file and folder icons, used by files dialog.
         /// </summary>
         public Dictionary<string, IconTexture> SystemIcons { get; set; } = new();

@@ -50,6 +50,44 @@ namespace Iguina.Drivers
         /// <remarks>Its the input provider responsibility to add 'Repeat Delay' and 'Repeat Rate'. Iguina will not limit or impose any delays on typing speed.</remarks>
         /// <returns>Text commands that were pressed this frame.</returns>
         TextInputCommands[] GetTextInputCommands();
+
+        /// <summary>
+        /// Optionally get keyboard-based interactions.
+        /// This input is used on currently focused entity.
+        /// </summary>
+        /// <returns>Keyboard interaction command, or null if there are no keyboard interactions.</returns>
+        KeyboardInteractions? GetKeyboardInteraction();
+    }
+
+    /// <summary>
+    /// Keyboard-based input commands.
+    /// </summary>
+    public enum KeyboardInteractions
+    {
+        /// <summary>
+        /// Move up (typically on arrow up key press).
+        /// </summary>
+        MoveUp,
+
+        /// <summary>
+        /// Move down (typically on arrow down key press).
+        /// </summary>
+        MoveDown,
+
+        /// <summary>
+        /// Move left (typically on arrow left key press).
+        /// </summary>
+        MoveLeft,
+
+        /// <summary>
+        /// Move right (typically on arrow right key press).
+        /// </summary>
+        MoveRight,
+
+        /// <summary>
+        /// Select / click / toggle (typically on space / enter key press).
+        /// </summary>
+        Select
     }
 
     /// <summary>
