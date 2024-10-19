@@ -1385,6 +1385,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added `InvokeOnUIThread` to handle concurrency properly.
 - Added single-thread validations in debug mode.
 - Added system-level UI icons.
+- Updated dependencies.
 
 # License
 
