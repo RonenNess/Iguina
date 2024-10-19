@@ -64,6 +64,7 @@ namespace Iguina.Entities
             _selectedValuePanel.Size.Y.SetPixels(GetClosedStateHeight());
             _selectedValuePanel.IgnoreScrollOffset = true;
             _selectedValuePanel._overrideInteractableState = true;
+            _selectedValuePanel.PassFocusTo = this;
             var padding = GetPadding();
             _selectedValuePanel.Offset.X.Value = -padding.Left;
             _selectedValuePanel.Offset.Y.Value = -padding.Top;

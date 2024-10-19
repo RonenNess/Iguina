@@ -346,6 +346,66 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Scroll to selected item.
+        /// </summary>
+        public void ScrollToSelected()
+        {
+            if (VerticalScrollbar != null)
+            {
+                VerticalScrollbar.ValueSafe = SelectedIndex - _paragraphs.Count / 2;
+            }
+        }
+
+        /// <inheritdoc/>
+        internal override void DoFocusedEntityInteractions(InputState inputState)
+        {
+            // call base class to trigger events
+            base.DoFocusedEntityInteractions(inputState);
+
+            // select items with up
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveUp)
+            {
+                if (SelectedIndex <= 0)
+                {
+                    SelectedIndex = ItemsCount - 1;
+                    if (VerticalScrollbar != null)
+                    {
+                        VerticalScrollbar.ValueSafe = VerticalScrollbar.MaxValue;
+                    }
+                }
+                else
+                {
+                    SelectedIndex--;
+                    if (VerticalScrollbar != null && (VerticalScrollbar.Value > SelectedIndex))
+                    {
+                        VerticalScrollbar.ValueSafe = SelectedIndex;
+                    }
+                }
+            }
+
+            // select items with down
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveDown)
+            {
+                if ((SelectedIndex == ItemsCount - 1) || (SelectedIndex == -1))
+                {
+                    SelectedIndex = 0;
+                    if (VerticalScrollbar != null)
+                    {
+                        VerticalScrollbar.ValueSafe = 0;
+                    }
+                }
+                else
+                {
+                    SelectedIndex++;
+                    if (VerticalScrollbar != null && (VerticalScrollbar.Value < SelectedIndex - _paragraphs.Count + 1))
+                    {
+                        VerticalScrollbar.ValueSafe = SelectedIndex - _paragraphs.Count + 1;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Add item to list.
         /// </summary>
         /// <param name="index">Index to replace.</param>
