@@ -1,4 +1,5 @@
 ﻿using Iguina.Defs;
+using System.Reflection;
 
 
 namespace Iguina.Entities
@@ -215,17 +216,35 @@ namespace Iguina.Entities
             // create new item paragraphs
             while (_paragraphs.Count < paragraphsCount)
             {
+                // create item paragraph
                 var p = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
                 p.TextOverflowMode = TextOverflowMode.Overflow;
                 p.ShrinkWidthToMinimalSize = false;
                 p._overrideInteractableState = true;
                 p.Size.X.SetPercents(100f);
-                
-                // selecting list item value
+
+                // pass all events from paragraph to self
+                p.Events.OnMouseWheelScrollUp = (Entity entity) => { this.Events.OnMouseWheelScrollUp?.Invoke(this); };
+                p.Events.OnMouseWheelScrollDown = (Entity entity) => { this.Events.OnMouseWheelScrollDown?.Invoke(this); };
+                p.Events.OnLeftMouseDown = (Entity entity) => { this.Events.OnLeftMouseDown?.Invoke(this); };
+                p.Events.OnLeftMousePressed = (Entity entity) => { this.Events.OnLeftMousePressed?.Invoke(this); };
+                p.Events.OnLeftMouseReleased = (Entity entity) => { this.Events.OnLeftMouseReleased?.Invoke(this); };
+                p.Events.OnRightMouseDown = (Entity entity) => { this.Events.OnRightMouseDown?.Invoke(this); };
+                p.Events.OnRightMousePressed = (Entity entity) => { this.Events.OnRightMousePressed?.Invoke(this); };
+                p.Events.OnRightMouseReleased = (Entity entity) => { this.Events.OnRightMouseReleased?.Invoke(this); };
+                p.Events.WhileMouseHover = (Entity entity) => { this.Events.WhileMouseHover?.Invoke(this); };
+
+                // add click event to select item
                 p.Events.OnClick = (Entity entity) =>
                 {
+                    // select list item
                     this.OnItemClicked(entity);
+
+                    // pass click to self
+                    this.Events.OnClick?.Invoke(this);
                 };
+                
+                // add new paragraph
                 AddChildInternal(p);
                 p.IgnoreScrollOffset = true;
                 _paragraphs.Add(p);

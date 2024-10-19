@@ -1386,6 +1386,7 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added single-thread validations in debug mode.
 - Added system-level UI icons.
 - Updated dependencies.
+- Made list paragraphs propagate mouse events to parent list, so list mouse events can be properly used. 
 
 # License
 
