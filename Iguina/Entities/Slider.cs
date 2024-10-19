@@ -23,6 +23,11 @@ namespace Iguina.Entities
         /// </summary>
         public int MouseWheelStep = 1;
 
+        /// <summary>
+        /// How much to change value via keyboard interactions.
+        /// </summary>
+        public int KeyboardStep = 1;
+
         // current handle offset
         float _currHandleOffset;
 
@@ -224,6 +229,36 @@ namespace Iguina.Entities
                 }
                 int relativeValue = (int)(MathF.Round((valuePercent * valueRange) / stepSize) * stepSize);
                 Value = MinValue + (int)relativeValue;
+            }
+        }
+        /// <inheritdoc/>
+        internal override void DoFocusedEntityInteractions(InputState inputState)
+        {
+            // call base class to trigger events
+            base.DoFocusedEntityInteractions(inputState);
+
+            // move value via keyboard - horizontal
+            if (Orientation == Orientation.Horizontal)
+            {
+                if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveLeft)
+                {
+                    ValueSafe -= KeyboardStep;
+                }
+                if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveRight)
+                {
+                    ValueSafe += KeyboardStep;
+                }
+            }
+            else
+            {
+                if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveUp)
+                {
+                    ValueSafe += KeyboardStep;
+                }
+                if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveDown)
+                {
+                    ValueSafe -= KeyboardStep;
+                }
             }
         }
 
