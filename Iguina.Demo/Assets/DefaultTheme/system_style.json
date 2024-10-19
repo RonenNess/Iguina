@@ -24,6 +24,18 @@
     "TextScale": 1,
     "CursorScale": 1,
 	"TimeToLockInteractiveState": 0.135,
+	"SystemIcons": {
+		"file": {
+			"TextureId": "Textures/UI.png",
+			"Scale": 3,
+			"SourceRect": {"X": 240, "Y": 48, "Width": 16, "Height": 16}
+		},
+		"folder": {
+			"TextureId": "Textures/UI.png",
+			"Scale": 3,
+			"SourceRect": {"X": 240, "Y": 64, "Width": 16, "Height": 16}
+		}
+	},
     "LoadDefaultStylesheets": {
         "Panels": "Styles/panel.json",
         "MessageBoxBackdrop": "Styles/message_box_backdrop.json",

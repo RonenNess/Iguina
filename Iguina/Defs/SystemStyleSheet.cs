@@ -55,6 +55,11 @@ namespace Iguina.Defs
         public float TimeToLockInteractiveState { get; set; }
 
         /// <summary>
+        /// General system icons. For example file and folder icons, used by files dialog.
+        /// </summary>
+        public Dictionary<string, IconTexture> SystemIcons { get; set; } = new();
+
+        /// <summary>
         /// Default stylesheets to load for entities.
         /// Key = name of stylesheet to load (for example 'Panels' for 'uiSystem.DefaultStylesheets.Panels'.
         /// Value = path, relative to the folder containing this stylesheet, to load from.

@@ -717,7 +717,7 @@ In addition to the cursor styles and the default stylesheets to load, the global
 * **CursorScale** (float): a factor to scale all cursor icons in the UI system by. default to 1.
 * **TimeToLockInteractiveState** (float): for how long, in seconds, to keep entities in "interactive" state once the mouse points on them even if the mouse immediately leaves. This is useful to prevent flickering if the user constantly point on and off an entity and it has animations.
 * **RowSpaceHeight** (int): define the size, in pixels, of a single `RowsSpacer` row.
-
+* **SystemIcons** (dictionary of icons): define built-in icons to use with this UI system. For example, this is where you can define the icon to use for files in files dialog message box.
 
 ## Entities Stylesheet
 

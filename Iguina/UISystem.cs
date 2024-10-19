@@ -218,6 +218,20 @@ namespace Iguina
         }
 
         /// <summary>
+        /// Get system icon from UI system stylesheet.
+        /// </summary>
+        /// <param name="id">Icon id.</param>
+        /// <returns>Icon settings, or null if icon is not defined in stylesheet.</returns>
+        public IconTexture? GetSystemIcon(string id)
+        {
+            if (SystemStyleSheet.SystemIcons?.TryGetValue(id, out var icon) ?? false)
+            {
+                return icon;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Validate current thread id is the same thread that created the UI system.
         /// If false, raise assert in debug mode.
         /// </summary>
