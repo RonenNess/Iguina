@@ -28,11 +28,18 @@ namespace Iguina.Utils
         {
             public string Text;
             public Action? Action;
+            public Func<bool>? CancelableAction;
             public bool CloseMessageBox;
             public MessageBoxButtons(string text, Action? action = null, bool closeMessageBox = true)
             {
                 Text = text;
                 Action = action;
+                CloseMessageBox = closeMessageBox;
+            }
+            public MessageBoxButtons(string text, Func<bool>? action = null, bool closeMessageBox = true)
+            {
+                Text = text;
+                CancelableAction = action;
                 CloseMessageBox = closeMessageBox;
             }
         }
@@ -181,8 +188,16 @@ namespace Iguina.Utils
                 button.Size.X.SetPixels((int)buttonWidth);
                 button.Events.OnClick = (ent) =>
                 {
+                    // invoke action that can't be cancelled
                     option.Action?.Invoke();
 
+                    // invoke action that can be cancelled and if returned false, stop here
+                    if (option.CancelableAction?.Invoke() == false)
+                    {
+                        return;
+                    }
+
+                    // should close message box?
                     if (option.CloseMessageBox)
                     {
                         panel.RemoveSelf();
@@ -241,5 +256,196 @@ namespace Iguina.Utils
                 new MessageBoxButtons(buttonText, onConfirm)
             }, options);
         }
+
+        /// <summary>
+        /// Show a dialog to save file.
+        /// This dialog will show a list with available files in folder and allow the user to pick either existing file name or a new file name. 
+        /// </summary>
+        /// <param name="title">Message box title.</param>
+        /// <param name="text">Message box text.</param>
+        /// <param name="onConfirm">Action for confirmation. Return true to close the files dialog, or false to keep files dialog opened.</param>
+        /// <param name="onCancel">Action for cancel.</param>
+        /// <param name="startingFolder">Folder to open dialog from (or null for working directory).</param>
+        /// <param name="fileDialogOptions">Additional options for files dialog.</param>
+        /// <param name="filesFilter">Optional filter to apply on files to determine if to present them or not.</param>
+        /// <param name="confirmText">Text to show on confirm button.</param>
+        /// <param name="cancelText">Text to show on cancel button.</param>
+        /// <param name="rootLabel">If limited to not allow escaping starting folder, this is the label the dialog box will show as the root folder. If not set, will use starting folder name.</param>
+        /// <param name="options">Message box options, or null to use defaults.</param>
+        /// <returns>Newly created message box handle.</returns>
+        public MessageBoxHandle ShowSaveFileDialog(string title, string text, Func<bool>? onConfirm = null, Action? onCancel = null, 
+            string? startingFolder = null, Func<string, bool>? filesFilter = null, FileDialogOptions fileDialogOptions = DefaultSaveFileOptions, 
+            string confirmText = "Save File", string cancelText = "Cancel", string? rootLabel = null, MessageBoxOptions? options = null)
+        {
+            // show confirmation dialog box
+            var ret = ShowMessageBox(title, text, new MessageBoxButtons[]
+            {
+                new MessageBoxButtons(confirmText, onConfirm),
+                new MessageBoxButtons(cancelText, onCancel)
+            }, options);
+
+            // get files dialog root folder and current folder
+            string rootFolder = Path.GetFullPath(startingFolder ?? Directory.GetCurrentDirectory());
+            string currFolder = rootFolder;
+
+            // root folder name
+            string rootFolderName = rootLabel ?? Path.GetFileName(currFolder) ?? ".";
+
+            // create files / directories list
+            ListBox filesList = new ListBox(_uiSystem);
+
+            // create entity to show full path
+            Paragraph fullPathLabel = new Paragraph(_uiSystem);
+            fullPathLabel.Visible = fileDialogOptions.HasFlag(FileDialogOptions.ShowFullPath);
+            
+            // rebuild files list
+            void RebuildFilesList()
+            {
+                // update full path label
+                bool canEscapeRoot = fileDialogOptions.HasFlag(FileDialogOptions.AllowEscapingRootFolder);
+                fullPathLabel.Text = canEscapeRoot ? currFolder : (rootFolderName + currFolder.Substring(rootFolder.Length));
+
+                // clear previous values
+                filesList.Clear();
+
+                // add folders data
+                if (fileDialogOptions.HasFlag(FileDialogOptions.ShowFolders))
+                {
+                    // add going up folder item (..)
+                    if (fileDialogOptions.HasFlag(FileDialogOptions.AllowGoingUpFolders) && 
+                    (canEscapeRoot || (currFolder != rootFolder)))
+                    {  
+                        filesList.AddItem("..");
+                    }
+
+                    // add folders
+                    var icon = _uiSystem.GetSystemIcon("folder");
+                    var folders = Directory.GetDirectories(currFolder);
+                    foreach (var folder in folders)
+                    {
+                        // apply filter
+                        if (filesFilter?.Invoke(folder) == false)
+                        {
+                            continue;
+                        }
+
+                        // add folder
+                        var folderName = Path.GetFileName(folder);
+                        filesList.AddItem(folder, folderName);
+                        if (icon != null)
+                        {
+                            filesList.SetItemLabel(folder, folderName, icon!, false);
+                        }
+                    }
+                }
+
+                // add files data
+                if (fileDialogOptions.HasFlag(FileDialogOptions.ShowFiles))
+                {
+                    // add files
+                    var icon = _uiSystem.GetSystemIcon("file");
+                    var files = Directory.GetFiles(currFolder);
+                    foreach (var file in files)
+                    {
+                        // apply filter
+                        if (filesFilter?.Invoke(file) == false)
+                        {
+                            continue;
+                        }
+
+                        // add folder
+                        var fileName = Path.GetFileName(file);
+                        filesList.AddItem(file, fileName);
+                        if (icon != null)
+                        {
+                            filesList.SetItemLabel(file, fileName, icon!, false);
+                        }
+                    }
+                }
+            }
+
+            // build starting files
+            RebuildFilesList();
+
+            // add action for files list
+            filesList.Events.OnValueChanged = (Entity ent) =>
+            {
+                // skip if not selected
+                if (filesList.SelectedIndex == -1)
+                {
+                    return;
+                }
+
+                // go folder up
+                if (filesList.SelectedText == "..")
+                {
+                    currFolder = Path.GetFullPath(Path.Combine(currFolder, ".."));
+                    RebuildFilesList();
+                    return;
+                }
+
+                // change folder
+                if (Directory.Exists(filesList.SelectedValue))
+                {
+                    currFolder = filesList.SelectedValue;
+                    RebuildFilesList();
+                    return;
+                }
+            };
+
+            // add files list to message box
+            ret.ContentContainer.AddChild(fullPathLabel);
+            ret.ContentContainer.AddChild(filesList);
+
+            // return message box handle
+            return ret;
+        }
+
+        /// <summary>
+        /// Additional options for files dialog boxes.
+        /// </summary>
+        [Flags]
+        public enum FileDialogOptions
+        {
+            /// <summary>
+            /// If set, will allow users to go up one folder.
+            /// </summary>
+            AllowGoingUpFolders = 1 << 0,
+
+            /// <summary>
+            /// If set, will allow users to 'escape' the first folder we started in.
+            /// </summary>
+            AllowEscapingRootFolder = 1 << 1,
+
+            /// <summary>
+            /// If set, selected filename must exist.
+            /// </summary>
+            FileMustExist = 1 << 2,
+
+            /// <summary>
+            /// If set, selected filename must not exist.
+            /// </summary>
+            FileMustNotExist = 1 << 3,
+
+            /// <summary>
+            /// If set, will show folders in dialog box.
+            /// </summary>
+            ShowFolders = 1 << 4,
+
+            /// <summary>
+            /// If set, will show files in dialog box.
+            /// </summary>
+            ShowFiles = 1 << 5,
+
+            /// <summary>
+            /// If set, will always show current full path above the files list.
+            /// </summary>
+            ShowFullPath = 1 << 6
+        }
+
+        /// <summary>
+        /// Default flags for saving files dialog box.
+        /// </summary>
+        public const FileDialogOptions DefaultSaveFileOptions = FileDialogOptions.AllowGoingUpFolders | FileDialogOptions.ShowFolders | FileDialogOptions.ShowFiles | FileDialogOptions.ShowFullPath;
     }
 }

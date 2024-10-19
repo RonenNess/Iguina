@@ -754,6 +754,12 @@ This specific message box won't do much.
 You can just close it.");
                 };
 
+                panel.AddChild(new Button(_system, "Show Save File Dialog")).Events.OnClick = (Entity entity) =>
+                {
+                    _system.MessageBoxes.ShowSaveFileDialog("Save File Dialog",
+                        @"This is an interactive save file dialog box.
+Don't worry, nothing will actually be saved / written, feel free to play around.");
+                };
                 panel.AddChild(new RowsSpacer(_system));
             }
 
