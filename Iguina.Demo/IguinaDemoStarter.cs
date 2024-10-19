@@ -758,7 +758,12 @@ You can just close it.");
                 {
                     _system.MessageBoxes.ShowSaveFileDialog("Save File Dialog",
                         @"This is an interactive save file dialog box.
-Don't worry, nothing will actually be saved / written, feel free to play around.");
+Don't worry, nothing will actually be saved / written, feel free to play around.", 
+                        (string filename) =>
+                        {
+                            _system.MessageBoxes.ShowInfoMessageBox("Success!", $"Selected file: '{filename}'.");
+                            return true;
+                        });
                 };
                 panel.AddChild(new RowsSpacer(_system));
             }

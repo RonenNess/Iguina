@@ -1,5 +1,6 @@
 ﻿using Iguina.Defs;
 using Iguina.Entities;
+using System.Text.RegularExpressions;
 
 
 namespace Iguina.Utils
@@ -266,7 +267,7 @@ namespace Iguina.Utils
         /// </summary>
         /// <param name="title">Message box title.</param>
         /// <param name="text">Message box text.</param>
-        /// <param name="onConfirm">Action for confirmation. Return true to close the files dialog, or false to keep files dialog opened.</param>
+        /// <param name="onConfirm">Action for confirmation. Receive file full path as param, and return true to close the files dialog, or false to keep files dialog opened.</param>
         /// <param name="onCancel">Action for cancel.</param>
         /// <param name="startingFolder">Folder to open dialog from (or null for working directory).</param>
         /// <param name="fileDialogOptions">Additional options for files dialog.</param>
@@ -276,14 +277,17 @@ namespace Iguina.Utils
         /// <param name="rootLabel">If limited to not allow escaping starting folder, this is the label the dialog box will show as the root folder. If not set, will use starting folder name.</param>
         /// <param name="options">Message box options, or null to use defaults.</param>
         /// <returns>Newly created message box handle.</returns>
-        public MessageBoxHandle ShowSaveFileDialog(string title, string text, Func<bool>? onConfirm = null, Action? onCancel = null, 
+        public MessageBoxHandle ShowSaveFileDialog(string title, string text, Func<string, bool>? onConfirm = null, Action? onCancel = null, 
             string? startingFolder = null, Func<string, bool>? filesFilter = null, FileDialogOptions fileDialogOptions = DefaultSaveFileOptions, 
             string confirmText = "Save File", string cancelText = "Cancel", string? rootLabel = null, MessageBoxOptions? options = null)
         {
+            // current full filename
+            string fullFilename = string.Empty;
+
             // show confirmation dialog box
             var ret = ShowMessageBox(title, text, new MessageBoxButtons[]
             {
-                new MessageBoxButtons(confirmText, onConfirm),
+                new MessageBoxButtons(confirmText, () => { return onConfirm?.Invoke(fullFilename) ?? true; }),
                 new MessageBoxButtons(cancelText, onCancel)
             }, options);
 
@@ -313,6 +317,9 @@ namespace Iguina.Utils
 
                 // clear previous values
                 filesList.Clear();
+
+                // trigger filename change to re-apply validations
+                selectedFilename.Events.OnValueChanged?.Invoke(selectedFilename);
 
                 // add folders data
                 if (fileDialogOptions.HasFlag(FileDialogOptions.ShowFolders))
@@ -374,7 +381,7 @@ namespace Iguina.Utils
             RebuildFilesList();
 
             // add action for files list
-            filesList.Events.OnValueChanged = (Entity ent) =>
+            filesList.Events.OnClick = (Entity ent) =>
             {
                 // skip if not selected
                 if (filesList.SelectedIndex == -1)
@@ -406,6 +413,36 @@ namespace Iguina.Utils
             ret.ContentContainer.AddChild(fullPathLabel);
             ret.ContentContainer.AddChild(filesList);
             ret.ContentContainer.AddChild(selectedFilename);
+
+            // by default disable save button
+            var confirmButton = ret.Buttons[0];
+            confirmButton.Enabled = false;
+
+            // check if a given filename is valid
+            static bool IsValidFileName(string fileName)
+            {
+                var invalidChars = Path.GetInvalidFileNameChars();
+                var regex = new Regex($"[{Regex.Escape(new string(invalidChars))}]");
+                return !regex.IsMatch(fileName) && !string.IsNullOrWhiteSpace(fileName);
+            }
+
+            // set event to enable / disable confirm button
+            selectedFilename.Events.OnValueChanged = (Entity entity) =>
+            {
+                confirmButton.Enabled = (selectedFilename.Value.Length > 0) && IsValidFileName(selectedFilename.Value);
+
+                fullFilename = Path.GetFullPath(Path.Combine(currFolder, selectedFilename.Value));
+
+                if (fileDialogOptions.HasFlag(FileDialogOptions.FileMustNotExist))
+                {
+                    if (File.Exists(fullFilename)) { confirmButton.Enabled = false; }
+                }
+
+                if (fileDialogOptions.HasFlag(FileDialogOptions.FileMustExist))
+                {
+                    if (!File.Exists(fullFilename)) { confirmButton.Enabled = false; }
+                }
+            };
 
             // return message box handle
             return ret;
