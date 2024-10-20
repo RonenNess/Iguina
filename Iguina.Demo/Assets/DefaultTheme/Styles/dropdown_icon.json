@@ -3,17 +3,17 @@
         "Icon": {
             "TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 160, "Y": 96, "Width": 16, "Height": 16},
-			"TextureScale": 3
+			"TextureScale": 2
         }
     },
     "Interacted": {
         "Icon": {
             "TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 176, "Y": 96, "Width": 16, "Height": 16},
-			"TextureScale": 3
+			"TextureScale": 2
         }
     },
     "DefaultAnchor": "TopRight",
-    "DefaultWidth": {"Value": 48, "Units": "Pixels"},
-    "DefaultHeight": {"Value": 48, "Units": "Pixels"}
+    "DefaultWidth": {"Value": 32, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 32, "Units": "Pixels"}
 }

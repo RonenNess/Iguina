@@ -4,7 +4,7 @@
 			"TextureId": "Textures/UI.png",
 			"InternalSourceRect": {"X": 222, "Y": 51, "Width": 2, "Height": 74},
 			"ExternalSourceRect": {"X": 222, "Y": 48, "Width": 2, "Height": 80},
-			"TextureScale": 3
+			"TextureScale": 2
 		},
         "Padding": {"Left": 0, "Right": 0, "Top": 8, "Bottom": 8},
         "MarginBefore": {"X": 6, "Y": 0},

@@ -5,9 +5,9 @@
 			"TextureId": "Textures/UI.png",
 			"InternalSourceRect": {"X": 4, "Y": 132, "Width": 88, "Height": 88},
 			"ExternalSourceRect": {"X": 0, "Y": 128, "Width": 96, "Height": 96},
-			"TextureScale": 3
+			"TextureScale": 2
 		},
-        "Padding": {"Left": 10, "Right": 10, "Top": 10, "Bottom": 10}
+        "Padding": {"Left": 6, "Right": 6, "Top": 6, "Bottom": 6}
 	},
     "Targeted": {
         "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
@@ -15,6 +15,6 @@
     "Interacted": {
         "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
     },
-    "DefaultHeight": {"Value": 64, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 48, "Units": "Pixels"},
 	"InterpolateStatesSpeed": 5
 }

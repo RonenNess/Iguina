@@ -4,7 +4,7 @@
 			"TextureId": "Textures/UI.png",
 			"ExternalSourceRect": {"X": 208, "Y": 0, "Width": 16, "Height": 48},
             "InternalSourceRect": {"X": 208, "Y": 12, "Width": 16, "Height": 24},
-			"TextureScale": 3
+			"TextureScale": 2
 		}
 	},
     "Targeted": {
@@ -12,7 +12,7 @@
 			"TextureId": "Textures/UI.png",
 			"ExternalSourceRect": {"X": 240, "Y": 0, "Width": 16, "Height": 48},
             "InternalSourceRect": {"X": 240, "Y": 12, "Width": 16, "Height": 24},
-			"TextureScale": 3
+			"TextureScale": 2
 		}
 	},
     "Interacted": {
@@ -20,13 +20,13 @@
 			"TextureId": "Textures/UI.png",
 			"ExternalSourceRect": {"X": 240, "Y": 0, "Width": 16, "Height": 48},
             "InternalSourceRect": {"X": 240, "Y": 12, "Width": 16, "Height": 24},
-			"TextureScale": 3
+			"TextureScale": 2
 		}
 	},
     "Disabled": {
 		"EffectIdentifier": "disabled"
 	},
-    "DefaultWidth": {"Value": 48, "Units": "Pixels"},
+    "DefaultWidth": {"Value": 32, "Units": "Pixels"},
     "DefaultHeight": {"Value": 80, "Units": "Pixels"},
 	"InterpolateStatesSpeed": 5,
 	"InterpolateOffsetsSpeed": 10

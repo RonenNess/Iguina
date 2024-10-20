@@ -191,7 +191,24 @@ namespace Iguina.Entities
         {
             var buttonStyle = system.DefaultStylesheets.NumericTextInputButton ?? system.DefaultStylesheets.Buttons;
 
-            // add + button
+            // add minus (-) button
+            if (addMinusButton)
+            {
+                var minusButton = new Button(system, buttonStyle, "-");
+                minusButton.Anchor = Anchor.CenterLeft;
+                minusButton.Offset.X.SetPixels(-GetPadding().Left + minusButton.GetMarginBefore().X);
+                minusButton.Events.OnClick = (Entity entity) =>
+                {
+                    var value = NumericValue - ButtonsStepSize;
+                    if (value < MinValue) { value = MinValue.Value; }
+                    if (value > MaxValue) { value = MaxValue.Value; }
+                    NumericValue = value;
+                };
+                AddChildInternal(minusButton);
+                _minusButton = minusButton;
+            }
+
+            // add plus (+) button
             if (addPlusButton)
             {
                 var plusButton = new Button(system, buttonStyle, "+");
@@ -208,22 +225,6 @@ namespace Iguina.Entities
                 _plusButton = plusButton;
             }
 
-            // add - button
-            if (addMinusButton)
-            {
-                var minusButton = new Button(system, buttonStyle, "-");
-                minusButton.Anchor = Anchor.CenterLeft;
-                minusButton.Offset.X.SetPixels(-GetPadding().Left + minusButton.GetMarginBefore().X);
-                minusButton.Events.OnClick = (Entity entity) =>
-                {
-                    var value = NumericValue - ButtonsStepSize;
-                    if (value < MinValue) { value = MinValue.Value; }
-                    if (value > MaxValue) { value = MaxValue.Value; }
-                    NumericValue = value;
-                };
-                AddChildInternal(minusButton);
-                _minusButton = minusButton;
-            }
         }
 
         /// <summary>

@@ -121,7 +121,9 @@ namespace Iguina.Entities
             }
             if (AutoHeight)
             {
-                Size.Y.SetPixels(ItemHeight * (ItemsCount + 3)); // +3 to compensate top panel
+                var extraSize = _selectedValuePanel.GetExtraSize();
+                var selectedPanelHeight = _selectedValuePanel.LastBoundingRect.Height + _selectedValuePanel.GetMarginAfter().Y + extraSize.Bottom + extraSize.Top;
+                Size.Y.SetPixels((int)(ItemHeight * ((float)ItemsCount + 0.5f) + selectedPanelHeight));
             }
         }
 

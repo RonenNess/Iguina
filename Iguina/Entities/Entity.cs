@@ -202,6 +202,11 @@ namespace Iguina.Entities
         internal bool? _overrideInteractableState = false;
 
         /// <summary>
+        /// Return the rectangle to use for focused entity overlay graphics.
+        /// </summary>
+        public virtual Rectangle BoundingRectForFocusOverlay => LastBoundingRect;
+
+        /// <summary>
         /// Stylesheet to use for this entity.
         /// </summary>
         public StyleSheet StyleSheet;
@@ -1090,7 +1095,7 @@ namespace Iguina.Entities
                 var framedTexture = UISystem.SystemStyleSheet.FocusedEntityOverlay;
                 if (framedTexture != null)
                 {
-                    DrawUtils.Draw(UISystem.Renderer, null, framedTexture, selfRect.BoundingRect, Color.White);
+                    DrawUtils.Draw(UISystem.Renderer, null, framedTexture, BoundingRectForFocusOverlay, Color.White);
                 }
             }
 
@@ -1293,6 +1298,16 @@ namespace Iguina.Entities
                     if (sicon != null)
                     {
                         var dest = new Rectangle(boundingRect.X, boundingRect.Y, (int)(sicon.SourceRect.Width * sicon.TextureScale), (int)(sicon.SourceRect.Height * sicon.TextureScale));
+                        if (sicon.CenterHorizontally)
+                        {
+                            dest.X += boundingRect.Width / 2 - dest.Width / 2;
+                        }
+                        if (sicon.CenterVertically)
+                        {
+                            dest.Y += boundingRect.Height / 2 - dest.Height / 2;
+                        }
+                        dest.X += sicon.Offset.X;
+                        dest.Y += sicon.Offset.Y;
                         DrawUtils.Draw(UISystem.Renderer, effectId, sicon, dest, color);
                     }
 

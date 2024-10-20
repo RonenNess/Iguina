@@ -17,6 +17,9 @@ namespace Iguina.Entities
         // last handle offset
         Point _lastHandleOffset = new Point(-1, -1);
 
+        /// <inheritdoc/>
+        internal override bool Interactable => true;
+
         /// <summary>
         /// Get / set color picker value, as a color extracted from the source texture.
         /// </summary>
@@ -138,7 +141,11 @@ namespace Iguina.Entities
         void UpdateValueFromHandle()
         {
             var srcTexture = SourceTextureData;
-            _colorValue = UISystem.Renderer.GetPixelFromTexture(srcTexture!.TextureId ?? string.Empty, new Point(srcTexture.SourceRect.X + _offsetInSource.X, srcTexture.SourceRect.Y + _offsetInSource.Y));
+            _colorValue = UISystem.Renderer.GetPixelFromTexture(srcTexture!.TextureId ?? string.Empty, 
+                new Point(
+                    srcTexture.SourceRect.X + _offsetInSource.X, 
+                    srcTexture.SourceRect.Y + _offsetInSource.Y)
+                );
         }
 
         /// <inheritdoc/>
@@ -161,8 +168,48 @@ namespace Iguina.Entities
             var factor = GetDestToSourceFactor();
             Handle.Offset.X.Value = MathF.Ceiling(_offsetInSource.X / factor.X - Handle.LastBoundingRect.Width / 2);
             Handle.Offset.Y.Value = MathF.Ceiling(_offsetInSource.Y / factor.Y - Handle.LastBoundingRect.Height / 2);
-
             return base.Draw(parentDrawResult, siblingDrawResult, dryRun);
+        }
+
+        /// <inheritdoc/>
+        internal override void DoFocusedEntityInteractions(InputState inputState)
+        {
+            // call base class to trigger events
+            base.DoFocusedEntityInteractions(inputState);
+
+            // move value via keyboard - horizontal
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveLeft)
+            {
+                if (_offsetInSource.X > 0)
+                {
+                    _offsetInSource.X--;
+                    UpdateValueFromHandle();
+                }
+            }
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveRight)
+            {
+                if (_offsetInSource.X < SourceTextureData?.SourceRect.Width)
+                {
+                    _offsetInSource.X++;
+                    UpdateValueFromHandle();
+                }
+            }
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveUp)
+            {
+                if (_offsetInSource.Y > 0)
+                {
+                    _offsetInSource.Y--;
+                    UpdateValueFromHandle();
+                }
+            }
+            if (inputState.KeyboardInteraction == Drivers.KeyboardInteractions.MoveDown)
+            {
+                if (_offsetInSource.Y < SourceTextureData?.SourceRect.Height)
+                {
+                    _offsetInSource.Y++;
+                    UpdateValueFromHandle();
+                }
+            }
         }
     }
 }

@@ -20,5 +20,20 @@ namespace Iguina.Defs
         /// Will scale icon by this factor.
         /// </summary>
         public float TextureScale { get; set; } = 1f;
+
+        /// <summary>
+        /// If true, will center icon horizontally.
+        /// </summary>
+        public bool CenterHorizontally { get; set; }
+
+        /// <summary>
+        /// If true, will center icon vertically.
+        /// </summary>
+        public bool CenterVertically { get; set; }
+
+        /// <summary>
+        /// Icon offset in pixels.
+        /// </summary>
+        public Point Offset { get; set; }
     }
 }

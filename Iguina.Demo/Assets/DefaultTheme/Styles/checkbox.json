@@ -4,16 +4,18 @@
         "Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 80, "Y": 96, "Width": 16, "Height": 16},
-			"TextureScale": 3
+            "CenterVertically": true,
+			"TextureScale": 2
 		},
         "TextAlignment": "Left",
-        "Padding": {"Left": 30, "Right": 0, "Top": 0, "Bottom": 0}
+        "Padding": {"Left": 20, "Right": 0, "Top": 0, "Bottom": 0}
 	},
     "Targeted": {
 		"Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 112, "Y": 96, "Width": 16, "Height": 16},
-			"TextureScale": 3
+            "CenterVertically": true,
+			"TextureScale": 2
 		}
 	},
     "TargetedChecked": {
@@ -22,7 +24,8 @@
 		"Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 96, "Y": 96, "Width": 16, "Height": 16},
-			"TextureScale": 3
+            "CenterVertically": true,
+			"TextureScale": 2
 		}
 	},
     "Checked": {

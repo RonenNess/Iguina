@@ -4,7 +4,7 @@
 			"TextureId": "Textures/UI.png",
 			"InternalSourceRect": {"X": 102, "Y": 168, "Width": 14, "Height": 12},
 			"ExternalSourceRect": {"X": 96, "Y": 168, "Width": 26, "Height": 12},
-			"TextureScale": 3
+			"TextureScale": 2
 		},
         "Padding": {"Left": 0, "Right": 0, "Top": 0, "Bottom": 0},
         "MarginBefore": {"X": 0, "Y": 18},
@@ -14,7 +14,7 @@
 		"EffectIdentifier": "disabled"
 	},
     "DefaultWidth": {"Value": 100, "Units": "PercentOfParent"},
-    "DefaultHeight": {"Value": 48, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 32, "Units": "Pixels"},
 	"InterpolateStatesSpeed": 0,
 	"InterpolateOffsetsSpeed": 0,
     "MinWidth": 30,

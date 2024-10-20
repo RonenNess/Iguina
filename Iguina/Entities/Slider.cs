@@ -231,6 +231,7 @@ namespace Iguina.Entities
                 Value = MinValue + (int)relativeValue;
             }
         }
+
         /// <inheritdoc/>
         internal override void DoFocusedEntityInteractions(InputState inputState)
         {

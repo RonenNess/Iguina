@@ -5,7 +5,7 @@
 			"TextureId": "Textures/UI.png",
 			"InternalSourceRect": {"X": 116, "Y": 4, "Width": 72, "Height": 24},
 			"ExternalSourceRect": {"X": 112, "Y": 0, "Width": 80, "Height": 32},
-			"TextureScale": 3
+			"TextureScale": 2
 		},
         "TextAlignment": "Center",
         "Padding": {"Left": 8, "Right": 8, "Top": 8, "Bottom": 8}
@@ -15,7 +15,7 @@
 			"TextureId": "Textures/UI.png",
 			"InternalSourceRect": {"X": 116, "Y": 36, "Width": 72, "Height": 24},
 			"ExternalSourceRect": {"X": 112, "Y": 32, "Width": 80, "Height": 32},
-			"TextureScale": 3
+			"TextureScale": 2
 		}
 	},
     "Interacted": {
@@ -23,7 +23,7 @@
 			"TextureId": "Textures/UI.png",
 			"InternalSourceRect": {"X": 116, "Y": 68, "Width": 72, "Height": 24},
 			"ExternalSourceRect": {"X": 112, "Y": 64, "Width": 80, "Height": 32},
-			"TextureScale": 3
+			"TextureScale": 2
 		}
 	},
     "TargetedChecked": {

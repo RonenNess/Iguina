@@ -1393,6 +1393,16 @@ Set handle offset, in pixels, from top-left corner of the entity.
 
 ## 1.1.0 [WIP]
 
+**Breaking Changes**
+
+- Renamed 'Focus' related properties.
+- Changed default built-in theme.
+- Added method to implement in input provider.
+- Changed the value returned from lists `SelectedText`.
+- Added 'focused entity' behavior for systems (can be disabled).
+
+All changes:
+
 - Added `InvokeOnUIThread` to handle concurrency properly.
 - Added focused entities mechanism.
 - Added `Focused` entity style.
@@ -1403,7 +1413,10 @@ Set handle offset, in pixels, from top-left corner of the entity.
 - Added basic keyboard interactions with focused entity.
 - Added method to set list scrollbar offset to selected item.
 - Added `SelectedTextWithIcon` to `ListBox` and changed `SelectedText` to not include icons data.
+- Added `Offset`, `CenterVertically` and `CenterHorizontally` properties to icons.
+- Made built-in UI theme more compact and clean.
 - Updated dependencies.
+
 
 # License
 

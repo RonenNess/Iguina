@@ -409,7 +409,7 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                 panel.AddChild(new Paragraph(_system, @"And finally, here's an alternative progress bar design, without animation:"));
                 {
                     var progressBar = panel.AddChild(new ProgressBar(_system, hProgressBarAltStyle, hProgressBarAltFillStyle));
-                    progressBar.Size.X.SetPixels(420 + 36);
+                    progressBar.Size.X.SetPixels(280 + 24);
                     progressBar.MaxValue = 11;
                     progressBar.Value = 6;
                     progressBar.IgnoreInteractions = false;
@@ -715,12 +715,13 @@ Use the scrollbar on the right to see more of it."));
                     {
                         var textInput = panel.AddChild(new NumericInput(_system));
                         textInput.Anchor = Anchor.AutoInlineLTR;
-                        textInput.Size.X = new Measurement() { Units = MeasureUnit.PercentOfParent, Value = 80f };
+                        textInput.Size.X = new Measurement() { Units = MeasureUnit.PercentOfParent, Value = 60f };
                         textInput.CultureInfo = CultureInfo.GetCultureInfo(cultureName);
                         textInput.DefaultValue = (decimal)5.67f;
                         var label = panel.AddChild(new Paragraph(_system, $"\n ({cultureName})"));
                         label.Anchor = Anchor.AutoInlineLTR;
-                        panel.AddChild(new RowsSpacer(_system, 2));
+                        label.Offset.Y.SetPixels(-10);
+                        panel.AddChild(new RowsSpacer(_system, 1));
                     }
                 }
             }

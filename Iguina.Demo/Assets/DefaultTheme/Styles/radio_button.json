@@ -4,21 +4,24 @@
         "Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 80, "Y": 112, "Width": 16, "Height": 16},
-			"TextureScale": 3
+            "CenterVertically": true,
+			"TextureScale": 2
 		}
 	},
     "Targeted": {
 		"Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 112, "Y": 112, "Width": 16, "Height": 16},
-			"TextureScale": 3
+            "CenterVertically": true,
+			"TextureScale": 2
 		}
 	},
     "Interacted": {
 		"Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 96, "Y": 112, "Width": 16, "Height": 16},
-			"TextureScale": 3
+            "CenterVertically": true,
+			"TextureScale": 2
 		}
 	}
 }

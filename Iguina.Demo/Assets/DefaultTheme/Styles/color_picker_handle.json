@@ -3,14 +3,14 @@
 		"Icon": {
 			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 96, "Y": 192, "Width": 16, "Height": 16},
-			"TextureScale": 3
+			"TextureScale": 2
 		}
 	},
     "Disabled": {
 		"EffectIdentifier": "disabled"
 	},
-    "DefaultWidth": {"Value": 48, "Units": "Pixels"},
-    "DefaultHeight": {"Value": 48, "Units": "Pixels"},
+    "DefaultWidth": {"Value": 32, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 32, "Units": "Pixels"},
 	"InterpolateStatesSpeed": 5,
 	"InterpolateOffsetsSpeed": 10
 }
