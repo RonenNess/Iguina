@@ -52,7 +52,7 @@ Miscs:
 	* Text Input.
     * Numeric Input.
 	* Horizontal / Vertical Lines.
-    * Message Boxes.
+    * Message Boxes & file dialogs.
     * Color Slider and Color Picker.
 * Extensive Stylesheet system to load an entire UI theme from files.
 * Smooth transitions and animations.
@@ -859,7 +859,7 @@ If false there will be no focused entities unless you set them explicitly via co
 ### `MessageBoxes`
 
 A utility to generate message boxes.
-This is just an instance of the `MessageBoxUtils` utility for this system.
+This is just an instance of the `MessageBoxUtils` utility for this UI system instance.
 
 ### `InvokeOnUIThread`
 
@@ -1289,6 +1289,29 @@ Return the color value, as extracted from the source texture.
 ### `SetHandleOffset()`
 
 Set handle offset, in pixels, from top-left corner of the entity.
+
+# MessageBoxUtils
+
+![Save File Dialog](ReadmeAssets/save-file-dialog.png)
+
+A utility to show message boxes and file dialogs.
+
+## `ShowConfirmMessageBox()`
+
+Show a prompt with Confirm vs Cancel buttons.
+
+## `ShowInfoMessageBox()`
+
+Show info message box with just text and OK button.
+
+## `ShowSaveFileDialog()`
+
+Show save file dialog, that returns selected file path (or null if user cancelled).
+
+## `ShowOpenFileDialog()`
+
+Show open file dialog, that returns selected file path (or null if user cancelled).
+This is very similar to `ShowSaveFileDialog()` but with different default flags and designed to select an existing files rather than creating a new file or overriding old one.
 
 # Changelist
 

@@ -261,6 +261,30 @@ namespace Iguina.Utils
             }, options);
         }
 
+
+        /// <summary>
+        /// Show a dialog to open existing file.
+        /// This dialog will show a list with available files in folder and allow the user to pick existing file name. 
+        /// </summary>
+        /// <param name="title">Message box title.</param>
+        /// <param name="text">Message box text.</param>
+        /// <param name="onConfirm">Action for confirmation. Receive file full path as param, and return true to close the files dialog, or false to keep files dialog opened.</param>
+        /// <param name="onCancel">Action for cancel.</param>
+        /// <param name="startingFolder">Folder to open dialog from (or null for working directory).</param>
+        /// <param name="fileDialogOptions">Additional options for files dialog.</param>
+        /// <param name="filesFilter">Optional filter to apply on files to determine if to present them or not.</param>
+        /// <param name="confirmText">Text to show on confirm button.</param>
+        /// <param name="cancelText">Text to show on cancel button.</param>
+        /// <param name="rootLabel">If limited to not allow escaping starting folder, this is the label the dialog box will show as the root folder. If not set, will use starting folder name.</param>
+        /// <param name="options">Message box options, or null to use defaults.</param>
+        /// <returns>Newly created message box handle.</returns>
+        public MessageBoxHandle ShowOpenFileDialog(string title, string text, Func<string, bool>? onConfirm = null, Action? onCancel = null,
+            string? startingFolder = null, Func<string, bool>? filesFilter = null, FileDialogOptions fileDialogOptions = DefaultOpenFileOptions,
+            string confirmText = "Open File", string cancelText = "Cancel", string? rootLabel = null, MessageBoxOptions? options = null)
+        {
+            return ShowSaveFileDialog(title, text, onConfirm, onCancel, startingFolder, filesFilter, fileDialogOptions, confirmText, cancelText, rootLabel, options);
+        }
+
         /// <summary>
         /// Show a dialog to save file.
         /// This dialog will show a list with available files in folder and allow the user to pick either existing file name or a new file name. 
@@ -278,8 +302,8 @@ namespace Iguina.Utils
         /// <param name="options">Message box options, or null to use defaults.</param>
         /// <returns>Newly created message box handle.</returns>
         public MessageBoxHandle ShowSaveFileDialog(string title, string text, Func<string, bool>? onConfirm = null, Action? onCancel = null, 
-            string? startingFolder = null, Func<string, bool>? filesFilter = null, FileDialogOptions fileDialogOptions = DefaultSaveFileOptions, 
-            string confirmText = "Save File", string cancelText = "Cancel", string? rootLabel = null, MessageBoxOptions? options = null)
+        string? startingFolder = null, Func<string, bool>? filesFilter = null, FileDialogOptions fileDialogOptions = DefaultSaveFileOptions, 
+        string confirmText = "Save File", string cancelText = "Cancel", string? rootLabel = null, MessageBoxOptions? options = null)
         {
             // current full filename
             string fullFilename = string.Empty;
@@ -494,5 +518,10 @@ namespace Iguina.Utils
         /// Default flags for saving files dialog box.
         /// </summary>
         public const FileDialogOptions DefaultSaveFileOptions = FileDialogOptions.AllowGoingUpFolders | FileDialogOptions.ShowFolders | FileDialogOptions.ShowFiles | FileDialogOptions.ShowFullPath;
+
+        /// <summary>
+        /// Default flags for opening files dialog box.
+        /// </summary>
+        public const FileDialogOptions DefaultOpenFileOptions = FileDialogOptions.AllowGoingUpFolders | FileDialogOptions.ShowFolders | FileDialogOptions.ShowFiles | FileDialogOptions.ShowFullPath | FileDialogOptions.FileMustExist;
     }
 }

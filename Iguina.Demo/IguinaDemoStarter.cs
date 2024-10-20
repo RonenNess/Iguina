@@ -766,6 +766,19 @@ Don't worry, nothing will actually be saved / written, feel free to play around.
                             return true;
                         });
                 };
+
+                panel.AddChild(new Button(_system, "Show Open File Dialog")).Events.OnClick = (Entity entity) =>
+                {
+                    _system.MessageBoxes.ShowOpenFileDialog("Open File Dialog",
+                        @"This is an interactive open file dialog box.
+Don't worry, nothing will actually be opened, feel free to play around.",
+                        (string filename) =>
+                        {
+                            _system.MessageBoxes.ShowInfoMessageBox("Success!", $"Selected file: '{filename}'.");
+                            return true;
+                        });
+                };
+
                 panel.AddChild(new RowsSpacer(_system));
             }
 
