@@ -1414,7 +1414,7 @@ This is very similar to `ShowSaveFileDialog()` but with different default flags 
 - Added demo example with external animations (Morpheus).
 - Added `ShowInfoMessageBox` to message box utility.
 
-## 1.1.0 [WIP]
+## 1.1.0
 
 **Breaking Changes**
 
