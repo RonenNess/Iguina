@@ -139,6 +139,11 @@ namespace Iguina
         internal Queue<Rectangle> _scissorRegionQueue = new();
 
         /// <summary>
+        /// If set, will use this cursor properties regardless of interface state or entity the user points on.
+        /// </summary>
+        public CursorProperties? OverrideCursorProperties;
+
+        /// <summary>
         /// When entities turn into interactive state (for example a button is clicked on), it will be locked in this state for at least this time, in seconds.
         /// This property is useful to make sure the interactive state is properly shown, even if user perform very rapid short clicks.
         /// </summary>
@@ -523,24 +528,27 @@ namespace Iguina
             }
 
             // get which cursor to render
-            CursorProperties? cursor = SystemStyleSheet.CursorDefault;
-            if (TargetedEntity?.IsPointedOn(Input.GetMousePosition(), true) ?? false)
+            CursorProperties? cursor = OverrideCursorProperties ?? SystemStyleSheet.CursorDefault;
+            if (OverrideCursorProperties == null)
             {
-                if (TargetedEntity.CursorStyle != null)
+                if (TargetedEntity?.IsPointedOn(Input.GetMousePosition(), true) ?? false)
                 {
-                    cursor = TargetedEntity.CursorStyle;
-                }
-                else if (TargetedEntity.IsCurrentlyDisabled())
-                {
-                    cursor = SystemStyleSheet.CursorDisabled ?? SystemStyleSheet.CursorDefault;
-                }
-                else if (TargetedEntity.IsCurrentlyLocked())
-                {
-                    cursor = SystemStyleSheet.CursorLocked ?? SystemStyleSheet.CursorDefault;
-                }
-                else if (TargetedEntity.Interactable) 
-                { 
-                    cursor = SystemStyleSheet.CursorInteractable ?? SystemStyleSheet.CursorDefault; 
+                    if (TargetedEntity.CursorStyle != null)
+                    {
+                        cursor = TargetedEntity.CursorStyle;
+                    }
+                    else if (TargetedEntity.IsCurrentlyDisabled())
+                    {
+                        cursor = SystemStyleSheet.CursorDisabled ?? SystemStyleSheet.CursorDefault;
+                    }
+                    else if (TargetedEntity.IsCurrentlyLocked())
+                    {
+                        cursor = SystemStyleSheet.CursorLocked ?? SystemStyleSheet.CursorDefault;
+                    }
+                    else if (TargetedEntity.Interactable)
+                    {
+                        cursor = SystemStyleSheet.CursorInteractable ?? SystemStyleSheet.CursorDefault;
+                    }
                 }
             }
 
