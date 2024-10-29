@@ -1440,6 +1440,10 @@ All changes:
 - Made built-in UI theme more compact and clean.
 - Updated dependencies.
 
+# 1.1.1 [WIP]
+
+- Added option to make base entities interactable.
+- Added option to override cursor properties.
 
 # License
 
