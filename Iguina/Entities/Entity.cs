@@ -414,11 +414,18 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Entity stylesheet.</param>
-        public Entity(UISystem system, StyleSheet? stylesheet)
+        /// <param name="makeInteractable">If true, will make this entity interactable regardless of its type.</param>
+        public Entity(UISystem system, StyleSheet? stylesheet, bool makeInteractable = false)
         {
             // store system and stylesheet
             UISystem = system;
             StyleSheet = stylesheet ?? _emptyStylesheet;
+
+            // make interactable
+            if (makeInteractable)
+            {
+                _overrideInteractableState = true;
+            }
 
             // set some defaults from stylesheet
             CalculateDefaultAnchorAndSize();
