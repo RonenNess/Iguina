@@ -320,13 +320,18 @@ The small box in the corner is draggable too:"));
                 var panel = CreateDemoContainer("Paragraphs", new Point(650, 1));
                 panel.AddChild(new Paragraph(_system,
                     @"${FC:00FF00}Paragraphs${RESET} are entities that draw text.
-They can be used as labels for buttons, titles, or long texts like the one you read now.
+They can be used as labels for buttons, titles, or long paragraphs like the one you read now.
 
 ${FC:00FF00}Paragraphs${RESET} support special ${OC:FF0000}style changing commands${RESET}, so you can easily ${OC:00FFFF,FC:000000,OW:2}highlight specific words${RESET} within the paragraph.
 
 You can change ${FC:00FF00}Fill Color${RESET}, ${OC:AA0000}Outline Color${RESET}, and ${OW:0}Outline Width${RESET}. 
 
 And you can even embed icons ${ICO:Textures/UI.png|0|64|16|16|2}      inside text paragraphs!
+
+Another useful style command is used to align text (it doesn't even have to be mono-space font):
+
+Some Label:${XO:250}Some Value${XO:450}1
+Another Label:${XO:250}Another Value${XO:450}2
 
 To learn more, check out the source code of this demo project, or read the ${FC:FF00FF}official docs${RESET}.
 

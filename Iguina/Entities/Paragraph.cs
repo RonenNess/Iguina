@@ -60,6 +60,7 @@ namespace Iguina.Entities
         ///     OC:RRGGBBAA                         Change outline color. RRGGBBAA is the color components in hex. AA is optional.
         ///     OW:Width                            Change outline width. Width is the new outline width.
         ///     ICO:Texture|sx|sy|sw|sh|scale|utc   Embed an icon inside the text. Texture = texture id, sx,sy,sw,sh = source rectangle, scale = icon scale based on source rect, utc = use text color: if true, will use text color for the icon. 
+        ///     XO:Offset                           Move the next character render to the given offset, in pixels. This is useful to align labels and data.
         ///     RESET                               Reset all previously-set style command properties.
         /// </remarks>
         /// <example>
@@ -139,6 +140,11 @@ namespace Iguina.Entities
             /// If true, will use text current color for icon (if icon is set).
             /// </summary>
             public bool IconUseTextColor;
+
+            /// <summary>
+            /// Set next character offset, in pixels.
+            /// </summary>
+            public int? SetOffsetX;
 
             /// <summary>
             /// Reset all style commands.
@@ -247,6 +253,11 @@ namespace Iguina.Entities
 
                             case "OC":
                                 currCommand.OutlineColor = Color.Parse(value!);
+                                expectedValuesCount = 1;
+                                break;
+
+                            case "XO":
+                                currCommand.SetOffsetX = int.Parse(value!);
                                 expectedValuesCount = 1;
                                 break;
 
@@ -633,6 +644,12 @@ namespace Iguina.Entities
                                 // merge styles
                                 currTextStyle.MergeSelfWith(newStyleCommand);
 
+                                // adjust offset x
+                                if (newStyleCommand.SetOffsetX.HasValue)
+                                {
+                                    offsetX = newStyleCommand.SetOffsetX.Value;
+                                }
+
                                 // calculate text segment position
                                 var segmentPosition = new Point(position.X + offsetX, position.Y);
 
@@ -650,7 +667,7 @@ namespace Iguina.Entities
                                 // get range and segment to render
                                 var toIndex = (i + 1) < styleCommands.Count ? (styleCommands[i + 1].Index - newStyleCommand.Index) : -1;
                                 var segment = toIndex >= 0 ? line.Line.Substring(newStyleCommand.Index, toIndex) : line.Line.Substring(newStyleCommand.Index);
-                                
+
                                 // skip empty segments
                                 if (string.IsNullOrEmpty(segment)) 
                                 { 

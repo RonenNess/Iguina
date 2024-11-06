@@ -1444,6 +1444,7 @@ All changes:
 
 - Added option to make base entities interactable.
 - Added option to override cursor properties.
+- Added paragraph style command to change text offset (useful to align labels).
 
 # License
 
