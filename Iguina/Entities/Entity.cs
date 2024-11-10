@@ -691,6 +691,18 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Remove all child entities.
+        /// </summary>
+        public void ClearChildren()
+        {
+            var children = _children.ToArray();
+            foreach (var child in children)
+            {
+                RemoveChild(child);
+            }
+        }
+
+        /// <summary>
         /// Bring this entity to the top-most position of its parent.
         /// </summary>
         public void BringToFront()
