@@ -170,7 +170,7 @@ namespace Iguina.Utils
             panel.AddChild(new RowsSpacer(_uiSystem));
 
             // empty container for optional content
-            var contentContainer = panel.AddChild(new Entity(_uiSystem, null));
+            var contentContainer = panel.AddChild(new Panel(_uiSystem, null));
             contentContainer.Anchor = Anchor.AutoCenter;
             contentContainer.Size.X.SetPercents(100f);
             contentContainer.AutoHeight = true;
