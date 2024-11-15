@@ -1440,12 +1440,13 @@ All changes:
 - Made built-in UI theme more compact and clean.
 - Updated dependencies.
 
-# 1.1.1 [WIP]
+# 1.1.1
 
 - Added option to make base entities interactable.
 - Added option to override cursor properties.
 - Added paragraph style command to change text offset (useful to align labels).
 - Added method `ClearChildren()`.
+- Added `InteractableTargetedEntity` to get `TargetedEntity`, but only if its interactable.
 
 # License
 
