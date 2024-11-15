@@ -102,6 +102,12 @@ namespace Iguina
         public Entity? TargetedEntity { get; private set; }
 
         /// <summary>
+        /// Get 'TargetEntity' but only if its an interactable entity.
+        /// If its not, will return null instead.
+        /// </summary>
+        public Entity? InteractableTargetedEntity => (TargetedEntity != null && TargetedEntity.Interactable && !TargetedEntity.IgnoreInteractions) ? TargetedEntity : null;
+
+        /// <summary>
         /// Currently focused entity, and the entity that will receive keyboard interactions.
         /// Will be set to the last entity interacted with.
         /// </summary>
