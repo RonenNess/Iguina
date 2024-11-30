@@ -1448,6 +1448,10 @@ All changes:
 - Added method `ClearChildren()`.
 - Added `InteractableTargetedEntity` to get `TargetedEntity`, but only if its interactable.
 
+# 1.1.2 [WIP]
+
+- Added display filter to lists and dropdown.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 

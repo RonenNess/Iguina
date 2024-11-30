@@ -37,6 +37,13 @@ namespace Iguina.Entities
         protected List<Paragraph> _paragraphs = new();
 
         /// <summary>
+        /// An optional method to filter which values to show in the list.
+        /// Return true to show current item, false to hide it.
+        /// Regardless of the display filter, the item will still be a part of the list and you can set it as selected via code.
+        /// </summary>
+        public Func<ListItem, bool>? DisplayFilter;
+
+        /// <summary>
         /// Get list items count.
         /// </summary>
         public int ItemsCount => _items.Count;
@@ -320,16 +327,28 @@ namespace Iguina.Entities
         /// </summary>
         protected virtual void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
+            int skipped = 0;
             for (var i = startIndex; i < _paragraphs.Count; ++i)
             {
-                var itemIndex = i + scrollOffset - startIndex;
-                if ((itemIndex < 0) || (itemIndex > _items.Count)) { continue; }
+                // get item index and validate range
+                var itemIndex = i + scrollOffset - startIndex + skipped;
+                if (itemIndex < 0) { continue; }
                 if (itemIndex >= _items.Count)
                 {
                     _paragraphs[i].Visible = false;
-                    break;
+                    continue;
                 }
+
+                // get current item and apply filter
                 var item = _items[itemIndex];
+                if (DisplayFilter?.Invoke(item) == false)
+                {
+                    i--;
+                    skipped++;
+                    continue;
+                }
+
+                // set current paragraph
                 var paragraph = _paragraphs[i];
                 paragraph.Visible = true;
                 paragraph.UserData = item.Value;
