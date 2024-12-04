@@ -1,9 +1,8 @@
 {
 	"Default": {
 		"Icon": {
-			"TextureId": "Textures/UI.png",
-			"SourceRect": {"X": 96, "Y": 192, "Width": 16, "Height": 16},
-			"TextureScale": 2
+			"SourceRect": {"X": 96, "Y": 192, "Width": 16, "Height": 16}
+			
 		}
 	},
     "Disabled": {

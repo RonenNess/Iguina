@@ -1,26 +1,23 @@
 {
 	"Default": {
 		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
+			
 			"ExternalSourceRect": {"X": 208, "Y": 0, "Width": 16, "Height": 48},
-            "InternalSourceRect": {"X": 208, "Y": 12, "Width": 16, "Height": 24},
-			"TextureScale": 2
+            "InternalSourceRect": {"X": 208, "Y": 12, "Width": 16, "Height": 24}
 		}
 	},
     "Targeted": {
 		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
+			
 			"ExternalSourceRect": {"X": 240, "Y": 0, "Width": 16, "Height": 48},
-            "InternalSourceRect": {"X": 240, "Y": 12, "Width": 16, "Height": 24},
-			"TextureScale": 2
+            "InternalSourceRect": {"X": 240, "Y": 12, "Width": 16, "Height": 24}
 		}
 	},
     "Interacted": {
 		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
+			
 			"ExternalSourceRect": {"X": 240, "Y": 0, "Width": 16, "Height": 48},
-            "InternalSourceRect": {"X": 240, "Y": 12, "Width": 16, "Height": 24},
-			"TextureScale": 2
+            "InternalSourceRect": {"X": 240, "Y": 12, "Width": 16, "Height": 24}
 		}
 	},
     "Disabled": {

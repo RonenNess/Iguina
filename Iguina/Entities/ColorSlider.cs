@@ -104,7 +104,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Get slider source texture.
         /// </summary>
-        string SourceTextureId => SourceTextureData?.TextureId ?? string.Empty;
+        string SourceTextureId => SourceTextureData?.TextureId ?? UISystem.SystemStyleSheet.DefaultTexture ?? string.Empty;
 
         /// <inheritdoc/>
         protected override void SetAutoRange()

@@ -1114,7 +1114,7 @@ namespace Iguina.Entities
                 var framedTexture = UISystem.SystemStyleSheet.FocusedEntityOverlay;
                 if (framedTexture != null)
                 {
-                    DrawUtils.Draw(UISystem.Renderer, null, framedTexture, BoundingRectForFocusOverlay, Color.White);
+                    DrawUtils.Draw(UISystem.Renderer, null, framedTexture, BoundingRectForFocusOverlay, Color.White, UISystem.SystemStyleSheet.TextureScale, UISystem.SystemStyleSheet.DefaultTexture);
                 }
             }
 
@@ -1309,14 +1309,16 @@ namespace Iguina.Entities
                     var stexture = StyleSheet.GetProperty<StretchedTexture>("FillTextureStretched", state, null, OverrideStyles);
                     if (stexture != null)
                     {
-                        DrawUtils.Draw(UISystem.Renderer, effectId, stexture, boundingRect, color);
+                        DrawUtils.Draw(UISystem.Renderer, effectId, stexture, boundingRect, color, UISystem.SystemStyleSheet.DefaultTexture);
                     }
 
                     // draw icon texture
                     var sicon = StyleSheet.GetProperty<IconTexture>("Icon", state, null, OverrideStyles);
                     if (sicon != null)
                     {
-                        var dest = new Rectangle(boundingRect.X, boundingRect.Y, (int)(sicon.SourceRect.Width * sicon.TextureScale), (int)(sicon.SourceRect.Height * sicon.TextureScale));
+                        var dest = new Rectangle(boundingRect.X, boundingRect.Y, 
+                            (int)(sicon.SourceRect.Width * sicon.TextureScale * UISystem.SystemStyleSheet.TextureScale), 
+                            (int)(sicon.SourceRect.Height * sicon.TextureScale * UISystem.SystemStyleSheet.TextureScale));
                         if (sicon.CenterHorizontally)
                         {
                             dest.X += boundingRect.Width / 2 - dest.Width / 2;
@@ -1327,14 +1329,14 @@ namespace Iguina.Entities
                         }
                         dest.X += sicon.Offset.X;
                         dest.Y += sicon.Offset.Y;
-                        DrawUtils.Draw(UISystem.Renderer, effectId, sicon, dest, color);
+                        DrawUtils.Draw(UISystem.Renderer, effectId, sicon, dest, color, UISystem.SystemStyleSheet.DefaultTexture);
                     }
 
                     // draw framed texture
                     var ftexture = StyleSheet.GetProperty<FramedTexture>("FillTextureFramed", state, null, OverrideStyles);
                     if (ftexture != null)
                     {
-                        DrawUtils.Draw(UISystem.Renderer, effectId, ftexture, boundingRect, color);
+                        DrawUtils.Draw(UISystem.Renderer, effectId, ftexture, boundingRect, color, UISystem.SystemStyleSheet.TextureScale, UISystem.SystemStyleSheet.DefaultTexture);
                     }
                 }
 

@@ -139,8 +139,10 @@ namespace Iguina.Entities
         /// </summary>
         public bool AllowDeselect = true;
 
-        // stylesheet for items
-        StyleSheet? _itemsStylesheet;
+        /// <summary>
+        /// Stylesheet used for list items.
+        /// </summary>
+        public StyleSheet? ItemsStyleSheet { get; private set; }
 
         /// <summary>
         /// The height of a single item in list.
@@ -163,16 +165,16 @@ namespace Iguina.Entities
         /// <param name="itemsStylesheet">List box items stylesheet. If not set, will use the same as base stylesheet.</param>
         public ListBox(UISystem system, StyleSheet? stylesheet, StyleSheet? itemsStylesheet = null) : base(system, stylesheet) 
         {
-            _itemsStylesheet = itemsStylesheet ?? StyleSheet;
+            ItemsStyleSheet = itemsStylesheet ?? StyleSheet;
 
             // set defaults
             OverflowMode = OverflowMode.HideOverflow;
 
             // create paragraph to calculate item height
-            var paragraph = new Paragraph(system, _itemsStylesheet);
-            if (_itemsStylesheet.DefaultHeight?.Units == MeasureUnit.Pixels)
+            var paragraph = new Paragraph(system, ItemsStyleSheet);
+            if (ItemsStyleSheet.DefaultHeight?.Units == MeasureUnit.Pixels)
             {
-                ItemHeight = (int)(_itemsStylesheet.DefaultHeight.Value.Value);
+                ItemHeight = (int)(ItemsStyleSheet.DefaultHeight.Value.Value);
             }
             else
             {
@@ -238,7 +240,7 @@ namespace Iguina.Entities
             while (_paragraphs.Count < paragraphsCount)
             {
                 // create item paragraph
-                var p = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
+                var p = new Paragraph(UISystem, ItemsStyleSheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
                 p.TextOverflowMode = TextOverflowMode.Overflow;
                 p.ShrinkWidthToMinimalSize = false;
                 p.PassFocusTo = this;
@@ -494,11 +496,11 @@ namespace Iguina.Entities
         {
             // set label + icon
             var iconWidth = icon.SourceRect.Width * icon.TextureScale;
-            var tempParagraph = new Paragraph(UISystem, _itemsStylesheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
+            var tempParagraph = new Paragraph(UISystem, ItemsStyleSheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
             var spaceWidth = tempParagraph.MeasureText(" ").X;
             var spacesCount = (int)(Math.Ceiling(iconWidth / spaceWidth) + 1);
             var iconUseTextureColorVal = iconUseTextColor ? "y" : "n";
-            SetItemLabel(valueToSet, $"${{ICO:{icon.TextureId}|{icon.SourceRect.X}|{icon.SourceRect.Y}|{icon.SourceRect.Width}|{icon.SourceRect.Height}|{icon.TextureScale}|{iconUseTextureColorVal}}}" + new string(' ', spacesCount) + label);
+            SetItemLabel(valueToSet, $"${{ICO:{icon.TextureId ?? UISystem.SystemStyleSheet.DefaultTexture}|{icon.SourceRect.X}|{icon.SourceRect.Y}|{icon.SourceRect.Width}|{icon.SourceRect.Height}|{icon.TextureScale}|{iconUseTextureColorVal}}}" + new string(' ', spacesCount) + label);
 
             // set just label text
             var index = GetIndexOfValue(valueToSet);

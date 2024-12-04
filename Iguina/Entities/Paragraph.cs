@@ -661,7 +661,7 @@ namespace Iguina.Entities
                                         (int)(newStyleCommand.Icon.SourceRect.Height * newStyleCommand.Icon.TextureScale * UISystem.TextsScale));
                                     dest.Y -= dest.Height / 2;
                                     var color = (newStyleCommand.IconUseTextColor) ? (currTextStyle.FillColor ?? fillColor) : (currTextStyle.FillColor ?? Color.White);
-                                    DrawUtils.Draw(UISystem.Renderer, effectId, newStyleCommand.Icon, dest, color);
+                                    DrawUtils.Draw(UISystem.Renderer, effectId, newStyleCommand.Icon, dest, color, UISystem.SystemStyleSheet.DefaultTexture);
                                 }
 
                                 // get range and segment to render

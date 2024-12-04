@@ -9,7 +9,7 @@
 	},
     "Checked": {
         "FillTextureStretched": {
-            "TextureId": "Textures/UI.png",
+            
             "SourceRect": {"X": 0, "Y": 80, "Width": 16, "Height": 16},
             "ExtraSize": {"Left": 20, "Right": 10, "Top": 10, "Bottom": 0}
         },

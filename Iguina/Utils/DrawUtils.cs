@@ -82,7 +82,7 @@ namespace Iguina.Utils
         /// <summary>
         /// Render framed texture.
         /// </summary>
-        public static void Draw(IRenderer renderer, string? effectId, FramedTexture texture, Rectangle dest, Color color)
+        public static void Draw(IRenderer renderer, string? effectId, FramedTexture texture, Rectangle dest, Color color, float textureScale, string defaultTexture)
         {
             // to avoid glitches
             if (dest.Width <= 0 || dest.Height <= 0) { return; }
@@ -101,7 +101,7 @@ namespace Iguina.Utils
             bool isHorizontalStrip = texture.InternalSourceRect.Height == texture.ExternalSourceRect.Height;
             if (isHorizontalStrip)
             {
-                DrawHorizontal(renderer, texture.TextureId, texture.TextureScale, effectId, texture.LeftSourceRect, texture.InternalSourceRect, texture.RightSourceRect, dest.Width, new Point(dest.X, dest.Y), color);
+                DrawHorizontal(renderer, texture.TextureId ?? defaultTexture, texture.TextureScale * textureScale, effectId, texture.LeftSourceRect, texture.InternalSourceRect, texture.RightSourceRect, dest.Width, new Point(dest.X, dest.Y), color);
                 return;
             }
 
@@ -109,20 +109,20 @@ namespace Iguina.Utils
             bool isVerticalStrip = texture.InternalSourceRect.Width == texture.ExternalSourceRect.Width;
             if (isVerticalStrip)
             {
-                DrawVertical(renderer, texture.TextureId, texture.TextureScale, effectId, texture.TopSourceRect, texture.InternalSourceRect, texture.BottomSourceRect, dest.Height, new Point(dest.X, dest.Y), color);
+                DrawVertical(renderer, texture.TextureId ?? defaultTexture, texture.TextureScale * textureScale, effectId, texture.TopSourceRect, texture.InternalSourceRect, texture.BottomSourceRect, dest.Height, new Point(dest.X, dest.Y), color);
                 return;
             }
 
             // calculate all dest rects
-            var topLeftDest = new Rectangle(dest.X, dest.Y, (int)(topLeftSrc.Width * texture.TextureScale), (int)(topLeftSrc.Height * texture.TextureScale));
-            var topRightDest = new Rectangle(dest.Right - (int)(topRightSrc.Width * texture.TextureScale), dest.Y, (int)(topRightSrc.Width * texture.TextureScale), (int)(topRightSrc.Height * texture.TextureScale));
-            var bottomLeftDest = new Rectangle(dest.X, dest.Bottom - (int)(bottomLeftSrc.Height * texture.TextureScale), (int)(bottomLeftSrc.Width * texture.TextureScale), (int)(bottomLeftSrc.Height * texture.TextureScale));
-            var bottomRightDest = new Rectangle(dest.Right - (int)(bottomRightSrc.Width * texture.TextureScale), dest.Bottom - (int)(bottomRightSrc.Height * texture.TextureScale), (int)(bottomRightSrc.Width * texture.TextureScale), (int)(bottomRightSrc.Height * texture.TextureScale));
+            var topLeftDest = new Rectangle(dest.X, dest.Y, (int)(topLeftSrc.Width * texture.TextureScale * textureScale), (int)(topLeftSrc.Height * texture.TextureScale));
+            var topRightDest = new Rectangle(dest.Right - (int)(topRightSrc.Width * texture.TextureScale * textureScale), dest.Y, (int)(topRightSrc.Width * texture.TextureScale), (int)(topRightSrc.Height * texture.TextureScale));
+            var bottomLeftDest = new Rectangle(dest.X, dest.Bottom - (int)(bottomLeftSrc.Height * texture.TextureScale * textureScale), (int)(bottomLeftSrc.Width * texture.TextureScale), (int)(bottomLeftSrc.Height * texture.TextureScale));
+            var bottomRightDest = new Rectangle(dest.Right - (int)(bottomRightSrc.Width * texture.TextureScale * textureScale), dest.Bottom - (int)(bottomRightSrc.Height * texture.TextureScale), (int)(bottomRightSrc.Width * texture.TextureScale), (int)(bottomRightSrc.Height * texture.TextureScale));
 
             // render center parts
             {
                 var srcRect = texture.InternalSourceRect;
-                var destRect = new Rectangle(topLeftDest.Right, topLeftDest.Bottom, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
+                var destRect = new Rectangle(topLeftDest.Right, topLeftDest.Bottom, (int)(srcRect.Width * texture.TextureScale * textureScale), (int)(srcRect.Height * texture.TextureScale));
 
                 bool lastRow = false;
                 while (true)
@@ -132,7 +132,7 @@ namespace Iguina.Utils
                     if (cutOff >= 0)
                     {
                         destRect.Width -= cutOff;
-                        srcRect.Width -= (int)(cutOff / texture.TextureScale);
+                        srcRect.Width -= (int)(cutOff / (texture.TextureScale * textureScale));
                     }
 
                     // check if we exceed bottom
@@ -140,7 +140,7 @@ namespace Iguina.Utils
                     if (cutOffBottom >= 0)
                     {
                         destRect.Height -= cutOffBottom;
-                        srcRect.Height -= (int)(cutOffBottom / texture.TextureScale);
+                        srcRect.Height -= (int)(cutOffBottom / (texture.TextureScale * textureScale));
                         lastRow = true;
                     }
 
@@ -150,7 +150,7 @@ namespace Iguina.Utils
                     // draw part
                     if (destRect.Width > 0 && destRect.Height > 0)
                     {
-                        renderer.DrawTexture(effectId, texture.TextureId, destRect, srcRect, color);
+                        renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, destRect, srcRect, color);
                     }
                     destRect.X += destRect.Width;
                 
@@ -173,18 +173,18 @@ namespace Iguina.Utils
             {
                 bool keepDrawing = true;
                 var srcRect = texture.TopSourceRect;
-                var destRect = new Rectangle(topLeftDest.Right, dest.Top, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
+                var destRect = new Rectangle(topLeftDest.Right, dest.Top, (int)(srcRect.Width * texture.TextureScale * textureScale), (int)(srcRect.Height * texture.TextureScale * textureScale));
                 while (keepDrawing)
                 {
                     var cutOff = destRect.Right - topRightDest.Left;
                     if (cutOff >= 0)
                     {
                         destRect.Width -= cutOff;
-                        srcRect.Width -= (int)(cutOff / texture.TextureScale);
+                        srcRect.Width -= (int)(cutOff / (texture.TextureScale * textureScale));
                         if (destRect.Width <= 0 || srcRect.Width <= 0) { break; }
                         keepDrawing = false;
                     }
-                    renderer.DrawTexture(effectId, texture.TextureId, destRect, srcRect, color);
+                    renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, destRect, srcRect, color);
                     destRect.X += destRect.Width;
                 }
             }
@@ -193,18 +193,18 @@ namespace Iguina.Utils
                 {
                     bool keepDrawing = true;
                     var srcRect = texture.BottomSourceRect;
-                    var destRect = new Rectangle(bottomLeftDest.Right, bottomLeftDest.Top, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
+                    var destRect = new Rectangle(bottomLeftDest.Right, bottomLeftDest.Top, (int)(srcRect.Width * texture.TextureScale * textureScale), (int)(srcRect.Height * texture.TextureScale * textureScale));
                     while (keepDrawing)
                     {
                         var cutOff = destRect.Right - bottomRightDest.Left;
                         if (cutOff >= 0)
                         {
                             destRect.Width -= cutOff;
-                            srcRect.Width -= (int)(cutOff / texture.TextureScale);
+                            srcRect.Width -= (int)(cutOff / (texture.TextureScale * textureScale));
                             if (destRect.Width <= 0 || srcRect.Width <= 0) { break; }
                             keepDrawing = false;
                         }
-                        renderer.DrawTexture(effectId, texture.TextureId, destRect, srcRect, color);
+                        renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, destRect, srcRect, color);
                         destRect.X += destRect.Width;
                     }
                 }
@@ -212,18 +212,18 @@ namespace Iguina.Utils
                 {
                     bool keepDrawing = true;
                     var srcRect = texture.LeftSourceRect;
-                    var destRect = new Rectangle(dest.Left, topLeftDest.Bottom, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
+                    var destRect = new Rectangle(dest.Left, topLeftDest.Bottom, (int)(srcRect.Width * texture.TextureScale * textureScale), (int)(srcRect.Height * texture.TextureScale * textureScale));
                     while (keepDrawing)
                     {
                         var cutOff = destRect.Bottom - bottomLeftDest.Top;
                         if (cutOff >= 0)
                         {
                             destRect.Height -= cutOff;
-                            srcRect.Height -= (int)(cutOff / texture.TextureScale);
+                            srcRect.Height -= (int)(cutOff / (texture.TextureScale * textureScale));
                             if (destRect.Height <= 0 || srcRect.Height <= 0) { break; }
                             keepDrawing = false;
                         }
-                        renderer.DrawTexture(effectId, texture.TextureId, destRect, srcRect, color);
+                        renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, destRect, srcRect, color);
                         destRect.Y += destRect.Height;
                     }
                 }
@@ -231,18 +231,18 @@ namespace Iguina.Utils
                 {
                     bool keepDrawing = true;
                     var srcRect = texture.RightSourceRect;
-                    var destRect = new Rectangle(topRightDest.Left, topRightDest.Bottom, (int)(srcRect.Width * texture.TextureScale), (int)(srcRect.Height * texture.TextureScale));
+                    var destRect = new Rectangle(topRightDest.Left, topRightDest.Bottom, (int)(srcRect.Width * texture.TextureScale * textureScale), (int)(srcRect.Height * texture.TextureScale * textureScale));
                     while (keepDrawing)
                     {
                         var cutOff = destRect.Bottom - bottomRightDest.Top;
                         if (cutOff >= 0)
                         {
                             destRect.Height -= cutOff;
-                            srcRect.Height -= (int)(cutOff / texture.TextureScale);
+                            srcRect.Height -= (int)(cutOff / (texture.TextureScale * textureScale));
                             if (destRect.Height <= 0 || srcRect.Height <= 0) { break; }
                             keepDrawing = false;
                         }
-                        renderer.DrawTexture(effectId, texture.TextureId, destRect, srcRect, color);
+                        renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, destRect, srcRect, color);
                         destRect.Y += destRect.Height;
                     }
                 }
@@ -250,17 +250,17 @@ namespace Iguina.Utils
 
             // render corners
             {
-                renderer.DrawTexture(effectId, texture.TextureId, topLeftDest, topLeftSrc, color);
-                renderer.DrawTexture(effectId, texture.TextureId, topRightDest, topRightSrc, color);
-                renderer.DrawTexture(effectId, texture.TextureId, bottomLeftDest, bottomLeftSrc, color);
-                renderer.DrawTexture(effectId, texture.TextureId, bottomRightDest, bottomRightSrc, color);
+                renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, topLeftDest, topLeftSrc, color);
+                renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, topRightDest, topRightSrc, color);
+                renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, bottomLeftDest, bottomLeftSrc, color);
+                renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, bottomRightDest, bottomRightSrc, color);
             }
         }
 
         /// <summary>
         /// Render stretched texture.
         /// </summary>
-        public static void Draw(IRenderer renderer, string? effectId, StretchedTexture texture, Rectangle dest, Color color)
+        public static void Draw(IRenderer renderer, string? effectId, StretchedTexture texture, Rectangle dest, Color color, string defaultTexture)
         {
             if (texture.ExtraSize.HasValue)
             {
@@ -273,18 +273,18 @@ namespace Iguina.Utils
             // to avoid glitches
             if (dest.Width <= 0 || dest.Height <= 0) { return; }
 
-            renderer.DrawTexture(effectId, texture.TextureId, dest, texture.SourceRect, color);
+            renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, dest, texture.SourceRect, color);
         }
 
         /// <summary>
         /// Render icon texture.
         /// </summary>
-        public static void Draw(IRenderer renderer, string? effectId, IconTexture texture, Rectangle dest, Color color)
+        public static void Draw(IRenderer renderer, string? effectId, IconTexture texture, Rectangle dest, Color color, string defaultTexture)
         {
             // to avoid glitches
             if (dest.Width <= 0 || dest.Height <= 0) { return; }
 
-            renderer.DrawTexture(effectId, texture.TextureId, dest, texture.SourceRect, color);
+            renderer.DrawTexture(effectId, texture.TextureId ?? defaultTexture, dest, texture.SourceRect, color);
         }
     }
 }

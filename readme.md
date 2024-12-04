@@ -649,8 +649,9 @@ For example:
 
 ## System Level Stylesheet
 
-The global system stylesheet define mostly the cursor appearance, some factors, and provides a map of which stylesheet to load for every entity type. 
-With this default stylesheets map, you can create an entire UI theme that covers all types, and load it once as a whole.
+The global system stylesheet primarily defines cursor appearance and other visual factors, while also providing a mapping of stylesheets to entity types. 
+
+Using this default stylesheet map, you can create a comprehensive UI theme that covers all entity types and load it as a single, unified package.
 
 Lets explore the sections of the System Level Stylesheet:
 
@@ -719,6 +720,8 @@ In addition to the cursor styles and the default stylesheets to load, the global
 
 * **ThemeIdentifier** (string): optional name you can give to your UI theme. this has no actual affect on anything, its for documentation only.
 * **TextScale** (float): a factor to scale all texts in the UI system by. defaults to 1.
+* **TextureScale** (float): a factor to scale all textures in the UI system by. defaults to 1.
+* **DefaultTexture** (string): a default texture path to use in any stylesheet where a texture id is expected, but not provided. defaults to null.
 * **CursorScale** (float): a factor to scale all cursor icons in the UI system by. default to 1.
 * **TimeToLockInteractiveState** (float): for how long, in seconds, to keep entities in "interactive" state once the mouse points on them even if the mouse immediately leaves. This is useful to prevent flickering if the user constantly point on and off an entity and it has animations.
 * **RowSpaceHeight** (int): define the size, in pixels, of a single `RowsSpacer` row.
@@ -1451,6 +1454,9 @@ All changes:
 # 1.1.2 [WIP]
 
 - Added display filter to lists and dropdown.
+- Made per-item stylesheet public for list box and dropdown.
+- Added 'DefaultTexture' and 'TextureScale' properties to system stylesheet, to reduce duplications in stylesheets.
+- Updated the built-in theme to make it leaner and with less duplications.
 
 # License
 

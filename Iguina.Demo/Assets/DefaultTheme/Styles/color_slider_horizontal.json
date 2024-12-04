@@ -1,7 +1,6 @@
 {
 	"Default": {
 		"FillTextureStretched": {
-			"TextureId": "Textures/UI.png",
 			"SourceRect": {"X": 128, "Y": 186, "Width": 128, "Height": 6},
             "ExtraSize": {"Left": -10, "Right": -10, "Top": 0, "Bottom": 0}
 		},

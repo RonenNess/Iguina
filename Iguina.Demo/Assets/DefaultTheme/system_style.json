@@ -1,44 +1,39 @@
 {
     "ThemeIdentifier": "Default UI",
     "CursorDefault": {
-        "TextureId": "Textures/UI.png",
-        "Scale": 2,
+        
         "SourceRect": {"X": 0, "Y": 0, "Width": 16, "Height": 16}
     },
     "CursorDisabled": {
-        "TextureId": "Textures/UI.png",
-        "Scale": 2,
+        
         "SourceRect": {"X": 0, "Y": 16, "Width": 16, "Height": 16}
     },
     "CursorLocked": {
-        "TextureId": "Textures/UI.png",
-        "Scale": 2,
+        
         "SourceRect": {"X": 0, "Y": 16, "Width": 16, "Height": 16}
     },
     "CursorInteractable": {
-        "TextureId": "Textures/UI.png",
-        "Scale": 2,
+        
         "SourceRect": {"X": 0, "Y": 32, "Width": 16, "Height": 16}
     },
     "FocusedEntityOverlay": {
-			"TextureId": "Textures/UI.png",
+			
 			"InternalSourceRect": {"X": 177, "Y": 129, "Width": 30, "Height": 30},
-			"ExternalSourceRect": {"X": 176, "Y": 128, "Width": 32, "Height": 32},
-			"TextureScale": 2
+			"ExternalSourceRect": {"X": 176, "Y": 128, "Width": 32, "Height": 32}	
     },
 	"RowSpaceHeight": 14,
+    "DefaultTexture": "Textures/UI.png",
     "TextScale": 1,
+    "TextureScale": 2,
     "CursorScale": 1,
 	"TimeToLockInteractiveState": 0.135,
 	"SystemIcons": {
 		"file": {
-			"TextureId": "Textures/UI.png",
-			"Scale": 2,
+			
 			"SourceRect": {"X": 240, "Y": 48, "Width": 16, "Height": 16}
 		},
 		"folder": {
-			"TextureId": "Textures/UI.png",
-			"Scale": 2,
+			
 			"SourceRect": {"X": 240, "Y": 64, "Width": 16, "Height": 16}
 		}
 	},

@@ -1,11 +1,10 @@
 {
 	"Default": {
 		"FillTextureFramed": {
-			"TextureId": "Textures/UI.png",
+			
 			"InternalSourceRect": {"X": 4, "Y": 98, "Width": 72, "Height": 14},
 			"ExternalSourceRect": {"X": 0, "Y": 98, "Width": 80, "Height": 14},
-            "Offset": {"X": 0, "Y": 0},
-			"TextureScale": 2
+            "Offset": {"X": 0, "Y": 0}
 		},
         "Padding": {"Left": 6, "Right": 6, "Top": 0, "Bottom": 0},
         "ExtraSize": {"Left": 60, "Right": 60, "Top": 0, "Bottom": 0},

@@ -2,26 +2,23 @@
     "InheritFrom": "checkbox.json",
 	"Default": {
         "Icon": {
-			"TextureId": "Textures/UI.png",
+			
 			"SourceRect": {"X": 80, "Y": 112, "Width": 16, "Height": 16},
-            "CenterVertically": true,
-			"TextureScale": 2
+            "CenterVertically": true
 		}
 	},
     "Targeted": {
 		"Icon": {
-			"TextureId": "Textures/UI.png",
+			
 			"SourceRect": {"X": 112, "Y": 112, "Width": 16, "Height": 16},
-            "CenterVertically": true,
-			"TextureScale": 2
+            "CenterVertically": true
 		}
 	},
     "Interacted": {
 		"Icon": {
-			"TextureId": "Textures/UI.png",
+			
 			"SourceRect": {"X": 96, "Y": 112, "Width": 16, "Height": 16},
-            "CenterVertically": true,
-			"TextureScale": 2
+            "CenterVertically": true
 		}
 	}
 }

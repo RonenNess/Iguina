@@ -30,7 +30,7 @@ namespace Iguina.Entities
             {
                 _colorValue = value;
                 var srcTexture = SourceTextureData;
-                var offset = UISystem.Renderer.FindPixelOffsetInTexture(srcTexture!.TextureId, srcTexture.SourceRect, value, false);
+                var offset = UISystem.Renderer.FindPixelOffsetInTexture(srcTexture!.TextureId ?? UISystem.SystemStyleSheet.DefaultTexture, srcTexture.SourceRect, value, false);
                 if (offset.HasValue)
                 {
                     SetHandleOffsetFromSource(offset.Value);
@@ -43,7 +43,7 @@ namespace Iguina.Entities
         {
             _colorValue = value;
             var srcTexture = SourceTextureData;
-            var offset = UISystem.Renderer.FindPixelOffsetInTexture(srcTexture!.TextureId, srcTexture.SourceRect, value, true);
+            var offset = UISystem.Renderer.FindPixelOffsetInTexture(srcTexture!.TextureId ?? UISystem.SystemStyleSheet.DefaultTexture, srcTexture.SourceRect, value, true);
             if (offset.HasValue)
             {
                 SetHandleOffsetFromSource(offset.Value);
@@ -141,7 +141,7 @@ namespace Iguina.Entities
         void UpdateValueFromHandle()
         {
             var srcTexture = SourceTextureData;
-            _colorValue = UISystem.Renderer.GetPixelFromTexture(srcTexture!.TextureId ?? string.Empty, 
+            _colorValue = UISystem.Renderer.GetPixelFromTexture(srcTexture!.TextureId ?? UISystem.SystemStyleSheet.DefaultTexture ?? string.Empty, 
                 new Point(
                     srcTexture.SourceRect.X + _offsetInSource.X, 
                     srcTexture.SourceRect.Y + _offsetInSource.Y)

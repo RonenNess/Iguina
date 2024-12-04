@@ -567,13 +567,13 @@ namespace Iguina
             // render cursor
             if (ShowCursor && cursor != null)
             {
-                var scale = cursor.Scale * SystemStyleSheet.CursorScale;
+                var scale = cursor.Scale * SystemStyleSheet.CursorScale * SystemStyleSheet.TextureScale;
                 var destRect = cursor.SourceRect;
                 destRect.X = Input.GetMousePosition().X + (int)(cursor.Offset.X * scale);
                 destRect.Y = Input.GetMousePosition().Y + (int)(cursor.Offset.Y * scale);
                 destRect.Width = (int)(destRect.Width * scale);
                 destRect.Height = (int)(destRect.Height * scale);
-                Renderer.DrawTexture(cursor.EffectIdentifier, cursor.TextureId, destRect, cursor.SourceRect, cursor.FillColor);
+                Renderer.DrawTexture(cursor.EffectIdentifier, cursor.TextureId ?? SystemStyleSheet.DefaultTexture, destRect, cursor.SourceRect, cursor.FillColor);
             }
         }
     }
