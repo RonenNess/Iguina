@@ -1451,7 +1451,7 @@ All changes:
 - Added method `ClearChildren()`.
 - Added `InteractableTargetedEntity` to get `TargetedEntity`, but only if its interactable.
 
-# 1.1.2 [WIP]
+# 1.1.2
 
 - Added display filter to lists and dropdown.
 - Made per-item stylesheet public for list box and dropdown.
