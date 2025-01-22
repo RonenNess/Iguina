@@ -207,13 +207,25 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         protected override void SetAutoSizes(int maxWidth, int maxHeight)
         {
+            // set auto width
             if (AutoWidth)
             {
+                if (AutoWidthMaxSize.HasValue && maxWidth > AutoWidthMaxSize.Value)
+                {
+                    maxWidth = AutoWidthMaxSize.Value;
+                }
                 Size.X.SetPixels(maxWidth);
             }
+
+            // set auto height
             if (AutoHeight)
             {
-                Size.Y.SetPixels(ItemHeight * (_items.Count + 1));
+                var height = ItemHeight * (_items.Count + 1);
+                if (AutoHeightMaxSize.HasValue && height > AutoHeightMaxSize.Value)
+                {
+                    height = AutoHeightMaxSize.Value;
+                }
+                Size.Y.SetPixels(height);
             }
         }
 

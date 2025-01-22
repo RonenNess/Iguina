@@ -1458,6 +1458,10 @@ All changes:
 - Added 'DefaultTexture' and 'TextureScale' properties to system stylesheet, to reduce duplications in stylesheets.
 - Updated the built-in theme to make it leaner and with less duplications.
 
+# 1.1.3 [WIP]
+
+- Added `AutoWidthMaxSize` and `AutoHeightMaxSize` to limit auto size values.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 

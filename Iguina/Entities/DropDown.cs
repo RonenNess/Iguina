@@ -115,15 +115,28 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         protected override void SetAutoSizes(int maxWidth, int maxHeight)
         {
+            // set auto width
             if (AutoWidth)
             {
-                Size.X.SetPixels(maxWidth);
+                var width = maxWidth;
+                if (AutoWidthMaxSize.HasValue && width > AutoWidthMaxSize.Value)
+                {
+                    width = AutoWidthMaxSize.Value;
+                }
+                Size.X.SetPixels(width);
             }
+
+            // set auto height
             if (AutoHeight)
             {
                 var extraSize = _selectedValuePanel.GetExtraSize();
                 var selectedPanelHeight = _selectedValuePanel.LastBoundingRect.Height + _selectedValuePanel.GetMarginAfter().Y + extraSize.Bottom + extraSize.Top;
-                Size.Y.SetPixels((int)(ItemHeight * ((float)ItemsCount + 0.5f) + selectedPanelHeight));
+                var height = (int)(ItemHeight * ((float)ItemsCount + 0.5f) + selectedPanelHeight);
+                if (AutoHeightMaxSize.HasValue && height > AutoHeightMaxSize.Value)
+                {
+                    height = AutoHeightMaxSize.Value;
+                }
+                Size.Y.SetPixels(height);
             }
         }
 

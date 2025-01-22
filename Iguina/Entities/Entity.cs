@@ -104,9 +104,19 @@ namespace Iguina.Entities
         public bool AutoWidth = false;
 
         /// <summary>
+        /// Max width in pixels, when AutoWidth is set to true.
+        /// </summary>
+        public int? AutoWidthMaxSize;
+
+        /// <summary>
         /// If true, will set entity height automatically to fit its children.
         /// </summary>
         public bool AutoHeight = false;
+
+        /// <summary>
+        /// Max height in pixels, when AutoHeight is set to true.
+        /// </summary>
+        public int? AutoHeightMaxSize;
 
         /// <summary>
         /// If true, the entity will not be interactable, but will not change its state to Disabled.
@@ -1129,13 +1139,23 @@ namespace Iguina.Entities
         /// <param name="maxHeight">Max height, calculated based on children.</param>
         protected virtual void SetAutoSizes(int maxWidth, int maxHeight)
         {
-            // set auto size
+            // set auto width
             if (AutoWidth)
             {
+                if (AutoWidthMaxSize.HasValue && maxWidth > AutoWidthMaxSize.Value)
+                {
+                    maxWidth = AutoWidthMaxSize.Value;
+                }
                 Size.X.SetPixels(maxWidth);
             }
+
+            // set auto height
             if (AutoHeight)
             {
+                if (AutoHeightMaxSize.HasValue && maxHeight > AutoHeightMaxSize.Value)
+                {
+                    maxHeight = AutoHeightMaxSize.Value;
+                }
                 Size.Y.SetPixels(maxHeight);
             }
         }
