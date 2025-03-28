@@ -16,7 +16,45 @@ namespace Iguina.Defs
         /// <summary>
         /// The source rectangle of the center part, without the frame.
         /// </summary>
-        public Rectangle InternalSourceRect { get; set; }
+        public Rectangle InternalSourceRect 
+        {
+            get
+            {
+                if (_internalSourceRect.Width == 0 && _internalSourceRect.Height == 0 && FrameWidth.HasValue)
+                {
+                    _internalSourceRect = new Rectangle(
+                        ExternalSourceRect.X + FrameWidth.Value.X,
+                        ExternalSourceRect.Y + FrameWidth.Value.Y,
+                        ExternalSourceRect.Width - FrameWidth.Value.X * 2,
+                        ExternalSourceRect.Height - FrameWidth.Value.Y * 2);
+                }
+                return _internalSourceRect;
+            }
+            set => _internalSourceRect = value;
+        }
+
+        // internal source rect value
+        Rectangle _internalSourceRect;
+
+        /// <summary>
+        /// Graphics frame width.
+        /// If set, it will set the value of InternalSourceRect by calculating ExternalSourceRect - FrameWidth.
+        /// </summary>
+        public Point? FrameWidth
+        {
+            get => _frameWidth;
+            set
+            {
+                _frameWidth = value;
+                if (value.HasValue)
+                {
+                    _internalSourceRect = new Rectangle();
+                }
+            }
+        }
+
+        // frame width value
+        Point? _frameWidth;
 
         /// <summary>
         /// The source rectangle of the entire framed texture, including the frame.

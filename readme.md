@@ -1464,12 +1464,13 @@ All changes:
 - Added 'DefaultTexture' and 'TextureScale' properties to system stylesheet, to reduce duplications in stylesheets.
 - Updated the built-in theme to make it leaner and with less duplications.
 
-# 1.1.3 [WIP]
+# 1.1.3
 
 - Added `AutoWidthMaxSize` and `AutoHeightMaxSize` to limit auto size values.
 - Added files reader provider to allow users to change the source of content files.
 - Fixed message boxes back drop fade-in bug (+ added proper fade in support).
 - Fixed corners scale bug with panels that have texture scale.
+- Added `FrameWidth` graphic property to `FillTextureFramed` as a simpler way to set `InternalSourceRect` out of `ExternalSourceRect`.
 
 # License
 
