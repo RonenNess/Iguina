@@ -1316,6 +1316,12 @@ Show save file dialog, that returns selected file path (or null if user cancelle
 Show open file dialog, that returns selected file path (or null if user cancelled).
 This is very similar to `ShowSaveFileDialog()` but with different default flags and designed to select an existing files rather than creating a new file or overriding old one.
 
+# Miscs
+
+## Using with Android & MonoGame
+
+To use `Iguina` on Android with MonoGame, you can see general instructions [here](https://github.com/RonenNess/Iguina/issues/11).
+
 # Changelist
 
 ## 1.0.1
