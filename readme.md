@@ -576,6 +576,7 @@ The Framed Texture has the following fields:
 * **TextureId** (string): which texture to render.
 * **ExternalSourceRect** (Rectangle): the external source rectangle of the framed texture, including the frame.
 * **InternalSourceRect** (Rectangle): the internal source rectangle of the framed texture, without the frame. Must be contained inside ExternalSourceRect.
+* **FrameWidth** (Point): instead of setting `ExternalSourceRect` and `InternalSourceRect`, you can set just `ExternalSourceRect` + `FrameWidth`, and Iguina will calculate `InternalSourceRect` automatically based on this property.
 * **TextureScale** (float): will scale the framed texture parts when rendering. Scale of 1 means the width of the frame equals to the source size in texture.
 * **Offset** (Point): offset, in pixels, to render this framed texture from its original destination rect.
 
