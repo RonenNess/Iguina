@@ -10,5 +10,5 @@
 	"Disabled": {
 		"EffectIdentifier": "disabled"
 	},
-	"InterpolateStatesSpeed": 5
+	"InterpolateStatesSpeed": 2.5
 }

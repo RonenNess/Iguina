@@ -1307,7 +1307,7 @@ namespace Iguina.Entities
                     }
 
                     // apply alpha
-                    if (alpha <= 1f)
+                    if (alpha < 1f)
                     {
                         color.A = (byte)((float)color.A * alpha);
                         backColor.A = (byte)((float)backColor.A * alpha);
@@ -1363,8 +1363,17 @@ namespace Iguina.Entities
                 // draw state with interpolation
                 if (InterpolateStates && (_interpolateToNextState < 1f))
                 {
-                    DrawStateFill(_prevState, boundingRect, 1f);
-                    DrawStateFill(state, boundingRect, _interpolateToNextState);
+                    // this only happens when the entity appears, and we want to 'fade in'
+                    if ((_prevState == state) && (state == EntityState.Default))
+                    {
+                        DrawStateFill(state, boundingRect, _interpolateToNextState);
+                    }
+                    // actual state change
+                    else
+                    {
+                        DrawStateFill(_prevState, boundingRect, 1f);
+                        DrawStateFill(state, boundingRect, _interpolateToNextState);
+                    }
                 }
                 // draw current state without interpolation
                 else

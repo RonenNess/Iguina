@@ -1468,6 +1468,7 @@ All changes:
 
 - Added `AutoWidthMaxSize` and `AutoHeightMaxSize` to limit auto size values.
 - Added files reader provider to allow users to change the source of content files.
+- Fixed message boxes back drop fade-in bug (+ added proper fade in support).
 
 # License
 

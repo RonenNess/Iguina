@@ -139,7 +139,7 @@ namespace Iguina.Utils
             Entity backdrop = null!;
             if (options.Value.AddBackdrop)
             {
-                backdrop = new Entity(_uiSystem, _uiSystem.DefaultStylesheets.MessageBoxBackdrop);
+                backdrop = new Entity(_uiSystem, _uiSystem.DefaultStylesheets.MessageBoxBackdrop, false);
                 backdrop.Size.SetPercents(100f, 100f);
                 backdrop.Anchor = Anchor.Center;
                 backdrop.Locked = true;
