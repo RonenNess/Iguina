@@ -25,6 +25,11 @@ namespace Iguina
         public IInputProvider Input { get; private set; }
 
         /// <summary>
+        /// Files read provider.
+        /// </summary>
+        public IFilesProvider FilesProvider { get; private set; }
+
+        /// <summary>
         /// Total elapsed time this system is running, in seconds.
         /// </summary>
         public double ElapsedTime { get; private set; }
@@ -178,12 +183,14 @@ namespace Iguina
         /// <param name="styleSheetFilePath">UI System stylesheet file path.</param>
         /// <param name="renderer">Renderer provider, to draw UI elements.</param>
         /// <param name="input">Input provider, to get mouse-like and keyboard input.</param>
-        public UISystem(string styleSheetFilePath, IRenderer renderer, IInputProvider input) 
-            : this(renderer, input)
+        /// <param name="filesReader">Files read provider, to get text files content.</param>
+        public UISystem(string styleSheetFilePath, IRenderer renderer, IInputProvider input, IFilesProvider? filesReader = null) 
+            : this(renderer, input, filesReader)
         {
             try
             {
-                SystemStyleSheet = JsonSerializer.Deserialize<SystemStyleSheet>(File.ReadAllText(styleSheetFilePath))!;
+                var content = FilesProvider.ReadAllText(styleSheetFilePath);
+                SystemStyleSheet = JsonSerializer.Deserialize<SystemStyleSheet>(content)!;
             }
             catch (Exception e)
             {
@@ -224,11 +231,13 @@ namespace Iguina
         /// </remarks>
         /// <param name="renderer">Renderer provider, to draw UI elements.</param>
         /// <param name="input">Input provider, to get mouse-like and keyboard input.</param>
-        public UISystem(IRenderer renderer, IInputProvider input) 
+        /// <param name="filesReader">Files read provider, to get text files content. If null, will use a default built-in provider.</param>
+        public UISystem(IRenderer renderer, IInputProvider input, IFilesProvider? filesReader = null) 
         {
             // store renderer and input
             Renderer = renderer;
             Input = input;
+            FilesProvider = filesReader ?? new DefaultFilesProvider();
 
             // create root entity
             Root = new Panel(this, new StyleSheet()) { Identifier = "Root" };
@@ -287,7 +296,7 @@ namespace Iguina
                 var fullPath = Path.Combine(parentFolder, path);
                 try
                 {
-                    var stylesheet = StyleSheet.LoadFromJsonFile(fullPath);
+                    var stylesheet = StyleSheet.LoadFromJsonFile(fullPath, FilesProvider);
                     field.SetValue(DefaultStylesheets, stylesheet);
                 }
                 catch (FileNotFoundException)

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Iguina.Drivers;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -345,14 +346,16 @@ namespace Iguina.Defs
         /// Load and return stylesheet from JSON file path.
         /// </summary>
         /// <param name="filename">Json file path.</param>
+        /// <param name="filesReader">Files reader, or null to use the default built-in.</param>
         /// <returns>Loaded stylesheet.</returns>
-        public static StyleSheet LoadFromJsonFile(string filename)
+        public static StyleSheet LoadFromJsonFile(string filename, IFilesProvider? filesReader = null)
         {
-            var ret = LoadFromJsonMemory(File.ReadAllText(filename));
+            filesReader = filesReader ?? new DefaultFilesProvider();
+            var ret = LoadFromJsonMemory(filesReader.ReadAllText(filename));
             if (ret.InheritFrom != null)
             {
                 var folder = Path.GetDirectoryName(filename)!;
-                var parent = LoadFromJsonFile(Path.Combine(folder, ret.InheritFrom));
+                var parent = LoadFromJsonFile(Path.Combine(folder, ret.InheritFrom), filesReader);
                 ret.InterpolateOffsetsSpeed = ret.InterpolateOffsetsSpeed ?? parent.InterpolateOffsetsSpeed;
                 ret.InterpolateStatesSpeed = ret.InterpolateStatesSpeed ?? parent.InterpolateStatesSpeed;
                 ret.DefaultTextAnchor = ret.DefaultTextAnchor ?? parent.DefaultTextAnchor;

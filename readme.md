@@ -1461,6 +1461,7 @@ All changes:
 # 1.1.3 [WIP]
 
 - Added `AutoWidthMaxSize` and `AutoHeightMaxSize` to limit auto size values.
+- Added files reader provider to allow users to change the source of content files.
 
 # License
 
