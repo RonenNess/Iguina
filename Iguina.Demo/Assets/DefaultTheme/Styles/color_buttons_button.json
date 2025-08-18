@@ -1,0 +1,44 @@
+{
+    "InheritFrom": "paragraph_base_style.json",
+	"Default": {
+        "BackgroundColorPadding": {"Left": 2, "Right": 2, "Top": 2, "Bottom": 2},
+        "TextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "NoValueTextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+		"FillTextureStretched": {	
+			"SourceRect": {"X": 224, "Y": 96, "Width": 32, "Height": 16}
+		},
+        "TextAlignment": "Center",
+        "Padding": {"Left": 8, "Right": 8, "Top": 8, "Bottom": 8}
+	},
+    "Targeted": {
+        "TextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "NoValueTextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0}
+	},
+    "Interacted": {
+        "TextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "NoValueTextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0}
+	},
+    "TargetedChecked": {
+        "TextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "NoValueTextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0}
+	},
+    "Checked": {
+        "TextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "NoValueTextFillColor": {"R": 0, "G": 0, "B": 0, "A": 0},
+        "FillTextureStretched": {
+			"SourceRect": {"X": 224, "Y": 112, "Width": 32, "Height": 16}
+		}
+	},
+	"Disabled": {
+		"EffectIdentifier": "disabled"
+	},
+    "DefaultWidth": {"Value": 64, "Units": "Pixels"},
+    "DefaultHeight": {"Value": 32, "Units": "Pixels"},
+    "DefaultTextAnchor": "Center",
+	"InterpolateStatesSpeed": 5
+}

@@ -618,6 +618,29 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                         };
                     }
                 }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new HorizontalLine(_system));
+
+                // color buttons
+                {
+                    panel.AddChild(new Paragraph(_system, @"And finally, Iguina provides Color Buttons entity, which is a color picker for pre-defined set of colors, using buttons:"));
+                    var picker = panel.AddChild(new ColorButtons(_system));
+                    var value = panel.AddChild(new Label(_system));
+                    picker.Events.OnValueChanged = (Entity entity) =>
+                    {
+                        var color = picker.ColorValue;
+                        value.Text = $"Color value: {color.R}, {color.G}, {color.B}, {color.A} - ({picker.ColorLabel})";
+                    };
+                    picker.AddColor(new Color(255, 0, 0, 255), "Red");
+                    picker.AddColor(new Color(0, 255, 0, 255), "Green");
+                    picker.AddColor(new Color(0, 0, 255, 255), "Blue");
+                    picker.AddColor(new Color(255, 0, 255, 255), "Purple");
+                    picker.AddColor(new Color(255, 255, 0, 255), "Yellow");
+                    picker.AddColor(new Color(0, 255, 255, 255), "Teal");
+                    picker.AddColor(new Color(255, 255, 255, 255), "White");
+                    picker.AddColor(new Color(0, 0, 0, 255), "Black");
+                }
             }
 
             // scrollbars

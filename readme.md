@@ -53,7 +53,7 @@ Miscs:
     * Numeric Input.
 	* Horizontal / Vertical Lines.
     * Message Boxes & file dialogs.
-    * Color Slider and Color Picker.
+    * Color Slider, Color Picker and Color Buttons.
 * Extensive Stylesheet system to load an entire UI theme from files.
 * Smooth transitions and animations.
 * Cursor styles and handling.
@@ -1294,6 +1294,25 @@ Return the color value, as extracted from the source texture.
 
 Set handle offset, in pixels, from top-left corner of the entity.
 
+## ColorButtons
+
+![Color Buttons Image](ReadmeAssets/entity-colorbuttons.png)
+
+`ColorButtons` is used to pick a color from a set of predefined colors, using simple buttons.
+Unlike the other color pickers, this type is not purely by stylesheet and you will have to feed the color choices by code.
+
+### `AddColor`
+
+Add a color choice button to the color picker.
+
+### `ColorValue`
+
+Return the color value, as extracted from the source texture.
+
+### `ColorIndex`
+
+Get / set the selected color index.
+
 # MessageBoxUtils
 
 ![Save File Dialog](ReadmeAssets/save-file-dialog.png)
@@ -1473,11 +1492,14 @@ All changes:
 - Fixed corners scale bug with panels that have texture scale.
 - Added `FrameWidth` graphic property to `FillTextureFramed` as a simpler way to set `InternalSourceRect` out of `ExternalSourceRect`.
 
-# 1.1.4 [WIP]
+# 1.1.4
 
 - Upgraded .net version to `9.0`.
 - Updated libraries for demo projects and tests.
 - Added icon to projects.
+- Added `ColorButtons` entity.
+- Added comparison operators and hash to `Color` struct.
+- Added style property `BackgroundColorPadding`.
 
 # License
 

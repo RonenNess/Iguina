@@ -36,6 +36,11 @@ namespace Iguina.Defs
         public Color? BackgroundColor { get; set; }
 
         /// <summary>
+        /// Amount of pixels trimmed from the edges of the background color rect.
+        /// </summary>
+        public Sides? BackgroundColorPadding { get; set; }
+
+        /// <summary>
         /// Text alignment for entities with text.
         /// </summary>
         [JsonConverter(typeof(JsonStringEnumConverter))]

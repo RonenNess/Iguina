@@ -1316,7 +1316,20 @@ namespace Iguina.Entities
                     // draw background color
                     if (backColor.A > 0)
                     {
-                        UISystem.Renderer.DrawRectangle(boundingRect, backColor);
+                        var backColorMargins = StyleSheet.GetProperty<Sides?>("BackgroundColorPadding", state, null, OverrideStyles)!;
+                        if (backColorMargins.HasValue)
+                        {
+                            var backColorRect = boundingRect;
+                            backColorRect.X += backColorMargins.Value.Left;
+                            backColorRect.Width -= backColorMargins.Value.Right + backColorMargins.Value.Left;
+                            backColorRect.Y += backColorMargins.Value.Top;
+                            backColorRect.Height -= backColorMargins.Value.Bottom + backColorMargins.Value.Top;
+                            UISystem.Renderer.DrawRectangle(backColorRect, backColor);
+                        }
+                        else
+                        {
+                            UISystem.Renderer.DrawRectangle(boundingRect, backColor);
+                        }
                     }
 
                     // not visible? skip

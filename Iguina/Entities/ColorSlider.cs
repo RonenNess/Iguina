@@ -50,9 +50,10 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">Slider stylesheet.</param>
-        /// <param name="stylesheet">Slider handle stylesheet.</param>
+        /// <param name="handleStylesheet">Slider handle stylesheet.</param>
         /// <param name="orientation">Slider orientation.</param>
-        public ColorSlider(UISystem system, StyleSheet? stylesheet, StyleSheet? handleStylesheet, Orientation orientation = Orientation.Horizontal) : base(system, stylesheet, handleStylesheet, orientation)
+        public ColorSlider(UISystem system, StyleSheet? stylesheet, StyleSheet? handleStylesheet, Orientation orientation = Orientation.Horizontal) 
+            : base(system, stylesheet, handleStylesheet, orientation)
         {
             AutoSetRange = true;
             SetAutoRange();

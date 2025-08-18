@@ -13,6 +13,47 @@ namespace Iguina.Defs
         public byte B { get; set; }
         public byte A { get; set; }
 
+        public static bool operator ==(Color left, Color right)
+        {
+            return left.R == right.R &&
+                   left.G == right.G &&
+                   left.B == right.B &&
+                   left.A == right.A;
+        }
+
+        public static bool operator !=(Color left, Color right)
+        {
+            return !(left == right);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Color other)
+            {
+                return this == other;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            // Efficient hash code combining
+            return HashCode.Combine(R, G, B, A);
+        }
+
+        /// <summary>
+        /// Calculate distance between two colors, treating them as vectors.
+        /// </summary>
+        public static float Distance(Color a, Color b)
+        {
+            return MathF.Sqrt(
+                    MathF.Pow(a.R - b.R, 2) +
+                    MathF.Pow(a.G - b.G, 2) +
+                    MathF.Pow(a.B - b.B, 2) +
+                    MathF.Pow(a.A - b.A, 2)
+            );
+        }
+
         /// <summary>
         /// Parse color value from string.
         /// </summary>
@@ -57,5 +98,6 @@ namespace Iguina.Defs
 
         public static readonly Color White = new Color(255, 255, 255, 255);
         public static readonly Color Black = new Color(0, 0, 0, 255);
+
     }
 }

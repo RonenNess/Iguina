@@ -67,6 +67,8 @@
         "HorizontalColorSliders": "Styles/color_slider_horizontal.json",
         "HorizontalColorSlidersHandle": "Styles/color_slider_horizontal_handle.json",
         "ColorPickers": "Styles/color_picker.json",
-        "ColorPickersHandle": "Styles/color_picker_handle.json"
+        "ColorPickersHandle": "Styles/color_picker_handle.json",
+        "ColorButtonsPanel": "Styles/color_buttons_panel.json",
+        "ColorButtonsButton": "Styles/color_buttons_button.json"
     }
 }

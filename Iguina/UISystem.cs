@@ -93,6 +93,8 @@ namespace Iguina
             public StyleSheet? VerticalProgressBarsFill;
             public StyleSheet? ColorPickers;
             public StyleSheet? ColorPickersHandle;
+            public StyleSheet? ColorButtonsPanel;
+            public StyleSheet? ColorButtonsButton;
         }
         public _DefaultStylesheets DefaultStylesheets = new();
 
