@@ -1469,7 +1469,7 @@ All changes:
 - Made built-in UI theme more compact and clean.
 - Updated dependencies.
 
-# 1.1.1
+## 1.1.1
 
 - Added option to make base entities interactable.
 - Added option to override cursor properties.
@@ -1477,14 +1477,14 @@ All changes:
 - Added method `ClearChildren()`.
 - Added `InteractableTargetedEntity` to get `TargetedEntity`, but only if its interactable.
 
-# 1.1.2
+## 1.1.2
 
 - Added display filter to lists and dropdown.
 - Made per-item stylesheet public for list box and dropdown.
 - Added 'DefaultTexture' and 'TextureScale' properties to system stylesheet, to reduce duplications in stylesheets.
 - Updated the built-in theme to make it leaner and with less duplications.
 
-# 1.1.3
+## 1.1.3
 
 - Added `AutoWidthMaxSize` and `AutoHeightMaxSize` to limit auto size values.
 - Added files reader provider to allow users to change the source of content files.
@@ -1492,7 +1492,7 @@ All changes:
 - Fixed corners scale bug with panels that have texture scale.
 - Added `FrameWidth` graphic property to `FillTextureFramed` as a simpler way to set `InternalSourceRect` out of `ExternalSourceRect`.
 
-# 1.1.4
+## 1.1.4
 
 - Upgraded .net version to `9.0`.
 - Updated libraries for demo projects and tests.
