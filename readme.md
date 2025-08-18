@@ -1473,6 +1473,12 @@ All changes:
 - Fixed corners scale bug with panels that have texture scale.
 - Added `FrameWidth` graphic property to `FillTextureFramed` as a simpler way to set `InternalSourceRect` out of `ExternalSourceRect`.
 
+# 1.1.4 [WIP]
+
+- Upgraded .net version to `9.0`.
+- Updated libraries for demo projects and tests.
+- Added icon to projects.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 
