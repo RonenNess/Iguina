@@ -56,7 +56,7 @@ namespace Iguina.Entities
         /// <inheritdoc/>
         internal override void PerformMouseWheelScroll(int val)
         {
-            if ((VerticalScrollbar != null) && (VerticalScrollbar.Visible))
+            if (VerticalScrollbar != null && VerticalScrollbar.Enabled)
             {
                 VerticalScrollbar.PerformMouseWheelScroll(val);
             }
