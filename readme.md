@@ -18,6 +18,7 @@ Understanding `Iguina` and quick examples:
 Writing drivers and a UI theme (only required if you don't use the built-in drivers and UI theme from the demo projects):
 
 * [Writing Drivers](#writing-drivers)
+  * [Files Provider](#files-provider)
 * [Writing Stylesheets](#writing-stylesheets)
 
 Using `Iguina` in your application:
@@ -42,7 +43,7 @@ Miscs:
     * Panels.
 	* Buttons.
 	* Sliders.
-	* Progress Bars.
+	* Progress Bars (Horizontal and Vertical).
 	* Scrollbars.
 	* Paragraphs, Titles, and Labels.
 	* Checkboxes.
@@ -68,7 +69,7 @@ If you have a `MonoGame` project and you're already using [GeonBit.UI](https://g
 
 However, you should pick `Iguina` over `GeonBit.UI` for the following cases:
 
-- **For a new project.** `Iguina` is going to be maintained for longer, it has leaner and modern APIs, and its *not* dependant on `MonoGame` and its content manager.
+- **For a new project.** `Iguina` is going to be maintained for longer, it has leaner and modern APIs, and it's *not* dependent on `MonoGame` and its content manager.
 - **For projects that are not in MonoGame.** `Iguina` is completely framework-agnostic and can be used with `RayLib`, `SFML`, `SDL` or any other alternative.
 - **If you need any of the new features.** `Iguina` introduces some new features, including animations, cursor stylesheet, non-monospace fonts support, and much more.
 - **For cross platform projects.** `Iguina` is built with a more flexible design and can be ported more easily to any framework or device.
@@ -92,8 +93,8 @@ In addition to the generic demo project (which is a DLL), Iguina also provides t
 
 You can take the `Renderer` and `Input Provider` implementations from these demos and use in your own projects, as they offer a solid starting point. Or you can implement your own, which is quite easy to do.
 
-Note: if you take the demo projects implementations, know that rendering text outline is done in a lacky, quick and dirty way. 
-You might want to replace that part with a proper shader (not mandatory).
+Note: if you take the demo project implementations, know that text outline rendering is done in a quick-and-dirty way (rendering the string multiple times with offsets).
+You may want to replace that with a proper shader, but it's not mandatory.
 
 # Quick Examples
 
@@ -402,8 +403,7 @@ Render 2D text on screen. This is one the main methods `Iguina` uses to render i
 - **outlineWidth**: Text outline width. Note that it may be 0, in which case, you shouldn't render outline.
 - **spacing**: characters spacing factor.
 
-Note: in the default drivers implementation for both `RayLib` and `MonoGame`, outline is implemented in a quick-and-dirty way by simply rendering the string multiple times with offset for outline, and then on top of it render the fill without offset.
-This is less efficient and doesn't look that good with opacity. It's recommended to replace this implementation with something that uses a shader to draw outline. But not mandatory, it will work either way.
+Note: in the default driver implementations for both `RayLib` and `MonoGame`, outline is produced by rendering the string multiple times with pixel offsets, then drawing the fill on top. This is less efficient and doesn't look great at low opacity. Replacing it with a proper shader is recommended but not mandatory.
 
 ### `void DrawRectangle(Rectangle rectangle, Color color);`
 
@@ -475,7 +475,7 @@ Note:
 * This method does not handle commands such as line break, delete, etc. This is handled separately.
 * This method should also handle capital case, for example if shift is being held down.
 
-This method is perheps the most complicated thing to implement for `Iguina`.
+This method is perhaps the most complicated thing to implement for `Iguina`.
 
 ### `TextInputCommands[] GetTextInputCommands();`
 
@@ -484,6 +484,23 @@ Similar to `GetTextInput`, but handle special typing command, such as line break
 ### `KeyboardInteractions? GetKeyboardInteraction();`
 
 Return keyboard-based interactions, like arrow keys pressing and toggling with space / enter.
+
+## Files Provider
+
+The Files Provider (`Iguina.Drivers.IFilesProvider`) is an optional third driver that controls how `Iguina` reads text files (stylesheets, theme data, etc.). If you don't provide one, `Iguina` uses the built-in `DefaultFilesProvider` which reads from the local file system.
+
+Implement this interface to load files from a custom source, such as a zip archive, an embedded resource, or a network store.
+
+### `string ReadAllText(string path);`
+
+Return the full text content of the file at the given path. The path is whatever string was written into the stylesheet JSON (typically a relative file path).
+
+Assign your custom provider when creating the UI system:
+
+```cs
+var myProvider = new MyCustomFilesProvider();
+var uiSystem = new UISystem(Path.Combine(uiThemeFolder, "system_style.json"), renderer, input, myProvider);
+```
 
 # Writing Stylesheets
 
@@ -693,6 +710,7 @@ The map of default stylesheets to load is a simple dictionary of <string, string
     "Panels": "Styles/panel.json",
     "Paragraphs": "Styles/paragraph.json",
     "Titles": "Styles/title.json",
+    "Labels": "Styles/label.json",
     "Buttons": "Styles/button.json",
     "HorizontalLines": "Styles/horizontal_line.json",
     "VerticalLines": "Styles/vertical_line.json",
@@ -702,6 +720,8 @@ The map of default stylesheets to load is a simple dictionary of <string, string
     "VerticalSliders": "Styles/slider_vertical.json",
     "HorizontalSlidersHandle": "Styles/slider_handle.json",
     "VerticalSlidersHandle": "Styles/slider_handle.json",
+    "HorizontalColorSliders": "Styles/color_slider_horizontal.json",
+    "HorizontalColorSlidersHandle": "Styles/color_slider_handle.json",
     "ListPanels": "Styles/list_panel.json",
     "ListItems": "Styles/list_item.json",
     "DropDownPanels": "Styles/list_panel.json",
@@ -710,10 +730,24 @@ The map of default stylesheets to load is a simple dictionary of <string, string
     "VerticalScrollbars": "Styles/scrollbar_vertical.json",
     "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
     "TextInput": "Styles/text_input.json",
+    "NumericTextInput": "Styles/text_input.json",
+    "NumericTextInputButton": "Styles/button.json",
     "HorizontalProgressBars": "Styles/progress_bar_horizontal.json",
-    "HorizontalProgressBarsFill": "Styles/progress_bar_horizontal_fill.json"
+    "HorizontalProgressBarsFill": "Styles/progress_bar_horizontal_fill.json",
+    "VerticalProgressBars": "Styles/progress_bar_vertical.json",
+    "VerticalProgressBarsFill": "Styles/progress_bar_vertical_fill.json",
+    "ColorPickers": "Styles/color_picker.json",
+    "ColorPickersHandle": "Styles/color_picker_handle.json",
+    "ColorButtonsPanel": "Styles/panel.json",
+    "ColorButtonsButton": "Styles/button.json",
+    "MessageBoxPanels": "Styles/panel.json",
+    "MessageBoxParagraphs": "Styles/paragraph.json",
+    "MessageBoxTitles": "Styles/title.json",
+    "MessageBoxButtons": "Styles/button.json"
 }
 ```
+
+> **Note**: The exact file names depend on your theme. The keys listed above are all the valid keys supported by `Iguina`. You only need to include the ones relevant to your theme; unused keys can be omitted.
 
 ### Misc Properties
 
@@ -756,8 +790,8 @@ The following states properties can be defined: **Default**, **Targeted**, **Int
 
 For each state, we can define the following properties:
 
-* **FillTextureFramed** (FramedTexture): If defined, will render the entity as framed texture.
-* **FillTextureStretched** (StretchedTexture): If defined, will render the entity as framed texture.
+* **FillTextureFramed** (FramedTexture): If defined, will render the entity as a framed texture.
+* **FillTextureStretched** (StretchedTexture): If defined, will render the entity as a stretched texture.
 * **Icon** (IconTexture): If defined, will render the entity as icon texture.
 * **TintColor** (Color): Optional tint color. Will apply on any texture rendered.
 * **BackgroundColor** (Color): Background color to paint over the region of the entity, below everything.
@@ -778,6 +812,7 @@ For each state, we can define the following properties:
 * **BoxOutlineWidth** (Sides): Optional outline width to add around the bounding rectangle of the entity.
 * **BoxOutlineOffset** (Point): Bounding rectangle outline offset, in pixels.
 * **BoxOutlineColor** (Color): Bounding rectangle outline color.
+* **BackgroundColorPadding** (Sides): Optional extra padding to shrink the area filled by `BackgroundColor`, without affecting the entity's own bounding box.
  
 
 # Iguina Setup
@@ -846,6 +881,14 @@ The currently loaded system-level [system-level stylesheet](#system-level-styles
 
 Will contain the UI entity the user is currently pointing on or interacts with.
 
+### `InteractableTargetedEntity`
+
+Same as `TargetedEntity`, but returns `null` if the targeted entity is not interactable (e.g. a paragraph that ignores interactions).
+
+### `FocusedEntity`
+
+The entity that is currently focused and receives keyboard interactions. Set automatically when `AutoFocusEntities` is true, or manually via code.
+
 ### `Events`
 
 Events you can register callbacks to, which will be called for *any* entity and not just a specific entity instance.
@@ -853,12 +896,24 @@ Events you can register callbacks to, which will be called for *any* entity and 
 ### `ShowCursor`
 
 If true (default) will render the UI cursor.
-Does not affect the default operation system cursor, its up to you to hide / show it.
+Does not affect the default operating-system cursor; it is up to you to hide or show it separately.
+
+### `OverrideCursorProperties`
+
+When set, this `CursorProperties` object is used for every frame regardless of UI state or which entity the cursor points at. Useful for temporarily locking the cursor appearance.
 
 ### `AutoFocusEntities`
 
 If true (default) will focus on entities the user interacts with.
 If false there will be no focused entities unless you set them explicitly via code.
+
+### `FilesProvider`
+
+The `IFilesProvider` instance used to read stylesheet and asset files. By default this is the built-in provider that reads from the local file system, but you can replace it with a custom implementation to load files from any source (e.g. a virtual file system or an embedded resource archive).
+
+### `ValidateThreadSafety`
+
+When true (the default), `Iguina` will assert in debug builds if the UI system is accessed from a thread other than the one that created it. Set to false if you handle thread synchronization yourself.
 
 ### `MessageBoxes`
 
@@ -910,6 +965,10 @@ Entity [anchor](#anchors).
 If true, will set entity size based on its children.
 For example, a panel with `AutoHeight` will grow in height to fit all the entities inside of it.
 
+### `AutoWidthMaxSize` / `AutoHeightMaxSize`
+
+Optional maximum size limit in pixels when using `AutoWidth` or `AutoHeight`. The entity will not grow beyond this size even if its children require more space.
+
 ### `Identifier`
 
 Optional string identifier we can attach to this entity.
@@ -954,6 +1013,14 @@ Define if to show or hide child entities that exceed this entity bounds.
 ### `Parent`
 
 Parent entity, or null if have no parent.
+
+### `ClearChildren()`
+
+Remove all child entities from this entity.
+
+### `CursorStyle`
+
+Optional `CursorProperties` to use when the user points on this entity. Overrides any other cursor behavior, including state-based cursors defined in the system stylesheet.
 
 
 ## Checked Entity
@@ -1025,35 +1092,98 @@ Currently selected item value, or null if no item is selected.
 
 ### `SelectedText`
 
-Return selected value label, or value itself if it has no label.
-Will return null if no value is selected.
+Returns the selected item's label text (without any embedded icon commands), or the item's value if no label is set.
+Returns null if no item is selected.
+
+### `SelectedTextWithIcon`
+
+Like `SelectedText`, but includes embedded icon style commands if the item's label contains them.
+Returns null if no item is selected.
 
 ### `AllowDeselect`
 
-If true, users can click on selected item again to deselect it.
+If true, users can click on the selected item again to deselect it.
+
+### `DisplayFilter`
+
+An optional `Func<ListItem, bool>` callback. When set, only items for which the function returns `true` are displayed. Items hidden by the filter remain in the list and can still be selected via code.
+
+### `OverrideItemStyles`
+
+A `StyleSheetState` that overrides stylesheet defaults for every non-selected item paragraph.
+
+### `OverrideSelectedItemStyles`
+
+A `StyleSheetState` that overrides stylesheet defaults for the currently selected item paragraph.
+
+### `OverrideItemStyleByValue`
+
+A `Dictionary<string, StyleSheetState>` for per-value style overrides. Lets you apply a custom style to a specific item identified by its value.
 
 ### `AddItem(value, label?, index?)`
 
-Adds an item to the list.
+Adds an item to the list. `label` is the display text (falls back to `value` if omitted). `index` inserts at a specific position rather than appending.
 
 ### `ReplaceItem(index, value, label?)`
 
-Replace an existing item in the list.
+Replaces an existing item at the given index.
+
+### `SetItemLabel(value, label?)` / `SetItemLabel(value, label, icon, iconUseTextColor)`
+
+Changes the display label of an existing item without changing its underlying value. The icon overload prepends an inline icon to the label using paragraph style commands.
+
+### `GetIndexOfValue(value)`
+
+Returns the zero-based index of the item with the given value, or -1 if not found.
+
+### `ScrollToSelected()`
+
+Moves the scrollbar so that the currently selected item is visible.
 
 ### `RemoveItem(value)` / `RemoveItem(index)`
 
-Removes a value from the list.
+Removes an item from the list by value or by index.
 
 ### `Clear()`
 
-Remove all values from list.
+Removes all items from the list.
 
 ## DropDown
 
 ![Drop Down Image](ReadmeAssets/entity-dropdown.png)
 
 `DropDown` entity is a derived class of `ListBox`, that collapses into a single line when not interacted with.
-Its a way to take less space for lists.
+It's a compact alternative to a full list box.
+
+`DropDown` adds the following additional properties on top of `ListBox`:
+
+### `IsOpened`
+
+Read-only. Returns `true` when the dropdown list is currently expanded.
+
+### `DefaultSelectedText`
+
+Text to display in the collapsed state when no item is selected. If null and nothing is selected, the collapsed line is empty.
+
+### `OverrideSelectedText`
+
+When set, this string is always shown in the collapsed state regardless of the selected item or `DefaultSelectedText`.
+
+### `OverrideClosedStateTextStyles`
+
+A `StyleSheetState` to override the appearance of the text shown in the collapsed header row.
+
+### `OpenList()` / `CloseList()` / `ToggleList()`
+
+Programmatically open, close, or toggle the dropdown list.
+
+### `ShowArrowIcon(bool show)`
+
+Show or hide the arrow icon that indicates the dropdown's open/closed state (requires the arrow icon stylesheet to be set).
+
+### `GetClosedStateHeight()`
+
+Returns the pixel height of the dropdown in its collapsed state.
 
 ## HorizontalLine
 
@@ -1061,7 +1191,7 @@ Its a way to take less space for lists.
 
 This entity is just a graphical horizontal line to separate between sections.
 
-## VerticalLines
+## VerticalLine
 
 ![Vertical Line Image](ReadmeAssets/entity-vl.png)
 
@@ -1072,6 +1202,26 @@ This entity is just a graphical vertical line to separate between sections.
 ![Panel Image](ReadmeAssets/entity-panel.png)
 
 Panels are graphical containers of entities, like a windows form or a group box.
+
+### `VerticalScrollbar`
+
+The panel's vertical scrollbar entity, if one has been created. Null if no scrollbar is attached.
+
+### `CreateVerticalScrollbar(autoSetScrollbarMax?)`
+
+Attach a vertical scrollbar to the panel. If `autoSetScrollbarMax` is true (the default), the scrollbar's maximum value is set automatically based on how far the tallest child entity extends below the panel's visible area.
+
+### `RemoveVerticalScrollbar()`
+
+Detach and destroy the panel's vertical scrollbar.
+
+### `InterpolateScrollbarOffset`
+
+If true (the default), the panel's scroll position will animate smoothly when the scrollbar value changes. Set to false for an immediate jump.
+
+### `ScrollbarInterpolationSpeed`
+
+Controls how fast the scroll position animates when `InterpolateScrollbarOffset` is true. Default is `10`.
 
 ## Paragraph
 
@@ -1146,6 +1296,10 @@ Slider Orientation (vertical / horizontal).
 ### `MouseWheelStep`
 
 How much to change the slider value when the mouse scrolls on it.
+
+### `KeyboardStep`
+
+How much to change the slider value when the user interacts with it via keyboard (arrow keys on a focused slider).
 
 ### `MinValue`
 
@@ -1234,31 +1388,43 @@ Useful for stuff like passwords input field, where you want the password hidden.
 
 ### `NumericValue`
 
-Get / set value as a float.
+Get / set the current value as a `decimal`. Throws if the value is outside `MinValue`/`MaxValue` or if it has a decimal component and `AcceptsDecimal` is false.
 
 ### `DefaultValue`
 
-Default numeric value, when no value is set.
+The `decimal` value returned by `NumericValue` when the text field is empty.
 
 ### `CultureInfo`
 
-Culture info to use, will determine the character to use as decimal separator. 
+The `CultureInfo` used for parsing and formatting numbers. This determines the decimal separator and negative sign characters in use.
+
+### `DecimalSeparator`
+
+Read-only. The character used as the decimal point, derived from `CultureInfo`.
+
+### `NegativeSign`
+
+Read-only. The character used as the negative sign, derived from `CultureInfo`.
 
 ### `AcceptsDecimal`
 
-If true, it will accept decimal point and float values.
+If true (the default), the field accepts a decimal point and fractional values. If false, only integers are allowed.
 
 ### `MinValue`
 
-If defined, will add a min value limit to the Numeric Input.
+Optional minimum value. The field clamps input to this value when set.
 
 ### `MaxValue`
 
-If defined, will add a max value limit to the Numeric Input.
+Optional maximum value. The field clamps input to this value when set.
 
 ### `ButtonsStepSize`
 
-How much to increase / decrease value when clicking on the plus / minus buttons of the numeric input field.
+How much to increase or decrease the value when the user clicks the + or - buttons. Default is `1`.
+
+### `MinusButtonText` / `PlusButtonText`
+
+Get or set the label text on the minus and plus buttons respectively.
 
 ## RowsSpacer
 
@@ -1301,17 +1467,28 @@ Set handle offset, in pixels, from top-left corner of the entity.
 `ColorButtons` is used to pick a color from a set of predefined colors, using simple buttons.
 Unlike the other color pickers, this type is not purely by stylesheet and you will have to feed the color choices by code.
 
-### `AddColor`
+### `AddColor(color, label?)`
 
-Add a color choice button to the color picker.
+Add a color choice to the picker. A button with its background tinted to `color` is appended, with an optional text `label`.
 
 ### `ColorValue`
 
-Return the color value, as extracted from the source texture.
+Get or set the currently selected color. Setting raises an exception if the color is not in the list; use `SetColorValueApproximate()` to snap to the nearest color instead.
 
 ### `ColorIndex`
 
-Get / set the selected color index.
+Get or set the index of the selected color button.
+
+### `ColorLabel`
+
+Read-only. Returns the label text of the currently selected color button.
+
+## IColorPicker
+
+`IColorPicker` is a shared interface implemented by `ColorSlider`, `ColorPicker`, and `ColorButtons`. It exposes:
+
+- **`ColorValue`** — get or set the selected color exactly.
+- **`SetColorValueApproximate(color)`** — set the value to the closest available color in the picker (useful when an exact pixel match is not guaranteed).
 
 # MessageBoxUtils
 
