@@ -1501,6 +1501,11 @@ All changes:
 - Added comparison operators and hash to `Color` struct.
 - Added style property `BackgroundColorPadding`.
 
+## 1.1.5
+
+- Upgraded .net version to `10.0`.
+- Updated libraries for demo projects and tests.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 
