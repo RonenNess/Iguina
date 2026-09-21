@@ -183,8 +183,8 @@ namespace Iguina.Entities
             var es = paragraph.GetExtraSize();
             ItemHeight += Math.Max(paragraph.GetMarginBefore().Y, paragraph.GetMarginAfter().Y) + es.Bottom + es.Top;
 
-            // create scrollbar
-            CreateVerticalScrollbar();
+            // create scrollbar (list box sets scrollbar max value by itself)
+            CreateVerticalScrollbar(false);
         }
 
         /// <summary>

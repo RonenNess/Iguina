@@ -652,6 +652,35 @@ PS. you can also change the way words wrap when exceeding the parent width."));
 This panel has some random entities below that go wayyyy down.
 
 Use the scrollbar on the right to see more of it."));
+
+
+                // two elements side by side
+                {
+                    panel.AddChild(new Paragraph(_system, @"Side by side panels:"));
+                    panel.AddChild(new RowsSpacer(_system));
+
+                    {
+                        var panelLeft = new Panel(_system);
+                        panelLeft.Size.X.SetPercents(50f);
+                        panelLeft.Size.Y.SetPixels(140);
+                        panelLeft.Anchor = Anchor.AutoInlineLTR;
+                        panel.AddChild(panelLeft);
+
+                        panelLeft.AddChild(new Label(_system, "Left Panel"));
+                        panelLeft.AddChild(new Button(_system, "Left Button"));
+                    }
+                    {
+                        var panelRight = new Panel(_system);
+                        panelRight.Size.X.SetPercents(50f);
+                        panelRight.Size.Y.SetPixels(140);
+                        panelRight.Anchor = Anchor.AutoInlineLTR;
+                        panel.AddChild(panelRight);
+
+                        panelRight.AddChild(new Label(_system, "Right Panel"));
+                        panelRight.AddChild(new Button(_system, "Right Button"));
+                    }
+                }
+
                 panel.AddChild(new RowsSpacer(_system));
                 panel.AddChild(new Button(_system, "Some Button"));
                 panel.AddChild(new RowsSpacer(_system));

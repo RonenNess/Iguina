@@ -1683,6 +1683,11 @@ All changes:
 - Upgraded .net version to `10.0`.
 - Updated libraries for demo projects and tests.
 
+# 1.1.6
+
+- Fixed bug with scrollbars wrong max value.
+- Updated libraries.
+
 # License
 
 `Iguina` is distributed with the permissive MIT license. 

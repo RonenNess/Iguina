@@ -84,6 +84,11 @@ namespace Iguina.Entities
                         VerticalScrollbar.KeyboardStep = VerticalScrollbar.MouseWheelStep = -Math.Clamp(maxScrollbarHeight / 10, 1, 100);
                         VerticalScrollbar.Enabled = true;
                     }
+                    else
+                    {
+                        VerticalScrollbar.MaxValue = 0;
+                        VerticalScrollbar.Enabled = false;
+                    }
                 }
 
                 // current scroll value
@@ -92,14 +97,30 @@ namespace Iguina.Entities
             }
         }
 
+        /// <inheritdoc/>
+        protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult, bool dryRun)
+        {
+            // children are drawn right after this, so restart measuring scrollbar max height from scratch.
+            // skip dry runs, since layout may not be settled yet and would produce wrong heights.
+            _isDryRunDraw = dryRun;
+            if (!dryRun)
+            {
+                _maxHeightForScrollbar = 1;
+            }
+            return base.Draw(parentDrawResult, siblingDrawResult, dryRun);
+        }
+        bool _isDryRunDraw;
+
         /// <summary>
         /// Called after drawing a child.
         /// </summary>
         protected override void PostDrawingChild(DrawMethodResult? drawResult)
         {
-            if (_autoSetScrollbarMax &&  (VerticalScrollbar != null) && (drawResult != null))
+            if (_autoSetScrollbarMax && !_isDryRunDraw && (VerticalScrollbar != null) && (drawResult != null))
             {
-                _maxHeightForScrollbar = Math.Max(_maxHeightForScrollbar, drawResult.Value.BoundingRect.Bottom - LastInternalBoundingRect.Top - LastInternalBoundingRect.Height);
+                // remove scroll offset so the measured height won't change while scrolling
+                var childBottom = drawResult.Value.BoundingRect.Bottom - GetScrollOffset().Y;
+                _maxHeightForScrollbar = Math.Max(_maxHeightForScrollbar, childBottom - LastInternalBoundingRect.Top - LastInternalBoundingRect.Height);
             }
         }
         int _maxHeightForScrollbar = 1;
@@ -155,7 +176,8 @@ namespace Iguina.Entities
         {
             CreateVerticalScrollbar(
                 UISystem.DefaultStylesheets.VerticalScrollbars ?? UISystem.DefaultStylesheets.VerticalSliders,
-                UISystem.DefaultStylesheets.VerticalScrollbarsHandle ?? UISystem.DefaultStylesheets.VerticalSlidersHandle);
+                UISystem.DefaultStylesheets.VerticalScrollbarsHandle ?? UISystem.DefaultStylesheets.VerticalSlidersHandle,
+                autoSetScrollbarMax);
         }
 
         /// <summary>
