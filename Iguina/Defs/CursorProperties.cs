@@ -14,7 +14,7 @@ namespace Iguina.Defs
 
         /// <summary>
         /// The source rectangle of the cursor texture to draw.
-        /// An empty rectangle (0, 0, 0, 0) will render the entire texture.
+        /// This also determines the cursor size (multiplied by scale), so it must be set.
         /// </summary>
         public Rectangle SourceRect { get; set; }
 

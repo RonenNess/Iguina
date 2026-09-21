@@ -371,6 +371,7 @@ namespace Iguina.Defs
                 ret.DefaultHeight = ret.DefaultHeight ?? parent.DefaultHeight;
                 ret.Default = InheritStylesheetState(parent.Default, ret.Default);
                 ret.Targeted = InheritStylesheetState(parent.Targeted, ret.Targeted);
+                ret.Focused = InheritStylesheetState(parent.Focused, ret.Focused);
                 ret.TargetedChecked = InheritStylesheetState(parent.TargetedChecked, ret.TargetedChecked);
                 ret.DisabledChecked = InheritStylesheetState(parent.DisabledChecked, ret.DisabledChecked);
                 ret.Checked = InheritStylesheetState(parent.Checked, ret.Checked);

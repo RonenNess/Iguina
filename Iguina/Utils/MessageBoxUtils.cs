@@ -90,9 +90,9 @@ namespace Iguina.Utils
         public struct MessageBoxHandle
         {
             /// <summary>
-            /// Backdrop entity (the part that hides the background).
+            /// Backdrop entity (the part that hides the background), or null if the message box was created without a backdrop.
             /// </summary>
-            public Entity Backdrop;
+            public Entity? Backdrop;
 
             /// <summary>
             /// Message box main panel.
@@ -114,7 +114,7 @@ namespace Iguina.Utils
             /// </summary>
             public void Close()
             {
-                Backdrop.RemoveSelf();
+                Backdrop?.RemoveSelf();
                 MessageBoxPanel.RemoveSelf();
             }
         }
@@ -124,10 +124,10 @@ namespace Iguina.Utils
         /// </summary>
         /// <param name="title">Message box title.</param>
         /// <param name="text">Message box text.</param>
-        /// <param name="buttons">Message box options.</param>
+        /// <param name="buttons">Message box buttons.</param>
         /// <param name="options">Message box options, or null to use defaults.</param>
         /// <returns>Newly created message box handle.</returns>
-        MessageBoxHandle ShowMessageBox(string title, string text, MessageBoxButtons[] buttons, MessageBoxOptions? options = null)
+        public MessageBoxHandle ShowMessageBox(string title, string text, MessageBoxButtons[] buttons, MessageBoxOptions? options = null)
         {
             // get default options
             options = options ?? DefaultOptions;
@@ -136,7 +136,7 @@ namespace Iguina.Utils
             _uiSystem.FocusedEntity = null;
 
             // create the message box backdrop
-            Entity backdrop = null!;
+            Entity? backdrop = null;
             if (options.Value.AddBackdrop)
             {
                 backdrop = new Entity(_uiSystem, _uiSystem.DefaultStylesheets.MessageBoxBackdrop, false);
