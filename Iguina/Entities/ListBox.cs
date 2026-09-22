@@ -157,13 +157,16 @@ namespace Iguina.Entities
         /// </summary>
         protected virtual bool ShowListScrollbar => (_paragraphs.Count < _items.Count);
 
+        // Flag to track if scrollbar visibility was manually set
+        private bool _manualScrollbarVisibilitySet = false;
+
         /// <summary>
         /// Create the list box.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
         /// <param name="stylesheet">List box panel stylesheet.</param>
         /// <param name="itemsStylesheet">List box items stylesheet. If not set, will use the same as base stylesheet.</param>
-        public ListBox(UISystem system, StyleSheet? stylesheet, StyleSheet? itemsStylesheet = null) : base(system, stylesheet) 
+        public ListBox(UISystem system, StyleSheet? stylesheet, StyleSheet? itemsStylesheet = null) : base(system, stylesheet)
         {
             ItemsStyleSheet = itemsStylesheet ?? StyleSheet;
 
@@ -191,10 +194,22 @@ namespace Iguina.Entities
         /// Create the list box with default stylesheets.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
-        public ListBox(UISystem system) : this(system, 
-            system.DefaultStylesheets.ListPanels ?? system.DefaultStylesheets.Panels, 
+        public ListBox(UISystem system) : this(system,
+            system.DefaultStylesheets.ListPanels ?? system.DefaultStylesheets.Panels,
             system.DefaultStylesheets.ListItems ?? system.DefaultStylesheets.Paragraphs)
         {
+        }
+
+        /// <summary>
+        /// Override the scrollbar's Visible property to allow direct control.
+        /// </summary>
+        public void SetScrollbarVisible(bool visible)
+        {
+            if (VerticalScrollbar != null)
+            {
+                _manualScrollbarVisibilitySet = true;
+                VerticalScrollbar.Visible = visible;
+            }
         }
 
         /// <inheritdoc/>
@@ -279,7 +294,7 @@ namespace Iguina.Entities
                     // pass click to self
                     this.Events.OnClick?.Invoke(this);
                 };
-                
+
                 // add new paragraph
                 AddChildInternal(p);
                 p.IgnoreScrollOffset = true;
@@ -298,9 +313,15 @@ namespace Iguina.Entities
             // show / hide scrollbar
             if (VerticalScrollbar != null)
             {
-                VerticalScrollbar.Visible = ShowListScrollbar;
+                // Only set scrollbar visibility based on ShowListScrollbar if not manually set
+                if (!_manualScrollbarVisibilitySet)
+                {
+                    VerticalScrollbar.Visible = ShowListScrollbar;
+                }
                 VerticalScrollbar.MaxValue = (_items.Count - _paragraphs.Count) + 1;
-                scrollOffset = VerticalScrollbar.Visible ? VerticalScrollbar.Value : 0;
+
+                // Always use the value from the scrollbar regardless of visibility
+                scrollOffset = VerticalScrollbar.Value;
             }
 
             // set paragraphs values
