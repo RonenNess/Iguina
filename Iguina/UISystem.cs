@@ -419,7 +419,7 @@ namespace Iguina
                 TextInput = Input.GetTextInput(),
                 TextInputCommands = Input.GetTextInputCommands(),
                 KeyboardInteraction = Input.GetKeyboardInteraction(),
-                ShiftDown = Input.IsShiftDown()
+                ShiftDown = Input.IsTextSelectionKeyDown()
             };
             var inputState = new InputState()
             {

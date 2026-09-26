@@ -62,6 +62,12 @@ namespace Iguina.Defs
         public Color? NoValueTextFillColor { get; set; }
 
         /// <summary>
+        /// Background color to highlight text with.
+        /// Used for selected text in text inputs, and as the default color for paragraph text highlights.
+        /// </summary>
+        public Color? TextHighlightColor { get; set; }
+
+        /// <summary>
         /// Text outline color.
         /// </summary>
         public Color? TextOutlineColor { get; set; }

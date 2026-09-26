@@ -3,6 +3,7 @@
 		"TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255},
         "TextOutlineColor": {"R": 0, "G": 0, "B": 0, "A": 255},
         "NoValueTextFillColor": {"R": 175, "G": 175, "B": 175, "A": 255},
+        "TextHighlightColor": {"R": 60, "G": 140, "B": 255, "A": 130},
         "FontSize": 22,
         "TextSpacing": 2,
         "TextOutlineWidth": 2,

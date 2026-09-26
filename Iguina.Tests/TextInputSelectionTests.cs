@@ -173,7 +173,7 @@ namespace Iguina.Tests
 
             // selection is drawn behind text
             Frame();
-            var rect = _renderer.DrawnRectangles.Single(x => x.Color.Equals(_textInput.SelectionColor)).Rect;
+            var rect = _renderer.DrawnRectangles.Single(x => x.Color.Equals(Paragraph.DefaultTextHighlightColor)).Rect;
             Assert.That(rect.X, Is.EqualTo(CharPosition(6).X - 1));
             Assert.That(rect.Right, Is.EqualTo(CharPosition(15).X - 1));
         }

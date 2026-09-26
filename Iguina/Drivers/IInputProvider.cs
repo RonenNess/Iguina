@@ -59,12 +59,12 @@ namespace Iguina.Drivers
         KeyboardInteractions? GetKeyboardInteraction();
 
         /// <summary>
-        /// Get if shift key is currently held down.
+        /// Get if the text selection key is currently held down (typically Shift).
         /// Used to select text with arrow keys in text inputs.
         /// </summary>
         /// <remarks>Has a default implementation that returns false, for backward compatibility.</remarks>
-        /// <returns>True if shift key is currently down.</returns>
-        bool IsShiftDown() => false;
+        /// <returns>True if text selection key is currently down.</returns>
+        bool IsTextSelectionKeyDown() => false;
     }
 
     /// <summary>

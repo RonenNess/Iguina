@@ -115,7 +115,7 @@ namespace Iguina.Demo.RayLib
             Raylib_cs.KeyboardKey.Home
         };
 
-        public bool IsShiftDown()
+        public bool IsTextSelectionKeyDown()
         {
             return Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.LeftShift) || Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.RightShift);
         }

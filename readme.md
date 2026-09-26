@@ -550,6 +550,12 @@ The supported interactions are `MoveUp`, `MoveDown`, `MoveLeft`, `MoveRight` (ty
 
 Return the interaction for as long as its key is held down. `Iguina` detects the moment it was pressed by itself.
 
+### `bool IsShiftDown();`
+
+Return true while the shift key is held down. Used to select text in text inputs with the arrow keys.
+
+This method is optional: it has a default implementation that returns false, in which case text can only be selected with the mouse.
+
 ## Files Provider
 
 The Files Provider (`Iguina.Drivers.IFilesProvider`) is an optional third driver that controls how `Iguina` reads text files (stylesheets, theme data, etc.). If you don't provide one, `Iguina` uses the built-in `DefaultFilesProvider`, which reads from the local file system.
@@ -943,6 +949,7 @@ For each state, you can define the following properties:
 * **TextScale** (float): Optional factor to scale text by. This is useful with inheritance: you can define the font size in one base stylesheet, and scale it for specific entity types.
 * **TextFillColor** (Color): Text fill color.
 * **NoValueTextFillColor** (Color): Text fill color to use when the value is null or empty. Used for placeholder texts.
+* **TextHighlightColor** (Color): Background color to highlight text with. Used for selected text in text inputs, and as the default color of [paragraph highlights](#addhighlightstart-end-color--sethighlightstart-end-color). If not defined, `Paragraph.DefaultTextHighlightColor` is used.
 * **TextOutlineColor** (Color): Text outline color.
 * **TextOutlineWidth** (int): Text outline width.
 * **TextSpacing** (float): Optional character spacing factor.
@@ -1440,6 +1447,30 @@ If true (default), shrinks the `Paragraph` entity size to match the actual rende
 
 Measure the size, in pixels, of a string or of a single text line, using this paragraph's current style.
 
+### `AddHighlight(start, end, color)` / `SetHighlight(start, end, color)`
+
+Highlight a range of the text with a background color. `start` is inclusive and `end` is exclusive. `AddHighlight` adds to existing highlights, while `SetHighlight` replaces them.
+If `color` is null (default), the `TextHighlightColor` style property is used.
+
+```cs
+paragraph.Text = "Press the red button to continue.";
+paragraph.SetHighlight(10, 20);
+```
+
+Highlights are kept when the text changes, and ranges are capped to the text length. Highlights are positioned accurately only on lines without style commands.
+
+### `HighlightOccurrences(text, comparison, color)`
+
+Highlight every occurrence of a string in the text, in addition to existing highlights. Returns how many occurrences were found. Useful for search results:
+
+```cs
+paragraph.HighlightOccurrences("dragon", StringComparison.OrdinalIgnoreCase);
+```
+
+### `ClearHighlights()` / `Highlights`
+
+Remove all highlights, or get the list of current highlights.
+
 Note: paragraphs ignore interactions by default (they're click-through). If you want a paragraph to receive mouse events, pass `ignoreInteractions: false` to the constructor, or set `IgnoreInteractions = false`.
 
 ## Title
@@ -1889,7 +1920,36 @@ The caret blinking speed. Default is `3`.
 
 ### `InsertCharacters(text)` / `InsertCharacter(character)`
 
-Insert text at the caret position, as if it was typed by the user.
+Insert text at the caret position, as if it was typed by the user. If there's selected text, it's replaced.
+
+### `AllowTextSelection`
+
+If true (default), the user can select text by dragging the mouse, or by pressing the arrow keys (and Home / End) while holding shift. Selected text is highlighted with the `TextHighlightColor` style property.
+
+- Clicking places the caret and clears the selection. Dragging selects from the caret to the mouse position, and shift + click extends the selection from the caret.
+- Typing replaces the selected text, and Backspace / Delete removes it.
+- Left / Right (without shift) move the caret to the start / end of the selection.
+
+If false, text inputs behave as before, without selection.
+
+Note: selecting with the keyboard requires your input provider to implement [`IsShiftDown()`](#bool-isshiftdown).
+
+### `SelectionOffset`
+
+The selection, relative to the caret. Positive values select characters after the caret, and negative values select characters before it.
+For example, `CaretOffset` of 10 and `SelectionOffset` of -5 means characters 5 to 10 are selected.
+
+### `SetSelection(start, end)`
+
+Select a range of text. The caret is placed at `end`, and the selection extends from it towards `start`. Values are capped to the text length.
+
+### `SelectionStart` / `SelectionEnd` / `SelectionLength` / `HasSelection` / `SelectedText` / `GetSelection(out start, out end)`
+
+Get the current selection range (`SelectionStart` inclusive, `SelectionEnd` exclusive), its length, whether there's a selection, and the selected text.
+
+### `SelectAll()` / `ClearSelection()` / `DeleteSelection()` / `ReplaceSelection(text)`
+
+Select the whole text, clear the selection (without moving the caret), delete the selected text, or replace it with another text.
 
 ## NumericInput
 
@@ -2323,7 +2383,11 @@ All changes:
 
 - Fixed bugs with text input multiline cursor placement (clicking and arrows place cursor at the right position).
 - Fixed bugs with text input multiline scrollbar interactions + scrollbar when box height is too small.
-
+- Added text selection to text inputs (`AllowTextSelection`, `SetSelection()`, `SelectedText`, etc.).
+- Added optional `IsTextSelectionKeyDown()` to the input provider interface.
+- Added `TextHighlightColor` style property.
+- Added text highlights to paragraphs (`AddHighlight()`, `SetHighlight()`, `HighlightOccurrences()`, `ClearHighlights()`).
+- Fixed `MaxLength` allowing one extra character.
 
 # License
 

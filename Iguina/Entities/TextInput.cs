@@ -121,12 +121,8 @@ namespace Iguina.Entities
         /// <summary>
         /// If true, will allow selecting text by dragging the mouse, or by using arrow keys while shift is down.
         /// </summary>
+        /// <remarks>Selected text is highlighted with the 'TextHighlightColor' style property.</remarks>
         public bool AllowTextSelection = true;
-
-        /// <summary>
-        /// Color to highlight selected text with.
-        /// </summary>
-        public Color SelectionColor = new Color(80, 140, 255, 110);
 
         /// <summary>
         /// Selection offset, relative to caret offset.
@@ -285,8 +281,6 @@ namespace Iguina.Entities
             bool showSelection = _isEditing && HasSelection;
             _valueParagraph._selectionStart = showSelection ? SelectionStart : 0;
             _valueParagraph._selectionEnd = showSelection ? SelectionEnd : 0;
-            _valueParagraph._selectionColor = SelectionColor;
-
             // call base drawing method
             var ret = base.Draw(parentDrawResult, siblingDrawResult, dryRun);
             return ret;

@@ -208,7 +208,7 @@ namespace Iguina.Demo.MonoGame
            Keys.Home
         };
 
-        public bool IsShiftDown()
+        public bool IsTextSelectionKeyDown()
         {
             var keyboardState = Keyboard.GetState();
             return keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift);

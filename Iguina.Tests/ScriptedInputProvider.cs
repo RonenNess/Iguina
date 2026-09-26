@@ -23,7 +23,7 @@ namespace Iguina.Tests
             TextInput.Clear();
             return ret;
         }
-        public bool IsShiftDown() => ShiftDown;
+        public bool IsTextSelectionKeyDown() => ShiftDown;
         public TextInputCommands[] GetTextInputCommands()
         {
             var ret = Commands.ToArray();

@@ -49,10 +49,20 @@ namespace Iguina.Entities
         // text to draw as caret.
         internal string _caretText = "|";
 
-        // if end > start, will draw selection rectangles behind the text for this range of source text indices.
+        // if end > start, will draw selection rectangles behind the text for this range of text indices (used by text input).
         internal int _selectionStart;
         internal int _selectionEnd;
-        internal Color _selectionColor;
+
+        /// <summary>
+        /// Default highlight color, used if 'TextHighlightColor' style property is not defined.
+        /// </summary>
+        public static Color DefaultTextHighlightColor = new Color(80, 140, 255, 110);
+
+        /// <summary>
+        /// Currently highlighted text ranges.
+        /// </summary>
+        public IReadOnlyList<TextHighlight> Highlights => _highlights;
+        List<TextHighlight> _highlights = new();
 
         /// <summary>
         /// Max text width.
@@ -722,8 +732,13 @@ namespace Iguina.Entities
                     }
                 }
 
-                // draw selection behind text
-                DrawSelection();
+                // draw highlights and selection behind text
+                var defaultHighlightColor = StyleSheet.GetProperty("TextHighlightColor", state, DefaultTextHighlightColor, OverrideStyles);
+                foreach (var highlight in _highlights)
+                {
+                    DrawHighlight(highlight.Start, highlight.End, highlight.Color ?? defaultHighlightColor);
+                }
+                DrawHighlight(_selectionStart, _selectionEnd, defaultHighlightColor);
 
                 // draw state with interpolation
                 if (InterpolateStates && (_interpolateToNextState < 1f))
@@ -759,11 +774,71 @@ namespace Iguina.Entities
         }
 
         /// <summary>
-        /// Draw selected text range rectangles, if set.
+        /// Highlight a range of text, in addition to existing highlights.
         /// </summary>
-        void DrawSelection()
+        /// <param name="start">Range start index in text (inclusive).</param>
+        /// <param name="end">Range end index in text (exclusive).</param>
+        /// <param name="color">Highlight color, or null to use the 'TextHighlightColor' style property.</param>
+        /// <remarks>
+        /// Indices are capped to text length when drawing, and highlights are kept if text changes.
+        /// Highlights are positioned accurately only on lines without style commands.
+        /// </remarks>
+        public void AddHighlight(int start, int end, Color? color = null)
         {
-            if ((_selectionEnd <= _selectionStart) || (_selectionColor.A == 0)) { return; }
+            if (start > end) { (start, end) = (end, start); }
+            if (end <= start) { return; }
+            _highlights.Add(new TextHighlight(start, end, color));
+        }
+
+        /// <summary>
+        /// Clear all existing highlights and highlight a range of text.
+        /// </summary>
+        /// <param name="start">Range start index in text (inclusive).</param>
+        /// <param name="end">Range end index in text (exclusive).</param>
+        /// <param name="color">Highlight color, or null to use the 'TextHighlightColor' style property.</param>
+        public void SetHighlight(int start, int end, Color? color = null)
+        {
+            ClearHighlights();
+            AddHighlight(start, end, color);
+        }
+
+        /// <summary>
+        /// Highlight all occurrences of a given string in text, in addition to existing highlights.
+        /// </summary>
+        /// <param name="text">Text to search and highlight.</param>
+        /// <param name="comparison">How to compare strings (for example, to ignore case).</param>
+        /// <param name="color">Highlight color, or null to use the 'TextHighlightColor' style property.</param>
+        /// <returns>How many occurrences were highlighted.</returns>
+        public int HighlightOccurrences(string text, StringComparison comparison = StringComparison.Ordinal, Color? color = null)
+        {
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(Text)) { return 0; }
+            int count = 0;
+            int index = Text.IndexOf(text, comparison);
+            while (index >= 0)
+            {
+                AddHighlight(index, index + text.Length, color);
+                count++;
+                index = Text.IndexOf(text, index + text.Length, comparison);
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Remove all text highlights.
+        /// </summary>
+        public void ClearHighlights()
+        {
+            _highlights.Clear();
+        }
+
+        /// <summary>
+        /// Draw rectangles behind a range of text.
+        /// </summary>
+        void DrawHighlight(int start, int end, Color color)
+        {
+            start = Math.Clamp(start, 0, Text.Length);
+            end = Math.Clamp(end, 0, Text.Length);
+            if ((end <= start) || (color.A == 0)) { return; }
 
             int count = EnsureProcessedText();
             for (int i = 0; i < count; ++i)
@@ -774,18 +849,18 @@ namespace Iguina.Entities
                 int lineEnd = _sourceIndexMap[line.NormalizedStart + line.Line.Length];
 
                 // skip lines not in selection
-                if ((_selectionStart > lineEnd) || (_selectionEnd <= lineStart)) { continue; }
+                if ((start > lineEnd) || (end <= lineStart)) { continue; }
 
                 // get selected part of the line
-                int from = Math.Max(_selectionStart, lineStart);
-                int to = Math.Min(_selectionEnd, lineEnd);
+                int from = Math.Max(start, lineStart);
+                int to = Math.Min(end, lineEnd);
                 var linePosition = GetLinePosition(i);
                 int x0 = linePosition.X + UISystem.Renderer.MeasureText(line.Line.Substring(0, GetColumnOfSourceIndex(i, from)), _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
                 int x1 = linePosition.X + UISystem.Renderer.MeasureText(line.Line.Substring(0, GetColumnOfSourceIndex(i, to)), _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
 
                 // if selection includes the character that ended this line (line break or space we wrapped on), extend a bit to show it
                 bool lineEndsWithDroppedChar = (i < count - 1) && (GetLineSourceStart(i + 1) > lineEnd);
-                if (lineEndsWithDroppedChar && (_selectionEnd > lineEnd))
+                if (lineEndsWithDroppedChar && (end > lineEnd))
                 {
                     x1 += UISystem.Renderer.MeasureText(" ", _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
                 }
@@ -793,7 +868,7 @@ namespace Iguina.Entities
                 // draw selection rectangle
                 if (x1 > x0)
                 {
-                    UISystem.Renderer.DrawRectangle(new Rectangle(x0, linePosition.Y, x1 - x0, _lineHeight), _selectionColor);
+                    UISystem.Renderer.DrawRectangle(new Rectangle(x0, linePosition.Y, x1 - x0, _lineHeight), color);
                 }
             }
         }
@@ -943,6 +1018,37 @@ namespace Iguina.Entities
             if ((count == 0) || (_lineHeight <= 0)) { return 0; }
             int lineIndex = (int)MathF.Floor((float)(position.Y - _lastTextTop) / _lineHeight);
             return GetSourceIndexAtLineAndX(Math.Clamp(lineIndex, 0, count - 1), position.X);
+        }
+    }
+
+    /// <summary>
+    /// A highlighted range of text in a paragraph.
+    /// </summary>
+    public readonly struct TextHighlight
+    {
+        /// <summary>
+        /// Range start index in text (inclusive).
+        /// </summary>
+        public readonly int Start;
+
+        /// <summary>
+        /// Range end index in text (exclusive).
+        /// </summary>
+        public readonly int End;
+
+        /// <summary>
+        /// Highlight color, or null to use the 'TextHighlightColor' style property.
+        /// </summary>
+        public readonly Color? Color;
+
+        /// <summary>
+        /// Create the text highlight.
+        /// </summary>
+        public TextHighlight(int start, int end, Color? color)
+        {
+            Start = start;
+            End = end;
+            Color = color;
         }
     }
 
