@@ -419,7 +419,11 @@ namespace Iguina
                 TextInput = Input.GetTextInput(),
                 TextInputCommands = Input.GetTextInputCommands(),
                 KeyboardInteraction = Input.GetKeyboardInteraction(),
-                ShiftDown = Input.IsTextSelectionKeyDown()
+                ShiftDown = Input.IsTextSelectionKeyDown(),
+                CopyCommand = Input.IsCopyCommand(),
+                PasteCommand = Input.IsPasteCommand(),
+                CutCommand = Input.IsCutCommand(),
+                SelectAllCommand = Input.IsSelectAllCommand()
             };
             var inputState = new InputState()
             {

@@ -120,6 +120,41 @@ namespace Iguina.Demo.RayLib
             return Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.LeftShift) || Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.RightShift);
         }
 
+        public bool IsCopyCommand()
+        {
+            return IsCtrlDown() && Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.C);
+        }
+
+        public bool IsPasteCommand()
+        {
+            return IsCtrlDown() && Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.V);
+        }
+
+        public bool IsCutCommand()
+        {
+            return IsCtrlDown() && Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.X);
+        }
+
+        public bool IsSelectAllCommand()
+        {
+            return IsCtrlDown() && Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.A);
+        }
+
+        static bool IsCtrlDown()
+        {
+            return Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.LeftControl) || Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.RightControl);
+        }
+
+        public string? GetClipboardText()
+        {
+            return Raylib_cs.Raylib.GetClipboardText_();
+        }
+
+        public void SetClipboardText(string text)
+        {
+            Raylib_cs.Raylib.SetClipboardText(text);
+        }
+
         public KeyboardInteractions? GetKeyboardInteraction()
         {
             if (Raylib_cs.Raylib.IsKeyDown(Raylib_cs.KeyboardKey.Left))

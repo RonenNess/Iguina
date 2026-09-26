@@ -550,11 +550,33 @@ The supported interactions are `MoveUp`, `MoveDown`, `MoveLeft`, `MoveRight` (ty
 
 Return the interaction for as long as its key is held down. `Iguina` detects the moment it was pressed by itself.
 
-### `bool IsShiftDown();`
+### `bool IsTextSelectionKeyDown();`
 
-Return true while the shift key is held down. Used to select text in text inputs with the arrow keys.
+Return true while the text selection key (typically Shift) is held down. Used to select text in text inputs with the arrow keys.
 
 This method is optional: it has a default implementation that returns false, in which case text can only be selected with the mouse.
+
+### `bool IsCopyCommand();` / `bool IsPasteCommand();`
+
+Return true while the copy command (typically Ctrl + C) or paste command (typically Ctrl + V) is held down. Used to copy selected text from text inputs, and to paste into them.
+
+Return true for as long as the keys are held down. `Iguina` detects the moment the command was pressed by itself, and ignores typed characters while a copy or paste command is down, so the 'c' or 'v' of the command won't be typed.
+
+These methods are optional: they have default implementations that return false, which disables copy and paste.
+
+### `bool IsCutCommand();` / `bool IsSelectAllCommand();`
+
+Return true while the cut command (typically Ctrl + X) or select all command (typically Ctrl + A) is held down. Used to cut selected text from text inputs, and to select their entire text.
+
+Same as copy and paste, return true for as long as the keys are held down, and typed characters are ignored while these commands are down.
+
+These methods are optional: they have default implementations that return false, which disables cut and select all.
+
+### `string? GetClipboardText();` / `void SetClipboardText(string text);`
+
+Get and set the clipboard text, used by copy and paste.
+
+These methods are optional: their default implementations use an internal clipboard, which only works within your application. Implement them to use the system clipboard (for example, with Raylib's `GetClipboardText_()` and `SetClipboardText()`, or with SDL's clipboard functions for MonoGame DesktopGL, as done in the demo projects).
 
 ## Files Provider
 
@@ -1932,7 +1954,7 @@ If true (default), the user can select text by dragging the mouse, or by pressin
 
 If false, text inputs behave as before, without selection.
 
-Note: selecting with the keyboard requires your input provider to implement [`IsShiftDown()`](#bool-isshiftdown).
+Note: selecting with the keyboard requires your input provider to implement [`IsTextSelectionKeyDown()`](#bool-istextselectionkeydown).
 
 ### `SelectionOffset`
 
@@ -1950,6 +1972,23 @@ Get the current selection range (`SelectionStart` inclusive, `SelectionEnd` excl
 ### `SelectAll()` / `ClearSelection()` / `DeleteSelection()` / `ReplaceSelection(text)`
 
 Select the whole text, clear the selection (without moving the caret), delete the selected text, or replace it with another text.
+
+### Copy, cut, paste and select all
+
+While editing:
+
+- The copy command (typically Ctrl + C) copies the selected text to the clipboard.
+- The cut command (typically Ctrl + X) copies the selected text to the clipboard and deletes it.
+- The paste command (typically Ctrl + V) pastes the clipboard text at the caret, replacing the selected text if there is any.
+- The select all command (typically Ctrl + A) selects the entire text. It does nothing if `AllowTextSelection` is false.
+
+See [`IsCopyCommand()` / `IsPasteCommand()`](#bool-iscopycommand--bool-ispastecommand) and [`IsCutCommand()` / `IsSelectAllCommand()`](#bool-iscutcommand--bool-isselectallcommand) for how to enable them in your input provider.
+
+- Copying and cutting from masked inputs (like passwords) is blocked, so their value can't leak via the clipboard.
+- In single line inputs, pasted line breaks are replaced with spaces.
+- In `NumericInput`, the value after pasting must be a valid number, otherwise nothing is pasted. Whitespaces around the pasted text are trimmed.
+
+You can also do it from code, with `CopySelection()`, `CutSelection()`, `PasteFromClipboard()`, `Paste(text)` and `SelectAll()`.
 
 ## NumericInput
 
@@ -2388,6 +2427,8 @@ All changes:
 - Added `TextHighlightColor` style property.
 - Added text highlights to paragraphs (`AddHighlight()`, `SetHighlight()`, `HighlightOccurrences()`, `ClearHighlights()`).
 - Fixed `MaxLength` allowing one extra character.
+- Added copy, cut, paste and select all to text inputs, with optional `IsCopyCommand()`, `IsPasteCommand()`, `IsCutCommand()`, `IsSelectAllCommand()`, `GetClipboardText()` and `SetClipboardText()` in the input provider interface.
+- Text inputs no longer type control characters.
 
 # License
 

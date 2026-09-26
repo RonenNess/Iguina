@@ -223,6 +223,59 @@ namespace Iguina.Entities
         }
 
         /// <summary>
+        /// Copy selected text to clipboard.
+        /// </summary>
+        /// <remarks>Does nothing for masked inputs (like passwords), so their value won't leak via clipboard.</remarks>
+        /// <returns>True if text was copied.</returns>
+        public bool CopySelection()
+        {
+            if (!HasSelection || (MaskingCharacter != null)) { return false; }
+            UISystem.Input.SetClipboardText(SelectedText);
+            return true;
+        }
+
+        /// <summary>
+        /// Copy selected text to clipboard and delete it.
+        /// </summary>
+        /// <remarks>Does nothing for masked inputs (like passwords), so their value won't leak via clipboard.</remarks>
+        /// <returns>True if text was cut.</returns>
+        public bool CutSelection()
+        {
+            if (!HasSelection || (MaskingCharacter != null)) { return false; }
+            var text = SelectedText;
+            if (!DeleteSelection()) { return false; } // value was rejected (for example, by numeric input validation)
+            UISystem.Input.SetClipboardText(text);
+            return true;
+        }
+
+        /// <summary>
+        /// Paste text from clipboard at caret position, replacing selected text if there is any.
+        /// </summary>
+        /// <returns>How many characters were actually added.</returns>
+        public int PasteFromClipboard()
+        {
+            var text = UISystem.Input.GetClipboardText();
+            if (string.IsNullOrEmpty(text)) { return 0; }
+            return Paste(text);
+        }
+
+        /// <summary>
+        /// Paste text at caret position, replacing selected text if there is any.
+        /// Unlike <see cref="InsertCharacters(string)"/>, this method adjusts the text to the input (for example, replace line breaks with spaces in single line inputs).
+        /// </summary>
+        /// <param name="text">Text to paste.</param>
+        /// <returns>How many characters were actually added.</returns>
+        public virtual int Paste(string text)
+        {
+            text = text.Replace("\r", string.Empty);
+            if (!Multiline)
+            {
+                text = text.Replace('\n', ' ');
+            }
+            return InsertCharacters(text);
+        }
+
+        /// <summary>
         /// Replace currently selected text (or insert at caret position, if there's no selection) with a given text.
         /// </summary>
         /// <param name="text">Text to put instead of the selected text.</param>
@@ -675,11 +728,42 @@ namespace Iguina.Entities
                 // did we type anything?
                 bool didType = false;
 
+                // clipboard and select all commands
+                if (inputState.SelectAllCommandPressedNow && AllowTextSelection)
+                {
+                    SelectAll();
+                    _caretDesiredX = null;
+                }
+                if (inputState.CopyCommandPressedNow)
+                {
+                    CopySelection();
+                }
+                if (inputState.CutCommandPressedNow)
+                {
+                    CutSelection();
+                    _caretDesiredX = null;
+                    didType = true;
+                }
+                if (inputState.PasteCommandPressedNow)
+                {
+                    PasteFromClipboard();
+                    _caretDesiredX = null;
+                    didType = true;
+                }
+
                 // get text input
-                if (inputState.TextInput != null)
+                // note: while clipboard / select all commands are down, ignore typed characters, so the command keys (like the 'v' in ctrl + v) won't be typed
+                bool commandDown = inputState.CopyCommandDown || inputState.PasteCommandDown || inputState.CutCommandDown || inputState.SelectAllCommandDown;
+                if ((inputState.TextInput != null) && !commandDown)
                 {
                     foreach (var unicode in inputState.TextInput)
                     {
+                        // skip control characters (some platforms send them for keyboard shortcuts, for example ctrl + c sends 0x03)
+                        if (((unicode < 32) && (unicode != '\n') && (unicode != '\t')) || (unicode == 127))
+                        {
+                            continue;
+                        }
+
                         InsertCharacter(unicode);
                         _caretDesiredX = null;
                         didType = true;

@@ -239,6 +239,30 @@ namespace Iguina.Entities
         }
 
         /// <inheritdoc/>
+        /// <remarks>For numeric inputs, the value after pasting must be a valid number, otherwise nothing will be pasted.</remarks>
+        public override int Paste(string text)
+        {
+            // trim whitespaces and line breaks (common when copying numbers from other sources)
+            text = text.Trim();
+            if (text.Length == 0) { return 0; }
+
+            // decimal point not accepted (without this check, parsing would silently remove it)
+            if (!AcceptsDecimal && text.Contains(DecimalSeparator)) { return 0; }
+
+            // build new value and validate it
+            var start = SelectionStart;
+            var newValue = Value.Remove(start, SelectionLength).Insert(start, text);
+            if (MaxLength.HasValue && (newValue.Length > MaxLength.Value)) { return 0; }
+            if (!TryParseValue(newValue, out _, out _)) { return 0; }
+
+            // set value
+            Value = newValue;
+            CaretOffset = start + text.Length;
+            ClearSelection();
+            return text.Length;
+        }
+
+        /// <inheritdoc/>
         protected override int GetInputMaxWidth()
         {
             return base.GetInputMaxWidth() - (_plusButton != null ? _plusButton.LastBoundingRect.Width : 0);

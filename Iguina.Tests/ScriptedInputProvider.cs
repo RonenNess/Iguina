@@ -31,5 +31,17 @@ namespace Iguina.Tests
             return ret;
         }
         public KeyboardInteractions? GetKeyboardInteraction() => null;
+
+        public bool CopyDown;
+        public bool PasteDown;
+        public string? Clipboard;
+        public bool IsCopyCommand() => CopyDown;
+        public bool IsPasteCommand() => PasteDown;
+        public bool CutDown;
+        public bool SelectAllDown;
+        public bool IsCutCommand() => CutDown;
+        public bool IsSelectAllCommand() => SelectAllDown;
+        public string? GetClipboardText() => Clipboard;
+        public void SetClipboardText(string text) => Clipboard = text;
     }
 }

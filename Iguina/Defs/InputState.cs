@@ -105,6 +105,46 @@ namespace Iguina.Defs
         public bool ShiftDown => _Current.ShiftDown;
 
         /// <summary>
+        /// Is copy command currently down.
+        /// </summary>
+        public bool CopyCommandDown => _Current.CopyCommand;
+
+        /// <summary>
+        /// Was copy command pressed this frame.
+        /// </summary>
+        public bool CopyCommandPressedNow => _Current.CopyCommand && !_Previous.CopyCommand;
+
+        /// <summary>
+        /// Is paste command currently down.
+        /// </summary>
+        public bool PasteCommandDown => _Current.PasteCommand;
+
+        /// <summary>
+        /// Was paste command pressed this frame.
+        /// </summary>
+        public bool PasteCommandPressedNow => _Current.PasteCommand && !_Previous.PasteCommand;
+
+        /// <summary>
+        /// Is cut command currently down.
+        /// </summary>
+        public bool CutCommandDown => _Current.CutCommand;
+
+        /// <summary>
+        /// Was cut command pressed this frame.
+        /// </summary>
+        public bool CutCommandPressedNow => _Current.CutCommand && !_Previous.CutCommand;
+
+        /// <summary>
+        /// Is select all command currently down.
+        /// </summary>
+        public bool SelectAllCommandDown => _Current.SelectAllCommand;
+
+        /// <summary>
+        /// Was select all command pressed this frame.
+        /// </summary>
+        public bool SelectAllCommandPressedNow => _Current.SelectAllCommand && !_Previous.SelectAllCommand;
+
+        /// <summary>
         /// Current screen bounds.
         /// </summary>
         public Rectangle ScreenBounds;
@@ -124,5 +164,9 @@ namespace Iguina.Defs
         public TextInputCommands[] TextInputCommands;
         public KeyboardInteractions? KeyboardInteraction;
         public bool ShiftDown;
+        public bool CopyCommand;
+        public bool PasteCommand;
+        public bool CutCommand;
+        public bool SelectAllCommand;
     }
 }

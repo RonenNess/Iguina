@@ -65,6 +65,76 @@ namespace Iguina.Drivers
         /// <remarks>Has a default implementation that returns false, for backward compatibility.</remarks>
         /// <returns>True if text selection key is currently down.</returns>
         bool IsTextSelectionKeyDown() => false;
+
+        /// <summary>
+        /// Get if the copy command is currently held down (typically Ctrl + C).
+        /// Used to copy selected text from text inputs to clipboard.
+        /// </summary>
+        /// <remarks>
+        /// Return true for as long as the command keys are held down. Iguina detects the moment it was pressed by itself.
+        /// Has a default implementation that returns false, for backward compatibility.
+        /// </remarks>
+        /// <returns>True if copy command is currently down.</returns>
+        bool IsCopyCommand() => false;
+
+        /// <summary>
+        /// Get if the paste command is currently held down (typically Ctrl + V).
+        /// Used to paste text from clipboard into text inputs.
+        /// </summary>
+        /// <remarks>
+        /// Return true for as long as the command keys are held down. Iguina detects the moment it was pressed by itself.
+        /// While copy, paste, cut or select all commands are down, text inputs will ignore typed characters, so the letter key of the command won't be typed.
+        /// Has a default implementation that returns false, for backward compatibility.
+        /// </remarks>
+        /// <returns>True if paste command is currently down.</returns>
+        bool IsPasteCommand() => false;
+
+        /// <summary>
+        /// Get if the cut command is currently held down (typically Ctrl + X).
+        /// Used to cut selected text from text inputs to clipboard.
+        /// </summary>
+        /// <remarks>
+        /// Return true for as long as the command keys are held down. Iguina detects the moment it was pressed by itself.
+        /// Has a default implementation that returns false, for backward compatibility.
+        /// </remarks>
+        /// <returns>True if cut command is currently down.</returns>
+        bool IsCutCommand() => false;
+
+        /// <summary>
+        /// Get if the select all command is currently held down (typically Ctrl + A).
+        /// Used to select the entire text in text inputs.
+        /// </summary>
+        /// <remarks>
+        /// Return true for as long as the command keys are held down. Iguina detects the moment it was pressed by itself.
+        /// Has a default implementation that returns false, for backward compatibility.
+        /// </remarks>
+        /// <returns>True if select all command is currently down.</returns>
+        bool IsSelectAllCommand() => false;
+
+        /// <summary>
+        /// Get text from clipboard.
+        /// </summary>
+        /// <remarks>Has a default implementation that uses an internal clipboard, which only works within the application.</remarks>
+        /// <returns>Clipboard text, or null if clipboard is empty or has no text.</returns>
+        string? GetClipboardText() => InternalClipboard.Text;
+
+        /// <summary>
+        /// Set clipboard text.
+        /// </summary>
+        /// <remarks>Has a default implementation that uses an internal clipboard, which only works within the application.</remarks>
+        /// <param name="text">Text to set.</param>
+        void SetClipboardText(string text) => InternalClipboard.Text = text;
+    }
+
+    /// <summary>
+    /// Clipboard used by the default input provider clipboard methods, if not implemented by the host application.
+    /// </summary>
+    internal static class InternalClipboard
+    {
+        /// <summary>
+        /// Current clipboard text.
+        /// </summary>
+        public static string? Text;
     }
 
     /// <summary>

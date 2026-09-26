@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Iguina.Demo.MonoGame
 {
@@ -212,6 +214,99 @@ namespace Iguina.Demo.MonoGame
         {
             var keyboardState = Keyboard.GetState();
             return keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift);
+        }
+
+        public bool IsCopyCommand()
+        {
+            var keyboardState = Keyboard.GetState();
+            return IsCtrlDown(keyboardState) && keyboardState.IsKeyDown(Keys.C);
+        }
+
+        public bool IsPasteCommand()
+        {
+            var keyboardState = Keyboard.GetState();
+            return IsCtrlDown(keyboardState) && keyboardState.IsKeyDown(Keys.V);
+        }
+
+        public bool IsCutCommand()
+        {
+            var keyboardState = Keyboard.GetState();
+            return IsCtrlDown(keyboardState) && keyboardState.IsKeyDown(Keys.X);
+        }
+
+        public bool IsSelectAllCommand()
+        {
+            var keyboardState = Keyboard.GetState();
+            return IsCtrlDown(keyboardState) && keyboardState.IsKeyDown(Keys.A);
+        }
+
+        static bool IsCtrlDown(KeyboardState keyboardState)
+        {
+            return keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl);
+        }
+
+        public string? GetClipboardText()
+        {
+            return SdlClipboard.GetText() ?? _fallbackClipboard;
+        }
+
+        public void SetClipboardText(string text)
+        {
+            if (!SdlClipboard.SetText(text))
+            {
+                _fallbackClipboard = text;
+            }
+        }
+
+        // used if SDL clipboard is not available
+        string? _fallbackClipboard;
+
+        /// <summary>
+        /// MonoGame doesn't provide clipboard access, but DesktopGL runs on SDL2 which does.
+        /// </summary>
+        static class SdlClipboard
+        {
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] delegate IntPtr GetClipboardTextFn();
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] delegate int SetClipboardTextFn(byte[] utf8Text);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)] delegate void FreeFn(IntPtr ptr);
+
+            static readonly GetClipboardTextFn? _getText;
+            static readonly SetClipboardTextFn? _setText;
+            static readonly FreeFn? _free;
+
+            static SdlClipboard()
+            {
+                foreach (var name in new[] { "SDL2", "libSDL2-2.0.so.0", "libSDL2-2.0.0.dylib" })
+                {
+                    if (NativeLibrary.TryLoad(name, typeof(Microsoft.Xna.Framework.Game).Assembly, null, out var handle) &&
+                        NativeLibrary.TryGetExport(handle, "SDL_GetClipboardText", out var getText) &&
+                        NativeLibrary.TryGetExport(handle, "SDL_SetClipboardText", out var setText) &&
+                        NativeLibrary.TryGetExport(handle, "SDL_free", out var free))
+                    {
+                        _getText = Marshal.GetDelegateForFunctionPointer<GetClipboardTextFn>(getText);
+                        _setText = Marshal.GetDelegateForFunctionPointer<SetClipboardTextFn>(setText);
+                        _free = Marshal.GetDelegateForFunctionPointer<FreeFn>(free);
+                        return;
+                    }
+                }
+            }
+
+            public static string? GetText()
+            {
+                if (_getText == null) { return null; }
+                var ptr = _getText();
+                if (ptr == IntPtr.Zero) { return null; }
+                var ret = Marshal.PtrToStringUTF8(ptr);
+                _free!(ptr);
+                return ret;
+            }
+
+            public static bool SetText(string text)
+            {
+                if (_setText == null) { return false; }
+                var bytes = Encoding.UTF8.GetBytes(text + '\0');
+                return _setText(bytes) == 0;
+            }
         }
 
         public KeyboardInteractions? GetKeyboardInteraction()
