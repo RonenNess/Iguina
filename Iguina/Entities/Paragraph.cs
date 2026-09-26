@@ -49,6 +49,11 @@ namespace Iguina.Entities
         // text to draw as caret.
         internal string _caretText = "|";
 
+        // if end > start, will draw selection rectangles behind the text for this range of source text indices.
+        internal int _selectionStart;
+        internal int _selectionEnd;
+        internal Color _selectionColor;
+
         /// <summary>
         /// Max text width.
         /// </summary>
@@ -717,6 +722,9 @@ namespace Iguina.Entities
                     }
                 }
 
+                // draw selection behind text
+                DrawSelection();
+
                 // draw state with interpolation
                 if (InterpolateStates && (_interpolateToNextState < 1f))
                 {
@@ -747,6 +755,46 @@ namespace Iguina.Entities
             {
                 var lineWidth = UISystem.Renderer.MeasureText(line.Line, font, fontSize, spacing).X;
                 _textWidth = (int)Math.Max(_textWidth, lineWidth);
+            }
+        }
+
+        /// <summary>
+        /// Draw selected text range rectangles, if set.
+        /// </summary>
+        void DrawSelection()
+        {
+            if ((_selectionEnd <= _selectionStart) || (_selectionColor.A == 0)) { return; }
+
+            int count = EnsureProcessedText();
+            for (int i = 0; i < count; ++i)
+            {
+                // get line range in source text
+                var line = _cachedProcessedText![i];
+                int lineStart = GetLineSourceStart(i);
+                int lineEnd = _sourceIndexMap[line.NormalizedStart + line.Line.Length];
+
+                // skip lines not in selection
+                if ((_selectionStart > lineEnd) || (_selectionEnd <= lineStart)) { continue; }
+
+                // get selected part of the line
+                int from = Math.Max(_selectionStart, lineStart);
+                int to = Math.Min(_selectionEnd, lineEnd);
+                var linePosition = GetLinePosition(i);
+                int x0 = linePosition.X + UISystem.Renderer.MeasureText(line.Line.Substring(0, GetColumnOfSourceIndex(i, from)), _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
+                int x1 = linePosition.X + UISystem.Renderer.MeasureText(line.Line.Substring(0, GetColumnOfSourceIndex(i, to)), _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
+
+                // if selection includes the character that ended this line (line break or space we wrapped on), extend a bit to show it
+                bool lineEndsWithDroppedChar = (i < count - 1) && (GetLineSourceStart(i + 1) > lineEnd);
+                if (lineEndsWithDroppedChar && (_selectionEnd > lineEnd))
+                {
+                    x1 += UISystem.Renderer.MeasureText(" ", _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
+                }
+
+                // draw selection rectangle
+                if (x1 > x0)
+                {
+                    UISystem.Renderer.DrawRectangle(new Rectangle(x0, linePosition.Y, x1 - x0, _lineHeight), _selectionColor);
+                }
             }
         }
 

@@ -208,6 +208,12 @@ namespace Iguina.Demo.MonoGame
            Keys.Home
         };
 
+        public bool IsShiftDown()
+        {
+            var keyboardState = Keyboard.GetState();
+            return keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift);
+        }
+
         public KeyboardInteractions? GetKeyboardInteraction()
         {
             var keyboardState = Keyboard.GetState();

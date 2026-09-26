@@ -9,31 +9,6 @@ namespace Iguina.Tests
     /// </summary>
     public class TextInputCaretTests
     {
-        /// <summary>
-        /// Renderer with a non-monospace font, that records drawn texts.
-        /// </summary>
-        class ProportionalRenderer : TestRenderer, IRenderer
-        {
-            public List<(string Text, Point Position)> DrawnTexts = new();
-
-            public static int CharWidth(char c) => c switch
-            {
-                'i' or 'l' or '.' or ' ' or '|' => 4,
-                'W' or 'M' or 'm' => 16,
-                _ => 9
-            };
-
-            public new Point MeasureText(string text, string? fontId, int fontSize, float spacing)
-            {
-                return new Point(text.Sum(CharWidth), 20);
-            }
-
-            public new void DrawText(string? effectIdentifier, string text, string? fontId, int fontSize, Point position, Color fillColor, Color outlineColor, int outlineWidth, float spacing)
-            {
-                DrawnTexts.Add((text, position));
-            }
-        }
-
         const string LongText = "The quick brown fox jumps over the lazy dog. Will Wimbledon iii WWW mmm lll iWiWiW.\nSecond paragraph, with Mmm and illi words.\n\nAfter empty line: MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM end";
 
         ProportionalRenderer _renderer = null!;
@@ -102,7 +77,7 @@ namespace Iguina.Tests
             return ret;
         }
 
-        static int Measure(string text) => text.Sum(ProportionalRenderer.CharWidth);
+        static int Measure(string text) => ProportionalRenderer.Measure(text);
 
         [Test]
         public void TestWrappedTextDoesntLoseCharacters()

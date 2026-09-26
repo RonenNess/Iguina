@@ -10,12 +10,20 @@ namespace Iguina.Tests
     {
         public Point MousePosition;
         public bool LeftDown;
+        public bool ShiftDown;
+        public List<int> TextInput = new();
         public List<TextInputCommands> Commands = new();
 
         public Point GetMousePosition() => MousePosition;
         public bool IsMouseButtonDown(MouseButton btn) => (btn == MouseButton.Left) && LeftDown;
         public int GetMouseWheelChange() => 0;
-        public int[] GetTextInput() => [];
+        public int[] GetTextInput()
+        {
+            var ret = TextInput.ToArray();
+            TextInput.Clear();
+            return ret;
+        }
+        public bool IsShiftDown() => ShiftDown;
         public TextInputCommands[] GetTextInputCommands()
         {
             var ret = Commands.ToArray();

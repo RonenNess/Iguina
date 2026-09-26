@@ -119,6 +119,129 @@ namespace Iguina.Entities
         int? _caretDesiredX;
 
         /// <summary>
+        /// If true, will allow selecting text by dragging the mouse, or by using arrow keys while shift is down.
+        /// </summary>
+        public bool AllowTextSelection = true;
+
+        /// <summary>
+        /// Color to highlight selected text with.
+        /// </summary>
+        public Color SelectionColor = new Color(80, 140, 255, 110);
+
+        /// <summary>
+        /// Selection offset, relative to caret offset.
+        /// Positive value means selection goes after the caret, negative value means selection goes before the caret.
+        /// For example, caret offset of 10 and selection offset of -5 means text range [5, 10) is selected.
+        /// </summary>
+        /// <remarks>Value is always capped to text length. Will always be 0 if text selection is not allowed.</remarks>
+        public int SelectionOffset
+        {
+            get => AllowTextSelection ? (Math.Clamp(CaretOffset + _selectionOffset, 0, Value.Length) - CaretOffset) : 0;
+            set => _selectionOffset = value;
+        }
+        int _selectionOffset;
+
+        /// <summary>
+        /// Selected text range start index (inclusive).
+        /// </summary>
+        public int SelectionStart => Math.Min(CaretOffset, CaretOffset + SelectionOffset);
+
+        /// <summary>
+        /// Selected text range end index (exclusive).
+        /// </summary>
+        public int SelectionEnd => Math.Max(CaretOffset, CaretOffset + SelectionOffset);
+
+        /// <summary>
+        /// Selected text length, in characters.
+        /// </summary>
+        public int SelectionLength => SelectionEnd - SelectionStart;
+
+        /// <summary>
+        /// Returns true if there's currently selected text.
+        /// </summary>
+        public bool HasSelection => SelectionLength > 0;
+
+        /// <summary>
+        /// Get currently selected text, or empty string if there's no selection.
+        /// </summary>
+        public string SelectedText => HasSelection ? Value.Substring(SelectionStart, SelectionLength) : string.Empty;
+
+        /// <summary>
+        /// Set selected text range.
+        /// Caret will be placed at 'end', and selection will extend from it towards 'start'.
+        /// Values are capped to text length.
+        /// </summary>
+        /// <param name="start">Selection start index (where the selection begins from).</param>
+        /// <param name="end">Selection end index (where the caret will be placed).</param>
+        /// <remarks>If text selection is not allowed, will just set caret offset to 'end'.</remarks>
+        public void SetSelection(int start, int end)
+        {
+            start = Math.Clamp(start, 0, Value.Length);
+            CaretOffset = end;
+            _selectionOffset = AllowTextSelection ? (start - CaretOffset) : 0;
+        }
+
+        /// <summary>
+        /// Get selected text range.
+        /// </summary>
+        /// <param name="start">Selection start index (inclusive).</param>
+        /// <param name="end">Selection end index (exclusive).</param>
+        /// <returns>True if there's currently selected text.</returns>
+        public bool GetSelection(out int start, out int end)
+        {
+            start = SelectionStart;
+            end = SelectionEnd;
+            return end > start;
+        }
+
+        /// <summary>
+        /// Select the entire text, with caret at the end.
+        /// </summary>
+        public void SelectAll()
+        {
+            SetSelection(0, Value.Length);
+        }
+
+        /// <summary>
+        /// Clear text selection, without changing caret position.
+        /// </summary>
+        public void ClearSelection()
+        {
+            _selectionOffset = 0;
+        }
+
+        /// <summary>
+        /// Delete currently selected text, and move caret to where the selection started.
+        /// </summary>
+        /// <returns>True if selected text was deleted.</returns>
+        public bool DeleteSelection()
+        {
+            if (!HasSelection) { return false; }
+            var start = SelectionStart;
+            var prevValue = Value;
+            Value = Value.Remove(start, SelectionLength);
+            if (Value == prevValue) { return false; } // value was rejected (for example, by numeric input validation)
+            CaretOffset = start;
+            _selectionOffset = 0;
+            return true;
+        }
+
+        /// <summary>
+        /// Replace currently selected text (or insert at caret position, if there's no selection) with a given text.
+        /// </summary>
+        /// <param name="text">Text to put instead of the selected text.</param>
+        /// <returns>How many characters were actually added.</returns>
+        public int ReplaceSelection(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                DeleteSelection();
+                return 0;
+            }
+            return InsertCharacters(text);
+        }
+
+        /// <summary>
         /// Create the text input.
         /// </summary>
         /// <param name="system">Parent UI system.</param>
@@ -157,6 +280,12 @@ namespace Iguina.Entities
             bool showCaret = _isEditing && (((int)(UISystem.ElapsedTime * CaretBlinkingSpeed)) % 2 == 0);
             _valueParagraph._caretText = CaretCharacter;
             _valueParagraph._caretSourceIndex = showCaret ? CaretOffset : -1;
+
+            // set selection to highlight
+            bool showSelection = _isEditing && HasSelection;
+            _valueParagraph._selectionStart = showSelection ? SelectionStart : 0;
+            _valueParagraph._selectionEnd = showSelection ? SelectionEnd : 0;
+            _valueParagraph._selectionColor = SelectionColor;
 
             // call base drawing method
             var ret = base.Draw(parentDrawResult, siblingDrawResult, dryRun);
@@ -205,19 +334,38 @@ namespace Iguina.Entities
         /// </summary>
         /// <param name="characters">Character(s) string value.</param>
         /// <returns>How many characters were actually added.</returns>
+        /// <remarks>If there's selected text, it will be replaced with the new characters.</remarks>
         public int InsertCharacters(string characters)
         {
-            // multiple characters insertion
-            if (characters.Length > 1)
+            // replace selected text
+            var prevValue = Value;
+            var prevCaret = CaretOffset;
+            var prevSelection = _selectionOffset;
+            bool deletedSelection = (characters.Length > 0) && DeleteSelection();
+
+            // insert characters one by one
+            int added = 0;
+            for (int i = 0; i < characters.Length; ++i)
             {
-                int added = 0;
-                for (int i = 0; i < characters.Length; ++i)
-                {
-                    added += InsertCharacters(characters.Substring(i, 1));
-                }
-                return added;
+                added += InsertSingleCharacter(characters.Substring(i, 1));
             }
 
+            // if nothing was added, restore the deleted selection (for example, line break in a single line input, or invalid character in numeric input)
+            if (deletedSelection && (added == 0))
+            {
+                Value = prevValue;
+                CaretOffset = prevCaret;
+                _selectionOffset = prevSelection;
+            }
+            return added;
+        }
+
+        /// <summary>
+        /// Insert a single character at caret position.
+        /// </summary>
+        /// <returns>1 if character was added, 0 otherwise.</returns>
+        int InsertSingleCharacter(string characters)
+        {
             // check multiline / rc
             if (characters == "\n")
             {
@@ -233,22 +381,27 @@ namespace Iguina.Entities
             if (characters == "\r") { return 0; }
 
             // check max length
-            if (MaxLength.HasValue && Value.Length > MaxLength.Value) { return 0; }
+            if (MaxLength.HasValue && Value.Length >= MaxLength.Value) { return 0; }
 
             // check max width
-            if (!Multiline && ((_valueParagraph.LastBoundingRect.Right + _valueParagraph.MeasureText(" ").X * 2) >= GetInputMaxWidth()))
+            // note: measure current text and not paragraph last bounding rect, since value may have changed since last draw (for example, if we just deleted selected text)
+            if (!Multiline)
             {
-                return 0;
+                var displayedText = (MaskingCharacter == null) ? Value : new string(MaskingCharacter.Value, Value.Length);
+                if ((_valueParagraph.LastBoundingRect.Left + _valueParagraph.MeasureText(displayedText).X + _valueParagraph.MeasureText(" ").X * 2) >= GetInputMaxWidth())
+                {
+                    return 0;
+                }
             }
 
             // add value
-            if (CaretOffset == Value.Length)
+            var prevValue = Value;
+            Value = Value.Insert(CaretOffset, characters);
+
+            // value was rejected (for example, by numeric input validation)
+            if (Value == prevValue)
             {
-                Value += characters;
-            }
-            else
-            {
-                Value = Value.Insert(CaretOffset, characters);
+                return 0;
             }
 
             // update caret
@@ -339,29 +492,27 @@ namespace Iguina.Entities
         }
 
         /// <summary>
-        /// Move caret to previous / next visual line (taking word wrap into account), while trying to keep its X position.
+        /// Get text position one visual line above / below a given position (taking word wrap into account), while trying to keep its X position.
         /// </summary>
+        /// <param name="position">Position to move from.</param>
         /// <param name="direction">-1 to move up, 1 to move down.</param>
-        void MoveCaretVertically(int direction)
+        int GetVerticalMovePosition(int position, int direction)
         {
             UpdateParagraphText();
             int linesCount = _valueParagraph.EnsureProcessedText();
-            var caretPosition = _valueParagraph.GetSourceIndexPosition(CaretOffset, out int caretLine);
-            _caretDesiredX ??= caretPosition.X;
+            var screenPosition = _valueParagraph.GetSourceIndexPosition(position, out int line);
+            _caretDesiredX ??= screenPosition.X;
 
-            int targetLine = caretLine + direction;
+            int targetLine = line + direction;
             if (targetLine < 0)
             {
-                CaretOffset = 0;
+                return 0;
             }
             else if (targetLine >= linesCount)
             {
-                CaretOffset = Value.Length;
+                return Value.Length;
             }
-            else
-            {
-                CaretOffset = _valueParagraph.GetSourceIndexAtLineAndX(targetLine, _caretDesiredX.Value);
-            }
+            return _valueParagraph.GetSourceIndexAtLineAndX(targetLine, _caretDesiredX.Value);
         }
 
         /// <inheritdoc/>
@@ -371,27 +522,59 @@ namespace Iguina.Entities
         }
 
         /// <summary>
-        /// Move caret to end of current line.
+        /// Get end of line position, for a given position.
         /// </summary>
-        void MoveCaretToEndOfLine()
+        int GetEndOfLinePosition(int position)
         {
-            _caretOffset = Math.Clamp(_caretOffset, 0, Value.Length);
-            while ((_caretOffset < Value.Length) && (Value[_caretOffset] != '\n'))
+            position = Math.Clamp(position, 0, Value.Length);
+            while ((position < Value.Length) && (Value[position] != '\n'))
             {
-                _caretOffset++;
+                position++;
+            }
+            return position;
+        }
+
+        /// <summary>
+        /// Get start of line position, for a given position.
+        /// </summary>
+        int GetStartOfLinePosition(int position)
+        {
+            position = Math.Clamp(position, 0, Value.Length);
+            while ((position > 0) && (Value[position - 1] != '\n'))
+            {
+                position--;
+            }
+            return position;
+        }
+
+        /// <summary>
+        /// Get the position we get to by applying a caret movement command on a given position.
+        /// </summary>
+        /// <returns>New position, or null if command is not a movement command.</returns>
+        int? GetPositionAfterMovement(int position, Drivers.TextInputCommands command)
+        {
+            switch (command)
+            {
+                case Drivers.TextInputCommands.MoveCaretLeft: return Math.Max(0, position - 1);
+                case Drivers.TextInputCommands.MoveCaretRight: return Math.Min(Value.Length, position + 1);
+                case Drivers.TextInputCommands.MoveCaretUp: return GetVerticalMovePosition(position, -1);
+                case Drivers.TextInputCommands.MoveCaretDown: return GetVerticalMovePosition(position, 1);
+                case Drivers.TextInputCommands.MoveCaretEnd: return Value.Length;
+                case Drivers.TextInputCommands.MoveCaretStart: return 0;
+                case Drivers.TextInputCommands.MoveCaretEndOfLine: return GetEndOfLinePosition(position);
+                case Drivers.TextInputCommands.MoveCaretStartOfLine: return GetStartOfLinePosition(position);
+                default: return null;
             }
         }
 
         /// <summary>
-        /// Move caret to start of current line.
+        /// Get text position under a given point on screen.
         /// </summary>
-        void MoveCaretToStartOfLine()
+        int GetPositionAtPoint(Point point)
         {
-            _caretOffset = Math.Clamp(_caretOffset, 0, Value.Length);
-            while ((_caretOffset > 0) && (Value[_caretOffset - 1] != '\n'))
-            {
-                _caretOffset--;
-            }
+            if (string.IsNullOrEmpty(Value)) { return 0; }
+            UpdateParagraphText();
+            return Math.Clamp(_valueParagraph.GetSourceIndexAtPosition(point), 0, Value.Length);
         }
 
         /// <inheritdoc/>
@@ -399,18 +582,22 @@ namespace Iguina.Entities
         {
             base.DoInteractions(inputState);
 
-            // check if need to adjust scrollbar to make sure caret is visible
+            // check if need to adjust scrollbar to make sure caret (or selection end, if we're selecting) is visible
             if (_needToMakeSureCaretIsVisible && (VerticalScrollbar != null))
             {
                 _needToMakeSureCaretIsVisible = false;
                 UpdateCachedCaretValues();
                 UpdateParagraphText();
                 var lineHeight = _valueParagraph.MeasureTextLineHeight();
-                var caretOffsetY = (_valueParagraph.GetLineIndexOfSourceIndex(CaretOffset) * lineHeight);
-                var absCaretOffsetY = caretOffsetY + _valueParagraph.Offset.Y.Value;
-                if ((absCaretOffsetY > (LastBoundingRect.Height - lineHeight * 3)) || (absCaretOffsetY < (lineHeight * 2)))
+                var lineY = _valueParagraph.GetLineIndexOfSourceIndex(CaretOffset + SelectionOffset) * lineHeight;
+                var visibleHeight = LastInternalBoundingRect.Height;
+                if (lineY < VerticalScrollbar.Value)
                 {
-                    VerticalScrollbar.ValueSafe = (int)(caretOffsetY) - lineHeight * 2;
+                    VerticalScrollbar.ValueSafe = lineY;
+                }
+                else if (lineY + lineHeight > VerticalScrollbar.Value + visibleHeight)
+                {
+                    VerticalScrollbar.ValueSafe = lineY + lineHeight - visibleHeight;
                 }
             }
 
@@ -423,6 +610,7 @@ namespace Iguina.Entities
             else if (!inputState.LeftMouseDown)
             {
                 _isDraggingScrollbar = false;
+                _isDraggingSelection = false;
             }
             if (_isDraggingScrollbar)
             {
@@ -431,13 +619,34 @@ namespace Iguina.Entities
                     VerticalScrollbar.DoInteractions(inputState);
                 }
             }
-            // set caret position from click
+            // clicking sets caret position and resets selection, dragging while mouse is down selects text
             else if (inputState.LeftMouseDown)
             {
-                if (!string.IsNullOrEmpty(Value))
+                var position = GetPositionAtPoint(inputState.MousePosition);
+                if (inputState.LeftMousePressedNow)
                 {
-                    UpdateParagraphText();
-                    CaretOffset = _valueParagraph.GetSourceIndexAtPosition(inputState.MousePosition);
+                    // shift + click extends selection from caret
+                    if (AllowTextSelection && _isEditing && inputState.ShiftDown)
+                    {
+                        _selectionOffset = position - CaretOffset;
+                    }
+                    else
+                    {
+                        CaretOffset = position;
+                        _selectionOffset = 0;
+                    }
+                    _isDraggingSelection = IsPointedOn(inputState.MousePosition, true);
+                }
+                else if (_isDraggingSelection)
+                {
+                    if (AllowTextSelection)
+                    {
+                        _selectionOffset = position - CaretOffset;
+                    }
+                    else
+                    {
+                        CaretOffset = position;
+                    }
                 }
                 _caretDesiredX = null;
                 _needToMakeSureCaretIsVisible = true;
@@ -452,7 +661,7 @@ namespace Iguina.Entities
             // if clicked on editing, decide if should lock target entity or not
             if (_isEditing)
             {
-                if (!_isDraggingScrollbar && inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
+                if (!_isDraggingScrollbar && !_isDraggingSelection && inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
                 {
                     _lockSelf = false;
                 }
@@ -486,86 +695,68 @@ namespace Iguina.Entities
                 // apply special input commands
                 if (inputState.TextInputCommands != null)
                 {
-                    if (Value.Length > 0)
+                    foreach (var cmd in inputState.TextInputCommands)
                     {
-                        foreach (var cmd in inputState.TextInputCommands)
+                        // any command other than moving up / down resets the desired caret X position
+                        if ((cmd != Drivers.TextInputCommands.MoveCaretUp) && (cmd != Drivers.TextInputCommands.MoveCaretDown))
                         {
-                            // any command other than moving up / down resets the desired caret X position
-                            if ((cmd != Drivers.TextInputCommands.MoveCaretUp) && (cmd != Drivers.TextInputCommands.MoveCaretDown))
-                            {
-                                _caretDesiredX = null;
-                            }
-
-                            // backspace
-                            if (cmd == Drivers.TextInputCommands.Backspace)
-                            {
-                                try
-                                {
-                                    Value = Value.Remove(CaretOffset - 1, 1);
-                                    CaretOffset--;
-                                }
-                                catch { }
-                            }
-                            // delete
-                            else if (cmd == Drivers.TextInputCommands.Delete)
-                            {
-                                try
-                                {
-                                    if (CaretOffset < Value.Length)
-                                    {
-                                        Value = Value.Remove(CaretOffset, 1);
-                                    }
-                                }
-                                catch { }
-                            }
-                            // move caret left
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretLeft)
-                            {
-                                CaretOffset--;
-                            }
-                            // move caret right
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretRight)
-                            {
-                                CaretOffset++;
-                            }
-                            // move caret up
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretUp)
-                            {
-                                MoveCaretVertically(-1);
-                            }
-                            // move caret down
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretDown)
-                            {
-                                MoveCaretVertically(1);
-                            }
-                            // move caret to end
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretEnd)
-                            {
-                                CaretOffset = Value.Length;
-                            }
-                            // move caret to home
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretStart)
-                            {
-                                CaretOffset = 0;
-                            }
-                            // move caret to start of line
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretEndOfLine)
-                            {
-                                MoveCaretToEndOfLine();
-                            }
-                            // move caret to end of line
-                            else if (cmd == Drivers.TextInputCommands.MoveCaretStartOfLine)
-                            {
-                                MoveCaretToStartOfLine();
-                            }
-                            // break line
-                            else if (cmd == Drivers.TextInputCommands.BreakLine)
-                            {
-                                InsertCharacter('\n');
-                            }
-
-                            didType = true;
+                            _caretDesiredX = null;
                         }
+
+                        // backspace
+                        if (cmd == Drivers.TextInputCommands.Backspace)
+                        {
+                            if (!DeleteSelection() && (CaretOffset > 0))
+                            {
+                                var caret = CaretOffset;
+                                Value = Value.Remove(caret - 1, 1);
+                                CaretOffset = caret - 1;
+                            }
+                        }
+                        // delete
+                        else if (cmd == Drivers.TextInputCommands.Delete)
+                        {
+                            if (!DeleteSelection() && (CaretOffset < Value.Length))
+                            {
+                                Value = Value.Remove(CaretOffset, 1);
+                            }
+                        }
+                        // break line
+                        else if (cmd == Drivers.TextInputCommands.BreakLine)
+                        {
+                            InsertCharacter('\n');
+                        }
+                        // caret movement
+                        else
+                        {
+                            // shift is down: move the selection end, while caret stays in place
+                            if (AllowTextSelection && inputState.ShiftDown)
+                            {
+                                var newSelectionEnd = GetPositionAfterMovement(CaretOffset + SelectionOffset, cmd);
+                                if (newSelectionEnd.HasValue)
+                                {
+                                    _selectionOffset = newSelectionEnd.Value - CaretOffset;
+                                }
+                            }
+                            // moving left / right with selection: go to selection start / end
+                            else if (HasSelection && ((cmd == Drivers.TextInputCommands.MoveCaretLeft) || (cmd == Drivers.TextInputCommands.MoveCaretRight)))
+                            {
+                                CaretOffset = (cmd == Drivers.TextInputCommands.MoveCaretLeft) ? SelectionStart : SelectionEnd;
+                                _selectionOffset = 0;
+                            }
+                            // regular caret movement
+                            else
+                            {
+                                var newCaret = GetPositionAfterMovement(CaretOffset, cmd);
+                                if (newCaret.HasValue)
+                                {
+                                    CaretOffset = newCaret.Value;
+                                    _selectionOffset = 0;
+                                }
+                            }
+                        }
+
+                        didType = true;
                     }
                 }
 
@@ -582,5 +773,8 @@ namespace Iguina.Entities
 
         // if true, mouse was pressed on the scrollbar and is still down
         bool _isDraggingScrollbar = false;
+
+        // if true, mouse was pressed on the text and is still down (so dragging it will select text)
+        bool _isDraggingSelection = false;
     }
 }

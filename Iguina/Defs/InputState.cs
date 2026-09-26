@@ -100,6 +100,11 @@ namespace Iguina.Defs
         public bool IsKeyboardSelectPressedDown => _Current.KeyboardInteraction == KeyboardInteractions.Select;
 
         /// <summary>
+        /// Is shift key currently down.
+        /// </summary>
+        public bool ShiftDown => _Current.ShiftDown;
+
+        /// <summary>
         /// Current screen bounds.
         /// </summary>
         public Rectangle ScreenBounds;
@@ -118,5 +123,6 @@ namespace Iguina.Defs
         public int[] TextInput;
         public TextInputCommands[] TextInputCommands;
         public KeyboardInteractions? KeyboardInteraction;
+        public bool ShiftDown;
     }
 }
