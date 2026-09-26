@@ -310,6 +310,24 @@ namespace Iguina.Entities
             {
                 UpdateCachedCaretValues();
             }
+
+            // while editing we lock targeting on self and pass interactions to the scrollbar, so we need to set its state to show it as pointed on / pressed
+            if (VerticalScrollbar != null)
+            {
+                EntityState? scrollbarState = null;
+                if (_isEditing && IsTargeted && !VerticalScrollbar.IsCurrentlyDisabled())
+                {
+                    if (_isDraggingScrollbar)
+                    {
+                        scrollbarState = EntityState.Interacted;
+                    }
+                    else if (VerticalScrollbar.IsPointedOn(inputState.MousePosition))
+                    {
+                        scrollbarState = EntityState.Targeted;
+                    }
+                }
+                VerticalScrollbar.LockedState = scrollbarState;
+            }
         }
 
         /// <summary>

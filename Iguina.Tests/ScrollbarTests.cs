@@ -89,19 +89,28 @@ namespace Iguina.Tests
             Assert.That(_system.TargetedEntity, Is.SameAs(_textInput));
             var caret = _textInput.CaretOffset;
 
-            // press on the bottom of the scrollbar, then drag to top
+            // pointing on the scrollbar shows it as targeted, even though text input is the targeted entity
             var sbRect = scrollbar.LastBoundingRect;
             _input.MousePosition = new Point(sbRect.X + sbRect.Width / 2, sbRect.Bottom - 1);
+            Frames(1);
+            Assert.That(_system.TargetedEntity, Is.SameAs(_textInput));
+            Assert.That(scrollbar.State, Is.EqualTo(EntityState.Targeted));
+            Assert.That(scrollbar.Handle.State, Is.EqualTo(EntityState.Targeted));
+
+            // press on the bottom of the scrollbar, then drag to top
             _input.LeftDown = true;
             Frames(2);
             Assert.That(scrollbar.Value, Is.EqualTo(scrollbar.MaxValue), "Pressing on scrollbar bottom should scroll to end");
+            Assert.That(scrollbar.State, Is.EqualTo(EntityState.Interacted));
 
             // dragging outside the scrollbar keeps dragging it
             _input.MousePosition = new Point(50, sbRect.Top - 50);
             Frames(2);
             Assert.That(scrollbar.Value, Is.EqualTo(0), "Dragging above scrollbar should scroll to start");
+            Assert.That(scrollbar.State, Is.EqualTo(EntityState.Interacted), "Scrollbar should remain pressed while dragging outside of it");
             _input.LeftDown = false;
             Frames(1);
+            Assert.That(scrollbar.State, Is.EqualTo(EntityState.Default), "Scrollbar should not be highlighted when mouse is not on it");
 
             // caret was not moved and text input is still being edited
             Assert.That(_textInput.CaretOffset, Is.EqualTo(caret));
