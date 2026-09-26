@@ -37,7 +37,7 @@ namespace Iguina.Entities
                     
                     // Make sure the caret doesn't overflow if, for example, the value is being directly manipulated while the user is typing (e.g. NumericInput)
                     if (_caretOffset > Value.Length)
-                        _caretOffset = Value.Length + 1;
+                        _caretOffset = Value.Length;
                     
                     Events.OnValueChanged?.Invoke(this);
                     UISystem.Events.OnValueChanged?.Invoke(this);
@@ -105,9 +105,6 @@ namespace Iguina.Entities
         }
         protected int _caretOffset;
 
-        // caret actual line index in wrapped text
-        int _caretActualLineIndexInWrappedText;
-
         /// <summary>
         /// Character to use as caret mark.
         /// </summary>
@@ -118,15 +115,8 @@ namespace Iguina.Entities
         /// </summary>
         public float CaretBlinkingSpeed = 3f;
 
-        // for caret rendering
-        int _caretOffsetInLine = 0;
-
-        // for moving caret
-        string _valueBeforeCaret = string.Empty;
-        string _valueAfterCaret = string.Empty;
-
-        // Convert offset in pixels to line first character index.
-        Dictionary<int, int> _lineOffsetToIndex = new Dictionary<int, int>();
+        // desired caret X position when moving caret up and down, so it will keep its column when passing through shorter lines
+        int? _caretDesiredX;
 
         /// <summary>
         /// Create the text input.
@@ -146,54 +136,6 @@ namespace Iguina.Entities
             // hide overflow by default
             OverflowMode = OverflowMode.HideOverflow;
 
-            // add blinking caret rendering + calculate actual caret position with word wrap applied
-            _valueParagraph._beforeDrawingLineNoStyleCommands = (string line, int lineIndex, int lineStartIndex) =>
-            {
-                // reset if first line
-                if (lineIndex == 0) 
-                {
-                    _lineOffsetToIndex.Clear();
-                    _caretActualLineIndexInWrappedText = 0; 
-                }
-
-                // line not visible? skip
-                int lineHeight = _valueParagraph.MeasureTextLineHeight();
-                int offset = (lineIndex * lineHeight - (VerticalScrollbar?.Value ?? 0));
-                _lineOffsetToIndex[offset] = lineStartIndex;
-
-                // should we show caret?
-                bool showCaret = (_isEditing && !string.IsNullOrEmpty(CaretCharacter));
-
-                // are we in the correct line?
-                if ((_caretOffset >= lineStartIndex) && (_caretOffset <= lineStartIndex + line.Length))
-                {
-                    // calculate which caret character to add
-                    var charToAdd = (((int)(UISystem.ElapsedTime * CaretBlinkingSpeed)) % 2 == 0) ? CaretCharacter : " ";
-
-                    // set caret actual line index
-                    _caretActualLineIndexInWrappedText = lineIndex;
-
-                    // draw caret
-                    if (showCaret)
-                    {
-                        // calculate caret offset in current line
-                        int caretOffsetInLine = _caretOffset - lineStartIndex;
-
-                        // caret at the end of line
-                        if (caretOffsetInLine >= line.Length)
-                        {
-                            return line + charToAdd;
-                        }
-                        // caret in middle of line
-                        else
-                        {
-                            return line.Substring(0, caretOffsetInLine) + charToAdd + line.Substring(caretOffsetInLine);
-                        }
-                    }
-                }
-                return line;
-            };
-
             AddChildInternal(_valueParagraph);
         }
 
@@ -207,6 +149,24 @@ namespace Iguina.Entities
 
         /// <inheritdoc/>
         protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult, bool dryRun)
+        {
+            // set text to show
+            UpdateParagraphText();
+
+            // set blinking caret
+            bool showCaret = _isEditing && (((int)(UISystem.ElapsedTime * CaretBlinkingSpeed)) % 2 == 0);
+            _valueParagraph._caretText = CaretCharacter;
+            _valueParagraph._caretSourceIndex = showCaret ? CaretOffset : -1;
+
+            // call base drawing method
+            var ret = base.Draw(parentDrawResult, siblingDrawResult, dryRun);
+            return ret;
+        }
+
+        /// <summary>
+        /// Update the paragraph text to show value, mask or placeholder.
+        /// </summary>
+        void UpdateParagraphText()
         {
             // do we currently have a value?
             var noValue = string.IsNullOrEmpty(Value);
@@ -229,10 +189,6 @@ namespace Iguina.Entities
                 }
             }
             _valueParagraph.UseEmptyValueTextColor = noValue;
-
-            // call base drawing method
-            var ret = base.Draw(parentDrawResult, siblingDrawResult, dryRun);
-            return ret;
         }
 
         /// <inheritdoc/>
@@ -343,7 +299,7 @@ namespace Iguina.Entities
             }
 
             // if clicked outside, release lock
-            if (_isEditing && inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
+            if (_isEditing && !_isDraggingScrollbar && inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
             {
                 _isEditing = false;
                 _lockSelf = false;
@@ -362,15 +318,38 @@ namespace Iguina.Entities
         void UpdateCachedCaretValues()
         {
             CaretOffset = CaretOffset; // to make sure caret is within valid range
-            _valueBeforeCaret = Value.Substring(0, CaretOffset);
-            _valueAfterCaret = Value.Substring(CaretOffset);
-            _caretOffsetInLine = _caretOffset - Math.Max(0, Value.Substring(0, _caretOffset).LastIndexOf('\n') + 1);
+        }
+
+        /// <summary>
+        /// Move caret to previous / next visual line (taking word wrap into account), while trying to keep its X position.
+        /// </summary>
+        /// <param name="direction">-1 to move up, 1 to move down.</param>
+        void MoveCaretVertically(int direction)
+        {
+            UpdateParagraphText();
+            int linesCount = _valueParagraph.EnsureProcessedText();
+            var caretPosition = _valueParagraph.GetSourceIndexPosition(CaretOffset, out int caretLine);
+            _caretDesiredX ??= caretPosition.X;
+
+            int targetLine = caretLine + direction;
+            if (targetLine < 0)
+            {
+                CaretOffset = 0;
+            }
+            else if (targetLine >= linesCount)
+            {
+                CaretOffset = Value.Length;
+            }
+            else
+            {
+                CaretOffset = _valueParagraph.GetSourceIndexAtLineAndX(targetLine, _caretDesiredX.Value);
+            }
         }
 
         /// <inheritdoc/>
         protected override int CalculateMaxScrollbarValue()
         {
-            return Math.Max(1, (_valueParagraph.LastBoundingRect.Height + _valueParagraph?.StyleSheet.Default?.FontSize ?? 20) - LastInternalBoundingRect.Height);
+            return Math.Max(1, (_valueParagraph.LastBoundingRect.Height + (_valueParagraph.StyleSheet?.Default?.FontSize ?? 20)) - LastInternalBoundingRect.Height);
         }
 
         /// <summary>
@@ -407,8 +386,9 @@ namespace Iguina.Entities
             {
                 _needToMakeSureCaretIsVisible = false;
                 UpdateCachedCaretValues();
+                UpdateParagraphText();
                 var lineHeight = _valueParagraph.MeasureTextLineHeight();
-                var caretOffsetY = (_caretActualLineIndexInWrappedText * lineHeight);
+                var caretOffsetY = (_valueParagraph.GetLineIndexOfSourceIndex(CaretOffset) * lineHeight);
                 var absCaretOffsetY = caretOffsetY + _valueParagraph.Offset.Y.Value;
                 if ((absCaretOffsetY > (LastBoundingRect.Height - lineHeight * 3)) || (absCaretOffsetY < (lineHeight * 2)))
                 {
@@ -416,19 +396,32 @@ namespace Iguina.Entities
                 }
             }
 
-            // select line to edit
-            if (inputState.LeftMouseDown)
+            // while editing, this entity locks targeting on itself, so the scrollbar won't get interactions on its own.
+            // if mouse was pressed on the scrollbar, pass interactions to it until mouse is released.
+            if (inputState.LeftMousePressedNow)
             {
-                int lineHeight = _valueParagraph.MeasureTextLineHeight();
-                foreach (var lineData in _lineOffsetToIndex)
+                _isDraggingScrollbar = (VerticalScrollbar != null) && VerticalScrollbar.IsCurrentlyVisible() && VerticalScrollbar.IsPointedOn(inputState.MousePosition);
+            }
+            else if (!inputState.LeftMouseDown)
+            {
+                _isDraggingScrollbar = false;
+            }
+            if (_isDraggingScrollbar)
+            {
+                if (!VerticalScrollbar!.IsCurrentlyDisabled() && !VerticalScrollbar.IsCurrentlyLocked())
                 {
-                    int cpY = inputState.MousePosition.Y - LastBoundingRect.Y - lineHeight / 2;
-                    if (cpY >= lineData.Key && cpY <= lineData.Key + lineHeight)
-                    {
-                        CaretOffset = lineData.Value;
-                        MoveCaretToEndOfLine();
-                    }
+                    VerticalScrollbar.DoInteractions(inputState);
                 }
+            }
+            // set caret position from click
+            else if (inputState.LeftMouseDown)
+            {
+                if (!string.IsNullOrEmpty(Value))
+                {
+                    UpdateParagraphText();
+                    CaretOffset = _valueParagraph.GetSourceIndexAtPosition(inputState.MousePosition);
+                }
+                _caretDesiredX = null;
                 _needToMakeSureCaretIsVisible = true;
             }
 
@@ -441,7 +434,7 @@ namespace Iguina.Entities
             // if clicked on editing, decide if should lock target entity or not
             if (_isEditing)
             {
-                if (inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
+                if (!_isDraggingScrollbar && inputState.LeftMouseDown && !IsPointedOn(inputState.MousePosition, true))
                 {
                     _lockSelf = false;
                 }
@@ -467,6 +460,7 @@ namespace Iguina.Entities
                     foreach (var unicode in inputState.TextInput)
                     {
                         InsertCharacter(unicode);
+                        _caretDesiredX = null;
                         didType = true;
                     }
                 }
@@ -478,6 +472,12 @@ namespace Iguina.Entities
                     {
                         foreach (var cmd in inputState.TextInputCommands)
                         {
+                            // any command other than moving up / down resets the desired caret X position
+                            if ((cmd != Drivers.TextInputCommands.MoveCaretUp) && (cmd != Drivers.TextInputCommands.MoveCaretDown))
+                            {
+                                _caretDesiredX = null;
+                            }
+
                             // backspace
                             if (cmd == Drivers.TextInputCommands.Backspace)
                             {
@@ -513,39 +513,12 @@ namespace Iguina.Entities
                             // move caret up
                             else if (cmd == Drivers.TextInputCommands.MoveCaretUp)
                             {
-                                if (_valueBeforeCaret.Contains('\n'))
-                                {
-                                    CaretOffset = Math.Max(0, GetSecondLineBreakFromEnd(_valueBeforeCaret)) + _caretOffsetInLine + 1;
-                                    var lastLineBreak = _valueBeforeCaret.LastIndexOf('\n');
-                                    if (CaretOffset > lastLineBreak)
-                                    {
-                                        CaretOffset = lastLineBreak;
-                                    }
-                                }
-                                else
-                                {
-                                    CaretOffset = 0;
-                                }
+                                MoveCaretVertically(-1);
                             }
                             // move caret down
                             else if (cmd == Drivers.TextInputCommands.MoveCaretDown)
                             {
-                                if (_valueAfterCaret.Contains('\n'))
-                                {
-                                    var nextLineBreakOffset = _valueAfterCaret.IndexOf('\n', _valueAfterCaret[0] == '\n' ? 1 : 0) + 1;
-                                    if (nextLineBreakOffset > 0)
-                                    {
-                                        CaretOffset += nextLineBreakOffset + _caretOffsetInLine;
-                                    }
-                                    else
-                                    {
-                                        CaretOffset += _caretOffsetInLine;
-                                    }
-                                }
-                                else
-                                {
-                                    CaretOffset = Value.Length;
-                                }
+                                MoveCaretVertically(1);
                             }
                             // move caret to end
                             else if (cmd == Drivers.TextInputCommands.MoveCaretEnd)
@@ -589,28 +562,7 @@ namespace Iguina.Entities
         // if true, it means we need to check if caret is currently visible after next update call
         bool _needToMakeSureCaretIsVisible = false;
 
-        /// <summary>
-        /// Get second line break from end.
-        /// </summary>
-        int GetSecondLineBreakFromEnd(string value)
-        {
-            int count = 0;
-            int secondLastIndex = -1;
-
-            for (int i = value.Length - 1; i >= 0; i--)
-            {
-                if (value[i] == '\n')
-                {
-                    count++;
-                    if (count == 2)
-                    {
-                        secondLastIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            return secondLastIndex;
-        }
+        // if true, mouse was pressed on the scrollbar and is still down
+        bool _isDraggingScrollbar = false;
     }
 }

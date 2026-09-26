@@ -2319,6 +2319,11 @@ All changes:
 - Updated and extended the readme file.
 - Updated libraries.
 
+## 1.1.7
+
+- Fixed bugs with text input multiline selection.
+- Fixed bugs with text input multiline scrollbar interactions + scrollbar when box height is too small.
+
 # License
 
 `Iguina` is distributed under the permissive MIT license.

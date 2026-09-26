@@ -1,5 +1,6 @@
 ﻿using Iguina.Defs;
 using Iguina.Utils;
+using System.Text;
 using System.Text.RegularExpressions;
 
 
@@ -30,14 +31,23 @@ namespace Iguina.Entities
         int _cachedTextWidth = 0;
         int _cachedTextFontSize = 0;
         string? _cachedTextFontId;
+        float _cachedTextSpacing = 1f;
         int _lineHeight;
 
-        // called before rendering a line
-        // params:
-        // line string.
-        // line index.
-        // line first character index.
-        internal Func<string, int, int, string> _beforeDrawingLineNoStyleCommands = null!;
+        // map from index in normalized text (after removing \r and expanding tabs) to index in source text.
+        // has one extra entry at the end, pointing to the end of source text.
+        int[] _sourceIndexMap = [0];
+
+        // text region, alignment and first line top position from last draw call, used to convert between text indices and positions.
+        Rectangle _lastTextRegion;
+        TextAlignment _lastTextAlignment = TextAlignment.Left;
+        int _lastTextTop;
+
+        // if >= 0, will draw a caret before the character at this index in source text.
+        internal int _caretSourceIndex = -1;
+
+        // text to draw as caret.
+        internal string _caretText = "|";
 
         /// <summary>
         /// Max text width.
@@ -321,6 +331,9 @@ namespace Iguina.Entities
         {
             public string Line = null!;
             public List<TextStyleCommand>? StyleCommands;
+
+            // index of line first character in normalized text
+            public int NormalizedStart;
         }
 
         /// <summary>
@@ -328,18 +341,37 @@ namespace Iguina.Entities
         /// </summary>
         LineAndStyleCommands[] BuildProcessedText(string? font, int fontSize, float maxWidth, float spacing)
         {
-            // normalize line breaks and tabs
-            string normalizedString = _textValue.Replace("\r", "").Replace("\t", "   ");
-
-            // break into lines and trim end of lines
-            var _lines = new List<string>(normalizedString.Split('\n'));
-            var ret = new List<LineAndStyleCommands>();
-            for (int i = 0; i < _lines.Count; ++i)
+            // normalize line breaks and tabs, while keeping a map back to source text indices
+            var normalized = new StringBuilder(_textValue.Length);
+            var sourceIndexMap = new List<int>(_textValue.Length + 1);
+            for (int i = 0; i < _textValue.Length; ++i)
             {
-                ret.Add( new LineAndStyleCommands()
+                var c = _textValue[i];
+                if (c == '\r') { continue; }
+                if (c == '\t')
                 {
-                    Line = _lines[i]
+                    normalized.Append("   ");
+                    sourceIndexMap.Add(i); sourceIndexMap.Add(i); sourceIndexMap.Add(i);
+                    continue;
+                }
+                normalized.Append(c);
+                sourceIndexMap.Add(i);
+            }
+            sourceIndexMap.Add(_textValue.Length);
+            _sourceIndexMap = sourceIndexMap.ToArray();
+            string normalizedString = normalized.ToString();
+
+            // break into lines
+            var ret = new List<LineAndStyleCommands>();
+            int normalizedStart = 0;
+            foreach (var line in normalizedString.Split('\n'))
+            {
+                ret.Add(new LineAndStyleCommands()
+                {
+                    Line = line,
+                    NormalizedStart = normalizedStart
                 });
+                normalizedStart += line.Length + 1;
             }
 
             // parse style commands
@@ -379,7 +411,7 @@ namespace Iguina.Entities
                                 bool retryWithImmediateMode = (mode == TextOverflowMode.WrapWords);
 
                                 // find last space or begin from end of line
-                                int lastSpaceIndex = immediateMode ? (line.Length - 1) : line.LastIndexOf(' ');
+                                int lastSpaceIndex = (mode == TextOverflowMode.WrapImmediate) ? (line.Length - 1) : line.LastIndexOf(' ');
                                 bool keepSearching = true;
 
                                 // handle no spaces condition
@@ -399,11 +431,14 @@ namespace Iguina.Entities
                                     if (cutLineWidth <= maxWidth)
                                     {
                                         // set new shortened line and next line we broke to
+                                        // note: when breaking on a space the space itself is dropped, otherwise no character is lost
                                         ret[lineIndex].Line = cutLine;
-                                        var nextLine = immediateMode ? line.Substring(lastSpaceIndex) : line.Substring(lastSpaceIndex + 1);
+                                        int nextLineStart = (immediateMode || line[lastSpaceIndex] != ' ') ? lastSpaceIndex : (lastSpaceIndex + 1);
+                                        var nextLine = line.Substring(nextLineStart);
                                         ret.Insert(lineIndex + 1, new LineAndStyleCommands()
                                         {
-                                            Line = nextLine
+                                            Line = nextLine,
+                                            NormalizedStart = ret[lineIndex].NormalizedStart + nextLineStart
                                         });
 
                                         // migrate style commands to next line
@@ -414,7 +449,7 @@ namespace Iguina.Entities
                                                 var currCmd = ret[lineIndex].StyleCommands![i];
                                                 if (currCmd.Index >= cutLine.Length)
                                                 {
-                                                    currCmd.Index -= cutLine.Length + 1;
+                                                    currCmd.Index -= nextLineStart;
                                                     if (currCmd.Index < 0) { currCmd.Index = 0; }
                                                     ret[lineIndex + 1].StyleCommands ??= new List<TextStyleCommand>();
                                                     ret[lineIndex + 1].StyleCommands!.Insert(0, currCmd);
@@ -529,20 +564,29 @@ namespace Iguina.Entities
                 if ((_cachedProcessedText == null) ||
                     (_cachedTextWidth != TextMaxWidth) ||
                     (_cachedTextFontSize != fontSize) ||
-                    (_cachedTextFontId != font))
+                    (_cachedTextFontId != font) ||
+                    (_cachedTextSpacing != spacing))
                 {
                     _cachedTextWidth = TextMaxWidth;
                     _cachedTextFontSize = fontSize;
                     _cachedTextFontId = font;
-                    _cachedProcessedText = BuildProcessedText(font, fontSize, TextMaxWidth, spacing);
-                    _lineHeight = UISystem.Renderer.GetTextLineHeight(font, fontSize);
-                    _textHeight = _lineHeight * _cachedProcessedText.Length;
-                    _textWidth = 0;
-                    foreach (var line in _cachedProcessedText)
-                    {
-                        var lineWidth = UISystem.Renderer.MeasureText(line.Line, font, fontSize, spacing).X;
-                        _textWidth = (int)Math.Max(_textWidth, lineWidth);
-                    }
+                    _cachedTextSpacing = spacing;
+                    RebuildProcessedText();
+                }
+
+                // store text layout params, so we can later convert between positions and text indices
+                bool centerVertically = (Anchor == Anchor.Center || Anchor == Anchor.CenterLeft || Anchor == Anchor.CenterRight);
+                _lastTextRegion = internalBoundingRect;
+                _lastTextAlignment = alignment;
+                _lastTextTop = centerVertically ? (internalBoundingRect.Top + internalBoundingRect.Height / 2 - _lineHeight / 2) : internalBoundingRect.Top;
+
+                // get caret line and column, if should draw caret
+                int caretLine = -1;
+                int caretColumn = 0;
+                if (_caretSourceIndex >= 0 && !string.IsNullOrEmpty(_caretText))
+                {
+                    caretLine = GetLineIndexOfSourceIndex(_caretSourceIndex);
+                    caretColumn = GetColumnOfSourceIndex(caretLine, _caretSourceIndex);
                 }
 
                 // draw text for a given state
@@ -578,18 +622,13 @@ namespace Iguina.Entities
                     }
 
                     // calculate position
-                    var position = new Point(0,
-                        (Anchor == Anchor.Center || Anchor == Anchor.CenterLeft || Anchor == Anchor.CenterRight) ?
-                        internalBoundingRect.Top + internalBoundingRect.Height / 2 - _lineHeight / 2 :
-                        internalBoundingRect.Top
-                    );
+                    var position = new Point(0, _lastTextTop);
 
                     // measure space width
                     var spaceWidth = (int)(UISystem.Renderer.MeasureText("_", font, fontSize, 1f).X * 0.5f);
 
                     // iterate lines and render them
                     int lineIndex = 0;
-                    int lineStartIndex = 0;
                     TextStyleCommand currTextStyle = TextStyleCommand.Null;
                     foreach (var line in _cachedProcessedText)
                     {
@@ -600,31 +639,12 @@ namespace Iguina.Entities
                         var lineSize = UISystem.Renderer.MeasureText(line.Line, font, fontSize, spacing);
 
                         // adjust position X based on alignment
-                        switch (alignment)
-                        {
-                            case TextAlignment.Left:
-                                position.X = internalBoundingRect.Left;
-                                break;
-                            case TextAlignment.Right:
-                                position.X = internalBoundingRect.Right - lineSize.X;
-                                break;
-                            case TextAlignment.Center:
-                                position.X = internalBoundingRect.X + internalBoundingRect.Width / 2 - lineSize.X / 2;
-                                break;
-                        }
+                        position.X = GetLineX(internalBoundingRect, alignment, lineSize.X);
 
                         // draw line without style commands
                         if (styleCommands == null || styleCommands.Count == 0)
                         {
-                            if (_beforeDrawingLineNoStyleCommands != null)
-                            {
-                                var processedLine = _beforeDrawingLineNoStyleCommands(line.Line, lineIndex, lineStartIndex);
-                                if (!string.IsNullOrEmpty(processedLine))
-                                {
-                                    UISystem.Renderer.DrawText(effectId, processedLine, font, fontSize, position, currTextStyle.FillColor ?? fillColor, currTextStyle.OutlineColor ?? outlineColor, currTextStyle.OutlineWidth ?? outlineWidth, spacing);
-                                }
-                            }
-                            else
+                            if (!string.IsNullOrEmpty(line.Line))
                             {
                                 UISystem.Renderer.DrawText(effectId, line.Line, font, fontSize, position, currTextStyle.FillColor ?? fillColor, currTextStyle.OutlineColor ?? outlineColor, currTextStyle.OutlineWidth ?? outlineWidth, spacing);
                             }
@@ -683,9 +703,16 @@ namespace Iguina.Entities
                             }
                         }
 
+                        // draw caret on top of the text, centered on the boundary between characters
+                        if (lineIndex == caretLine)
+                        {
+                            var caretX = position.X + UISystem.Renderer.MeasureText(line.Line.Substring(0, caretColumn), font, fontSize, spacing).X;
+                            caretX -= UISystem.Renderer.MeasureText(_caretText, font, fontSize, spacing).X / 2;
+                            UISystem.Renderer.DrawText(effectId, _caretText, font, fontSize, new Point(caretX, position.Y), fillColor, outlineColor, outlineWidth, spacing);
+                        }
+
                         // move position to next line
                         position.Y += _lineHeight;
-                        lineStartIndex += line.Line.Length + 1;
                         lineIndex++;
                     }
                 }
@@ -702,6 +729,172 @@ namespace Iguina.Entities
                     DrawStateText(state, internalBoundingRect, 1f);
                 }
             }
+        }
+
+        /// <summary>
+        /// Build processed text and measure it, using the cached font params.
+        /// </summary>
+        void RebuildProcessedText()
+        {
+            var font = _cachedTextFontId;
+            var fontSize = _cachedTextFontSize;
+            var spacing = _cachedTextSpacing;
+            _cachedProcessedText = BuildProcessedText(font, fontSize, _cachedTextWidth, spacing);
+            _lineHeight = UISystem.Renderer.GetTextLineHeight(font, fontSize);
+            _textHeight = _lineHeight * _cachedProcessedText.Length;
+            _textWidth = 0;
+            foreach (var line in _cachedProcessedText)
+            {
+                var lineWidth = UISystem.Renderer.MeasureText(line.Line, font, fontSize, spacing).X;
+                _textWidth = (int)Math.Max(_textWidth, lineWidth);
+            }
+        }
+
+        /// <summary>
+        /// Get line X position based on alignment.
+        /// </summary>
+        static int GetLineX(Rectangle region, TextAlignment alignment, int lineWidth)
+        {
+            switch (alignment)
+            {
+                case TextAlignment.Right:
+                    return region.Right - lineWidth;
+                case TextAlignment.Center:
+                    return region.X + region.Width / 2 - lineWidth / 2;
+                default:
+                    return region.Left;
+            }
+        }
+
+        /*
+         * Methods to convert between source text indices and positions on screen.
+         * Positions are based on the last draw call (region, font, wrapping width), but wrapped lines are rebuilt if text changed since.
+         * Note: indices are accurate only for lines without style commands.
+         */
+
+        /// <summary>
+        /// Make sure processed text is up-to-date with current text value.
+        /// </summary>
+        /// <returns>Processed lines count (0 if text is empty or was never drawn).</returns>
+        internal int EnsureProcessedText()
+        {
+            if (string.IsNullOrEmpty(Text) || (_cachedTextFontSize <= 0)) { return 0; }
+            if (_cachedProcessedText == null) { RebuildProcessedText(); }
+            return _cachedProcessedText!.Length;
+        }
+
+        /// <summary>
+        /// Get processed line first character index, in source text.
+        /// </summary>
+        int GetLineSourceStart(int lineIndex)
+        {
+            return _sourceIndexMap[_cachedProcessedText![lineIndex].NormalizedStart];
+        }
+
+        /// <summary>
+        /// Get the index of the processed line that contains a given source text index.
+        /// If index is on a wrap point where no character was dropped, it belongs to the next line.
+        /// </summary>
+        internal int GetLineIndexOfSourceIndex(int sourceIndex)
+        {
+            int count = EnsureProcessedText();
+            for (int i = 0; i < count - 1; ++i)
+            {
+                if (sourceIndex < GetLineSourceStart(i + 1)) { return i; }
+            }
+            return Math.Max(0, count - 1);
+        }
+
+        /// <summary>
+        /// Get column (character index in processed line) for a given source text index.
+        /// </summary>
+        int GetColumnOfSourceIndex(int lineIndex, int sourceIndex)
+        {
+            if (EnsureProcessedText() == 0) { return 0; }
+            var line = _cachedProcessedText![lineIndex];
+            for (int col = 0; col < line.Line.Length; ++col)
+            {
+                if (_sourceIndexMap[line.NormalizedStart + col] >= sourceIndex) { return col; }
+            }
+            return line.Line.Length;
+        }
+
+        /// <summary>
+        /// Get the top-left position of a processed line, based on last draw call.
+        /// </summary>
+        internal Point GetLinePosition(int lineIndex)
+        {
+            int lineWidth = 0;
+            if (EnsureProcessedText() > 0)
+            {
+                lineWidth = UISystem.Renderer.MeasureText(_cachedProcessedText![lineIndex].Line, _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
+            }
+            return new Point(GetLineX(_lastTextRegion, _lastTextAlignment, lineWidth), _lastTextTop + lineIndex * _lineHeight);
+        }
+
+        /// <summary>
+        /// Get the position of the boundary before a given source text index (ie where a caret should be).
+        /// </summary>
+        /// <param name="sourceIndex">Index in source text.</param>
+        /// <param name="lineIndex">Processed line index the source index is at.</param>
+        /// <returns>Top-left position of the boundary.</returns>
+        internal Point GetSourceIndexPosition(int sourceIndex, out int lineIndex)
+        {
+            lineIndex = GetLineIndexOfSourceIndex(sourceIndex);
+            var position = GetLinePosition(lineIndex);
+            if (EnsureProcessedText() > 0)
+            {
+                var col = GetColumnOfSourceIndex(lineIndex, sourceIndex);
+                position.X += UISystem.Renderer.MeasureText(_cachedProcessedText![lineIndex].Line.Substring(0, col), _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
+            }
+            return position;
+        }
+
+        /// <summary>
+        /// Get the source text index nearest to a given X position, in a given processed line.
+        /// </summary>
+        internal int GetSourceIndexAtLineAndX(int lineIndex, int x)
+        {
+            int count = EnsureProcessedText();
+            if (count == 0) { return 0; }
+            lineIndex = Math.Clamp(lineIndex, 0, count - 1);
+            var line = _cachedProcessedText![lineIndex];
+            int relativeX = x - GetLinePosition(lineIndex).X;
+
+            // find the characters boundary closest to position
+            // note: measure prefixes and not single characters, so kerning and non-monospace fonts are accounted for
+            int column = line.Line.Length;
+            int prevWidth = 0;
+            for (int col = 1; col <= line.Line.Length; ++col)
+            {
+                int width = UISystem.Renderer.MeasureText(line.Line.Substring(0, col), _cachedTextFontId, _cachedTextFontSize, _cachedTextSpacing).X;
+                if (relativeX * 2 < (prevWidth + width))
+                {
+                    column = col - 1;
+                    break;
+                }
+                prevWidth = width;
+            }
+
+            // if line was wrapped without dropping a character, its end index belongs to next line, so stop before last character
+            if ((column == line.Line.Length) && (column > 0) && (lineIndex < count - 1) &&
+                (_sourceIndexMap[line.NormalizedStart + column] >= GetLineSourceStart(lineIndex + 1)))
+            {
+                column--;
+            }
+
+            return _sourceIndexMap[line.NormalizedStart + column];
+        }
+
+        /// <summary>
+        /// Get the source text index nearest to a given position.
+        /// </summary>
+        internal int GetSourceIndexAtPosition(Point position)
+        {
+            int count = EnsureProcessedText();
+            if ((count == 0) || (_lineHeight <= 0)) { return 0; }
+            int lineIndex = (int)MathF.Floor((float)(position.Y - _lastTextTop) / _lineHeight);
+            return GetSourceIndexAtLineAndX(Math.Clamp(lineIndex, 0, count - 1), position.X);
         }
     }
 

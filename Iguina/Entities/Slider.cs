@@ -194,6 +194,62 @@ namespace Iguina.Entities
         {
         }
 
+        /// <summary>
+        /// If the slider internal region (after padding) is shorter than this fraction of the slider length, the slider is considered too small for its padding.
+        /// In this case, the padding is ignored and the handle will move along the slider entire length (and shrink, if needed).
+        /// </summary>
+        /// <remarks>
+        /// This happens, for example, with scrollbars of short panels, when the scrollbar padding is bigger than its height.
+        /// </remarks>
+        public float MinInternalLengthRatio = 0.25f;
+
+        // handle original length, if we had to shrink it because the slider is too small
+        Measurement? _handleOriginalLength;
+
+        /// <inheritdoc/>
+        protected override DrawMethodResult Draw(DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult, bool dryRun)
+        {
+            var ret = base.Draw(parentDrawResult, siblingDrawResult, dryRun);
+
+            // get slider length and internal length (the range the handle moves on)
+            bool horizontal = (Orientation == Orientation.Horizontal);
+            int length = horizontal ? ret.BoundingRect.Width : ret.BoundingRect.Height;
+            int internalLength = horizontal ? ret.InternalBoundingRect.Width : ret.InternalBoundingRect.Height;
+
+            // slider is too small for its padding? use its entire length instead, while keeping handle inside the slider
+            if ((length > 0) && (internalLength < length * MinInternalLengthRatio))
+            {
+                // shrink handle if it takes more than half the slider length
+                _handleOriginalLength ??= horizontal ? Handle.Size.X : Handle.Size.Y;
+                int handleLength = Math.Min(_handleOriginalLength.Value.GetValueInPixels(length), length / 2);
+                if (horizontal) { Handle.Size.X.SetPixels(handleLength); }
+                else { Handle.Size.Y.SetPixels(handleLength); }
+
+                // set internal region so that handle center moves between its half-size from both edges
+                int start = (horizontal ? ret.BoundingRect.Left : ret.BoundingRect.Top) + handleLength / 2;
+                int newInternalLength = Math.Max(1, length - handleLength);
+                if (horizontal)
+                {
+                    ret.InternalBoundingRect.X = start;
+                    ret.InternalBoundingRect.Width = newInternalLength;
+                }
+                else
+                {
+                    ret.InternalBoundingRect.Y = start;
+                    ret.InternalBoundingRect.Height = newInternalLength;
+                }
+            }
+            // restore handle size if we previously shrank it
+            else if (_handleOriginalLength.HasValue)
+            {
+                if (horizontal) { Handle.Size.X = _handleOriginalLength.Value; }
+                else { Handle.Size.Y = _handleOriginalLength.Value; }
+                _handleOriginalLength = null;
+            }
+
+            return ret;
+        }
+
         /// <inheritdoc/>
         internal override void DoInteractions(InputState inputState)
         {
