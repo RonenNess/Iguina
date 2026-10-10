@@ -61,6 +61,7 @@ Misc:
     * Radio Buttons.
     * List Box.
     * Drop Down List.
+    * Combo Box (drop down with free text / search).
     * Text Input.
     * Numeric Input.
     * Horizontal / Vertical Lines.
@@ -867,6 +868,10 @@ These are all the valid keys, with example file names:
     "DropDownPanels": "Styles/list_panel.json",
     "DropDownItems": "Styles/list_item.json",
     "DropDownIcon": "Styles/dropdown_icon.json",
+    "ComboBoxPanels": "Styles/list_panel.json",
+    "ComboBoxItems": "Styles/list_item.json",
+    "ComboBoxIcon": "Styles/dropdown_icon.json",
+    "ComboBoxTextInput": "Styles/combobox_text_input.json",
     "VerticalScrollbars": "Styles/scrollbar_vertical.json",
     "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
     "TextInput": "Styles/text_input.json",
@@ -895,6 +900,8 @@ Some entity types fall back to other default stylesheets when theirs is not set:
 * `RadioButtons` -> `CheckBoxes`.
 * `ListPanels` -> `Panels`, and `DropDownPanels` -> `ListPanels` -> `Panels`.
 * `ListItems` -> `Paragraphs`, and `DropDownItems` -> `ListItems` -> `Paragraphs`.
+* `ComboBoxPanels` -> `DropDownPanels` -> `ListPanels` -> `Panels`, `ComboBoxItems` -> `DropDownItems` -> `ListItems` -> `Paragraphs`, and `ComboBoxIcon` -> `DropDownIcon`.
+* `ComboBoxTextInput` -> the combo box items stylesheet. Note that this stylesheet is for the text box *inside* the combo box, so it usually shouldn't have a fill texture or padding.
 * `VerticalScrollbars` -> `VerticalSliders`, and `VerticalScrollbarsHandle` -> `VerticalSlidersHandle`.
 * `HorizontalColorSliders` / `VerticalColorSliders` (and their handles) -> the matching regular slider stylesheets.
 * `NumericTextInput` -> `TextInput`, and `NumericTextInputButton` -> `Buttons`.
@@ -1822,6 +1829,7 @@ Move the scrollbar so the selected item is visible.
 ### `DisplayFilter`
 
 An optional `Func<ListItem, bool>` callback. When set, only items for which it returns `true` are displayed. Hidden items remain in the list, and can still be selected by code. Useful for search boxes.
+The scrollbar range (and the height of auto-height lists) is based on the displayed items count.
 
 ### `OverrideItemStyles`
 
@@ -1884,6 +1892,98 @@ Returns the height, in pixels, of the dropdown in its collapsed state.
 
 For dropdowns, this sets how many items are visible while the list is open.
 
+### `SetMaxVisibleItemsCount(count)`
+
+Use auto height, but limit the open list to show up to this number of items. Unlike `SetVisibleItemsCount()`, the list shrinks when there are fewer items to show (for example, when some items are hidden by `DisplayFilter`).
+
+## ComboBox
+
+`ComboBox` is a `DropDown` with an editable text box instead of the selected value line.
+Users can pick an item from the list, or type in the text box to search the list. Depending on the `AllowFreeText` flag, users can also type values that are not in the list.
+
+```cs
+var nameInput = panel.AddChild(new ComboBox(uiSystem));
+nameInput.PlaceholderText = "Type or select a name";
+nameInput.AllowFreeText = true;
+nameInput.AddItem("Aragorn");
+nameInput.AddItem("Legolas");
+nameInput.AddItem("Gimli");
+nameInput.SetMaxVisibleItemsCount(5);
+nameInput.Events.OnValueChanged = (Entity entity) => { heroName = nameInput.Value; };
+```
+
+How it works:
+
+- Typing opens the list, and shows only items that contain the typed text (see `FilterItemsByText`).
+- Typing text that matches an item text exactly selects that item. Matching is done against the item label (without icons), or its value if it doesn't have a label.
+- Up / Down move between the displayed items while typing, and Enter confirms the text and closes the list.
+- Clicking an item selects it and sets the text to the item text. Clicking the arrow icon toggles the list.
+- The text is "committed" when pressing Enter, when the list closes, or when the text box loses focus. On commit, text that matches an item is normalized to the exact item text (for example, letters case).
+
+When `AllowFreeText` is `false`, typing only searches the list:
+
+- The selected item doesn't change while typing text that doesn't match any item.
+- On commit, text that doesn't match any item is reverted to the selected item text, and empty text clears the selection.
+- Pressing Enter when the text doesn't match any item selects the first item that passes the filter.
+
+`ComboBox` adds the following properties and methods on top of `DropDown`:
+
+### `AllowFreeText`
+
+If true (default), users can type any value, even if it's not one of the list items. If false, the value must be one of the list items.
+
+### `Value`
+
+Get / set the combo box value. This is the selected item value if an item is selected. Otherwise, if `AllowFreeText` is true, it's the typed text. Null if there's no value.
+
+Setting a value that is one of the items values selects that item. Any other value is set as free text, or throws `KeyNotFoundException` if `AllowFreeText` is false. Set to null to clear.
+
+The `OnValueChanged` event is triggered when `Value` changes. To respond to every typed character, register to `TextInputField.Events.OnValueChanged` instead.
+
+### `Text`
+
+Get / set the text in the text box. Setting text that matches an item text selects that item. If `AllowFreeText` is false, text that doesn't match any item is reverted right away.
+
+### `IsFreeText`
+
+`true` when the combo box has a free text value that is not one of the list items.
+
+### `SelectedValue` / `SelectedIndex`
+
+Inherited from `ListBox`. The selected item, or null / -1 when the text doesn't match any item. Setting them updates the text to the selected item text.
+
+### `PlaceholderText`
+
+Text to show while the text box is empty. Note: `DefaultSelectedText` and `OverrideSelectedText` from `DropDown` don't apply to combo boxes.
+
+### `FilterItemsByText`
+
+If true (default), the open list only shows items that contain the typed text. The filter is cleared when the list closes. This filter works together with `DisplayFilter`.
+
+### `CaseSensitive`
+
+If true, matching and filtering items is case sensitive. Default is false.
+
+### `OpenListWhileTyping`
+
+If true (default), typing in the text box opens the list.
+
+### `OpenListOnClick`
+
+If true (default), clicking on the text box opens the list.
+
+### `TextInputField`
+
+The `TextInput` entity inside the combo box. Use it to set properties like `MaxLength`, override text styles, or check `IsEditing`.
+
+### `CommitText()`
+
+Commit the current text by code, as described above.
+
+### `FindItemByText(text)`
+
+Returns the value of the first item that its text matches the given text, or null if not found. Respects `CaseSensitive`.
+
 ## TextInput
 
 ![Text Input Image](ReadmeAssets/entity-textinput.png)
@@ -1927,6 +2027,10 @@ Optional max length, in characters.
 
 If set, every character is displayed as this character.
 Useful for password input fields, where you want the password hidden.
+
+### `IsEditing`
+
+Read-only. `true` while the user is editing the text input (after clicking on it, until clicking outside).
 
 ### `CaretOffset`
 
@@ -2429,6 +2533,15 @@ All changes:
 - Fixed `MaxLength` allowing one extra character.
 - Added copy, cut, paste and select all to text inputs, with optional `IsCopyCommand()`, `IsPasteCommand()`, `IsCutCommand()`, `IsSelectAllCommand()`, `GetClipboardText()` and `SetClipboardText()` in the input provider interface.
 - Text inputs no longer type control characters.
+
+## 1.1.8
+
+- Added `ComboBox` entity: a drop down with an editable text box, that supports searching the list and (optionally) free text values.
+- Added `ComboBoxPanels`, `ComboBoxItems`, `ComboBoxIcon` and `ComboBoxTextInput` default stylesheets, and `combobox_text_input.json` to the demo theme.
+- Added `SetMaxVisibleItemsCount()` to `DropDown`.
+- Added `IsEditing` property to `TextInput`.
+- Fixed rendering bug with 3 or more nested entities with hidden overflow, where entities drawn after them were clipped by the wrong region.
+- Fixed `ListBox` and `DropDown` scrollbar range and auto height to be based on items that pass the `DisplayFilter`, instead of all items.
 
 # License
 

@@ -33,8 +33,22 @@ namespace Iguina.Entities
         // list items
         List<ListItem> _items = new();
 
+        // indices of the items that are currently displayed (ie pass the display filter)
+        protected List<int> _displayedItemIndices = new();
+
         // paragraph entities to present the items
         protected List<Paragraph> _paragraphs = new();
+
+        /// <summary>
+        /// Get all list items.
+        /// </summary>
+        protected IReadOnlyList<ListItem> Items => _items;
+
+        /// <summary>
+        /// How many items are currently displayed (ie pass the display filter).
+        /// Updated every time the list is drawn, or when calling <see cref="UpdateDisplayedItems"/>.
+        /// </summary>
+        protected int DisplayedItemsCount => _displayedItemIndices.Count;
 
         /// <summary>
         /// An optional method to filter which values to show in the list.
@@ -103,12 +117,47 @@ namespace Iguina.Entities
                         throw new KeyNotFoundException("Value to set was not found in list!");
                     }
                     _selectedValue = value;
-                    Events.OnValueChanged?.Invoke(this);
-                    UISystem.Events.OnValueChanged?.Invoke(this);
+                    OnSelectedValueChanged();
                 }
             }
         }
         string? _selectedValue;
+
+        /// <summary>
+        /// Called whenever the selected value changes.
+        /// By default, triggers the value changed events.
+        /// </summary>
+        protected virtual void OnSelectedValueChanged()
+        {
+            Events.OnValueChanged?.Invoke(this);
+            UISystem.Events.OnValueChanged?.Invoke(this);
+        }
+
+        /// <summary>
+        /// Return if a given item should be displayed in the list.
+        /// By default, uses <see cref="DisplayFilter"/>.
+        /// </summary>
+        /// <param name="item">Item to check.</param>
+        /// <returns>True to show item, false to hide it.</returns>
+        protected virtual bool ShouldDisplayItem(ListItem item)
+        {
+            return DisplayFilter?.Invoke(item) != false;
+        }
+
+        /// <summary>
+        /// Update the list of items that pass the display filter.
+        /// </summary>
+        protected void UpdateDisplayedItems()
+        {
+            _displayedItemIndices.Clear();
+            for (int i = 0; i < _items.Count; ++i)
+            {
+                if (ShouldDisplayItem(_items[i]))
+                {
+                    _displayedItemIndices.Add(i);
+                }
+            }
+        }
 
         /// <summary>
         /// Get selected item text, without any icons.
@@ -155,7 +204,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Should we show scrollbar for this list?
         /// </summary>
-        protected virtual bool ShowListScrollbar => (_paragraphs.Count < _items.Count);
+        protected virtual bool ShowListScrollbar => (_paragraphs.Count < DisplayedItemsCount);
 
         /// <summary>
         /// Create the list box.
@@ -220,7 +269,8 @@ namespace Iguina.Entities
             // set auto height
             if (AutoHeight)
             {
-                var height = ItemHeight * (_items.Count + 1);
+                UpdateDisplayedItems();
+                var height = ItemHeight * (DisplayedItemsCount + 1);
                 if (AutoHeightMaxSize.HasValue && height > AutoHeightMaxSize.Value)
                 {
                     height = AutoHeightMaxSize.Value;
@@ -243,10 +293,13 @@ namespace Iguina.Entities
             // render base
             base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
 
+            // update which items to show
+            UpdateDisplayedItems();
+
             // calculate how many items we should show at any given time
             int paragraphsCount = (int)Math.Ceiling((float)internalBoundingRect.Height / (float)ItemHeight) + GetExtraParagraphsCount();
             if (paragraphsCount < 1) { paragraphsCount = 1; }
-            if (paragraphsCount > _items.Count) { paragraphsCount = _items.Count; }
+            if (paragraphsCount > DisplayedItemsCount) { paragraphsCount = DisplayedItemsCount; }
 
             // create new item paragraphs
             while (_paragraphs.Count < paragraphsCount)
@@ -299,7 +352,7 @@ namespace Iguina.Entities
             if (VerticalScrollbar != null)
             {
                 VerticalScrollbar.Visible = ShowListScrollbar;
-                VerticalScrollbar.MaxValue = (_items.Count - _paragraphs.Count) + 1;
+                VerticalScrollbar.MaxValue = (DisplayedItemsCount - _paragraphs.Count) + 1;
                 scrollOffset = VerticalScrollbar.Visible ? VerticalScrollbar.Value : 0;
             }
 
@@ -341,26 +394,19 @@ namespace Iguina.Entities
         /// </summary>
         protected virtual void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
-            int skipped = 0;
             for (var i = startIndex; i < _paragraphs.Count; ++i)
             {
-                // get item index and validate range
-                var itemIndex = i + scrollOffset - startIndex + skipped;
-                if (itemIndex < 0) { continue; }
-                if (itemIndex >= _items.Count)
+                // get displayed item index and validate range
+                var displayIndex = i + scrollOffset - startIndex;
+                if (displayIndex < 0) { continue; }
+                if (displayIndex >= DisplayedItemsCount)
                 {
                     _paragraphs[i].Visible = false;
                     continue;
                 }
 
-                // get current item and apply filter
-                var item = _items[itemIndex];
-                if (DisplayFilter?.Invoke(item) == false)
-                {
-                    i--;
-                    skipped++;
-                    continue;
-                }
+                // get current item
+                var item = _items[_displayedItemIndices[displayIndex]];
 
                 // set current paragraph
                 var paragraph = _paragraphs[i];
@@ -400,7 +446,8 @@ namespace Iguina.Entities
         {
             if (VerticalScrollbar != null)
             {
-                VerticalScrollbar.ValueSafe = SelectedIndex - _paragraphs.Count / 2;
+                UpdateDisplayedItems();
+                VerticalScrollbar.ValueSafe = _displayedItemIndices.IndexOf(SelectedIndex) - _paragraphs.Count / 2;
             }
         }
 

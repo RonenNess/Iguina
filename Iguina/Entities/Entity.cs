@@ -984,7 +984,7 @@ namespace Iguina.Entities
 
             // apply scissor to hide overflow entities
             bool setScissor = !dryRun && (OverflowMode == OverflowMode.HideOverflow);
-            bool enqueuedPreviousScissorRegion = false;
+            bool pushedPreviousScissorRegion = false;
             if (setScissor)
             {
                 // if we already have scissor region set, queue it.
@@ -996,8 +996,8 @@ namespace Iguina.Entities
                 var currentRegion = UISystem.Renderer.GetScissorRegion();
                 if (currentRegion.HasValue)
                 {
-                    UISystem._scissorRegionQueue.Enqueue(currentRegion.Value);
-                    enqueuedPreviousScissorRegion = true;
+                    UISystem._scissorRegionStack.Push(currentRegion.Value);
+                    pushedPreviousScissorRegion = true;
                     newRegion = Rectangle.MergeRectangles(newRegion, currentRegion.Value);
                 }
 
@@ -1098,7 +1098,7 @@ namespace Iguina.Entities
             // reset scissor region if set
             if (setScissor)
             {
-                if (enqueuedPreviousScissorRegion && UISystem._scissorRegionQueue.TryDequeue(out Rectangle lastRegion))
+                if (pushedPreviousScissorRegion && UISystem._scissorRegionStack.TryPop(out Rectangle lastRegion))
                 {
                     UISystem.Renderer.SetScissorRegion(lastRegion);
                 }

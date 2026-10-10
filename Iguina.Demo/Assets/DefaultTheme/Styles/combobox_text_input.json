@@ -1,0 +1,15 @@
+{
+    "InheritFrom": "paragraph_base_style.json",
+	"Default": {
+        "TextAlignment": "Left",
+        "DefaultTextAnchor": "CenterLeft",
+        "Padding": {"Left": 0, "Right": 0, "Top": 0, "Bottom": 0}
+	},
+    "Targeted": {
+        "TextFillColor": {"R": 0, "G": 255, "B": 255, "A": 255}
+    },
+    "Interacted": {
+        "TextFillColor": {"R": 255, "G": 255, "B": 255, "A": 255}
+    },
+	"InterpolateStatesSpeed": 0
+}

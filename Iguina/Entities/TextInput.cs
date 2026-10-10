@@ -61,6 +61,11 @@ namespace Iguina.Entities
         bool _isEditing = false;
 
         /// <summary>
+        /// Returns true while the user is editing this text input (ie after clicking on it, and until clicking outside).
+        /// </summary>
+        public bool IsEditing => _isEditing;
+
+        /// <summary>
         /// If true, text input will support line breaks.
         /// </summary>
         public virtual bool Multiline

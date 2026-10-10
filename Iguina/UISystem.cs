@@ -82,6 +82,10 @@ namespace Iguina
             public StyleSheet? DropDownPanels;
             public StyleSheet? DropDownItems;
             public StyleSheet? DropDownIcon;
+            public StyleSheet? ComboBoxPanels;
+            public StyleSheet? ComboBoxItems;
+            public StyleSheet? ComboBoxIcon;
+            public StyleSheet? ComboBoxTextInput;
             public StyleSheet? VerticalScrollbars;
             public StyleSheet? VerticalScrollbarsHandle;
             public StyleSheet? TextInput;
@@ -148,8 +152,8 @@ namespace Iguina
         /// </summary>
         public Panel Root { get; private set; }
 
-        // queue of scissor regions to cut-off rendering when overflow mode is hidden.
-        internal Queue<Rectangle> _scissorRegionQueue = new();
+        // stack of scissor regions to restore after cutting-off rendering when overflow mode is hidden.
+        internal Stack<Rectangle> _scissorRegionStack = new();
 
         /// <summary>
         /// If set, will use this cursor properties regardless of interface state or entity the user points on.
@@ -527,7 +531,7 @@ namespace Iguina
             ValidateThreadId();
 
             // reset scissors queue
-            _scissorRegionQueue.Clear();
+            _scissorRegionStack.Clear();
             Renderer.ClearScissorRegion();
 
             // draw all entities

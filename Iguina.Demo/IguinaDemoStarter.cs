@@ -510,6 +510,50 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                 }
             }
 
+            // combo box
+            {
+                var panel = CreateDemoContainer("Combo Box", new Point(680, 1));
+
+                panel.AddChild(new Paragraph(_system, @"Combo Boxes are drop downs with a text box. You can type to filter the list, use the arrow keys to pick items, and press enter to confirm. This one also accepts free text that is not in the list:"));
+                panel.AddChild(new RowsSpacer(_system));
+                {
+                    panel.AddChild(new Label(_system, @"Character Name:"));
+                    var combobox = panel.AddChild(new ComboBox(_system));
+                    combobox.PlaceholderText = "< Type or Select Name >";
+                    combobox.AllowFreeText = true;
+                    foreach (var val in new[] { "Aragorn", "Legolas", "Gimli", "Gandalf", "Frodo", "Samwise", "Boromir" })
+                    {
+                        combobox.AddItem(val);
+                    }
+                    combobox.SetMaxVisibleItemsCount(5);
+                    var selectedParagraph = panel.AddChild(new Paragraph(_system));
+                    selectedParagraph.Text = "Value: None";
+                    combobox.Events.OnValueChanged = (Entity entity) =>
+                    {
+                        selectedParagraph.Text = "Value: " + (combobox.Value ?? "None") + (combobox.IsFreeText ? " (free text)" : string.Empty);
+                    };
+                }
+                {
+                    panel.AddChild(new Paragraph(_system, @"The combo box below does not accept free text. Typing only searches the list, and text that doesn't match an item is reverted when confirmed:"));
+                    panel.AddChild(new RowsSpacer(_system));
+                    panel.AddChild(new Label(_system, @"Select Class:"));
+                    var combobox = panel.AddChild(new ComboBox(_system));
+                    combobox.PlaceholderText = "< Search Class >";
+                    combobox.AllowFreeText = false;
+                    foreach (var val in dndClasses)
+                    {
+                        combobox.AddItem(val);
+                    }
+                    combobox.SetMaxVisibleItemsCount(7);
+                    var selectedParagraph = panel.AddChild(new Paragraph(_system));
+                    selectedParagraph.Text = "Selected Class: None";
+                    combobox.Events.OnValueChanged = (Entity entity) =>
+                    {
+                        selectedParagraph.Text = "Selected Class: " + (combobox.Value ?? "None");
+                    };
+                }
+            }
+
             // color inputs
             {
                 var panel = CreateDemoContainer("Color Pickers", new Point(650, 350));

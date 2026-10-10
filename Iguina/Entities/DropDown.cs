@@ -42,6 +42,21 @@ namespace Iguina.Entities
         Panel _selectedValuePanel;
         Paragraph _selectedValueParagraph;
 
+        /// <summary>
+        /// The panel showing the selected value while the dropdown is closed (and at the top of the list while its opened).
+        /// </summary>
+        protected Panel SelectedValuePanel => _selectedValuePanel;
+
+        /// <summary>
+        /// The paragraph showing the selected value text, inside <see cref="SelectedValuePanel"/>.
+        /// </summary>
+        protected Paragraph SelectedValueParagraph => _selectedValueParagraph;
+
+        /// <summary>
+        /// Arrow icon entity, or null if no arrow icon stylesheet was provided.
+        /// </summary>
+        protected Entity? ArrowIcon => _icon;
+
         // icon entity, if stylesheet is defined for it
         Entity _icon = null!;
 
@@ -129,9 +144,10 @@ namespace Iguina.Entities
             // set auto height
             if (AutoHeight)
             {
+                UpdateDisplayedItems();
                 var extraSize = _selectedValuePanel.GetExtraSize();
                 var selectedPanelHeight = _selectedValuePanel.LastBoundingRect.Height + _selectedValuePanel.GetMarginAfter().Y + extraSize.Bottom + extraSize.Top;
-                var height = (int)(ItemHeight * ((float)ItemsCount + 0.5f) + selectedPanelHeight);
+                var height = (int)(ItemHeight * ((float)DisplayedItemsCount + 0.5f) + selectedPanelHeight);
                 if (AutoHeightMaxSize.HasValue && height > AutoHeightMaxSize.Value)
                 {
                     height = AutoHeightMaxSize.Value;
@@ -172,6 +188,17 @@ namespace Iguina.Entities
         {
             AutoHeight = false;
             Size.Y.SetPixels(ItemHeight * (items + 2)); // +2 to compensate top panel that shows selected value
+        }
+
+        /// <summary>
+        /// Set the list to auto height, but limit its height to show up to this number of items.
+        /// Unlike 'SetVisibleItemsCount()', the list will shrink when there are fewer items to show (for example, when using a display filter).
+        /// </summary>
+        /// <param name="items">Max visible items count.</param>
+        public void SetMaxVisibleItemsCount(int items)
+        {
+            AutoHeight = true;
+            AutoHeightMaxSize = ItemHeight * (items + 2); // +2 to compensate top panel that shows selected value
         }
 
         /// <inheritdoc/>
@@ -238,7 +265,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Close the dropdown list.
         /// </summary>
-        public void CloseList()
+        public virtual void CloseList()
         {
             IsOpened = false;
         }
@@ -246,7 +273,7 @@ namespace Iguina.Entities
         /// <summary>
         /// Open the dropdown list.
         /// </summary>
-        public void OpenList()
+        public virtual void OpenList()
         {
             IsOpened = true;
         }
