@@ -40,8 +40,9 @@ namespace Iguina.Demo
             var panelTitleStyle = StyleSheet.LoadFromJsonFile(Path.Combine(uiThemeFolder, "Styles", "panel_title.json"));
 
             // create button for enable/ disable debug mode
+            Button enableDebugModeBtn;
             {
-                Button enableDebugModeBtn = new Button(_system, "Debug Mode")
+                enableDebugModeBtn = new Button(_system, "Debug Mode")
                 {
                     ToggleCheckOnClick = true,
                     Anchor = Anchor.TopRight
@@ -79,9 +80,19 @@ namespace Iguina.Demo
                 // create panel to select demo
                 demoSelection = new Panel(_system);
                 demoSelection.Anchor = Anchor.CenterLeft;
-                demoSelection.AutoWidth = true;
+                demoSelection.Size.X.SetPixels(400);
                 demoSelection.AutoHeight = true;
+                demoSelection.OverflowMode = OverflowMode.HideOverflow;
                 _system.Root.AddChild(demoSelection);
+
+                // limit panel height to screen height (minus the top buttons space, on both sides since its centered), and add scrollbar for when buttons exceed it
+                demoSelection.CreateVerticalScrollbar();
+                demoSelection.Events.AfterUpdate = (Entity entity) =>
+                {
+                    var topSpace = Math.Max(0, enableDebugModeBtn.LastBoundingRect.Bottom) + 10;
+                    demoSelection.AutoHeightMaxSize = Math.Max(150, renderer.GetScreenBounds().Height - topSpace * 2);
+                    demoSelection.VerticalScrollbar!.Visible = demoSelection.VerticalScrollbar.MaxValue > 0;
+                };
 
                 // add title and horizontal line
                 demoSelection.AddChild(new Title(_system, "Demo Selection:")
@@ -565,19 +576,20 @@ This view shows a document with ${FC:00FFFF}one million lines${RESET}, generated
                     var textView = panel.AddChild(new VirtualTextView(_system, new MillionLinesProvider()));
                     textView.SetVisibleEntriesCount(6);
 
+                    // note: 33.33% each so rounded widths don't sum to more than 100% (which would wrap the last button to a new row)
                     var startBtn = panel.AddChild(new Button(_system, "Go To Start"));
                     startBtn.Anchor = Anchor.AutoInlineLTR;
-                    startBtn.Size.X.SetPercents(33f);
+                    startBtn.Size.X.SetPercents(33.33f);
                     startBtn.Events.OnClick = (Entity entity) => textView.ScrollToStart();
 
                     var middleBtn = panel.AddChild(new Button(_system, "Go To Middle"));
                     middleBtn.Anchor = Anchor.AutoInlineLTR;
-                    middleBtn.Size.X.SetPercents(34f);
+                    middleBtn.Size.X.SetPercents(33.33f);
                     middleBtn.Events.OnClick = (Entity entity) => textView.ScrollOffset = textView.EntriesCount / 2;
 
                     var endBtn = panel.AddChild(new Button(_system, "Go To End"));
                     endBtn.Anchor = Anchor.AutoInlineLTR;
-                    endBtn.Size.X.SetPercents(33f);
+                    endBtn.Size.X.SetPercents(33.33f);
                     endBtn.Events.OnClick = (Entity entity) => textView.ScrollToEnd();
                 }
 
@@ -605,6 +617,75 @@ This view shows a document with ${FC:00FFFF}one million lines${RESET}, generated
                         }
                     };
                 }
+            }
+
+            // tree view
+            {
+                var panel = CreateDemoContainer("Tree View", new Point(780, 1));
+
+                panel.AddChild(new Paragraph(_system, @"Tree View shows a hierarchy of nodes. Every node has a value, a label and child nodes. Click on ${FC:00FFFF}+${RESET} / ${FC:00FFFF}-${RESET} to expand or collapse branches, and on labels to select nodes:"));
+
+                var tree = panel.AddChild(new TreeView(_system));
+                tree.SetVisibleRowsCount(8);
+
+                // build a project-like tree
+                var src = tree.AddNode("src", "${FC:FFFF00}src");
+                var entities = src.AddChild("src/entities", "${FC:FFFF00}Entities");
+                foreach (var name in new[] { "Button.cs", "Panel.cs", "Paragraph.cs", "TreeView.cs" })
+                {
+                    entities.AddChild("src/entities/" + name, name);
+                }
+                var drivers = src.AddChild("src/drivers", "${FC:FFFF00}Drivers");
+                drivers.AddChild("src/drivers/IRenderer.cs", "IRenderer.cs");
+                drivers.AddChild("src/drivers/IInputProvider.cs", "IInputProvider.cs");
+                src.AddChild("src/UISystem.cs", "UISystem.cs");
+                var assets = tree.AddNode("assets", "${FC:FFFF00}Assets");
+                var styles = assets.AddChild("assets/styles", "${FC:FFFF00}Styles");
+                for (int i = 1; i <= 10; ++i)
+                {
+                    styles.AddChild($"assets/styles/style_{i}.json", $"style_{i}.json");
+                }
+                assets.AddChild("assets/textures", "${FC:FFFF00}Textures").AddChild("assets/textures/ui.png", "ui.png");
+                tree.AddNode("readme.md", "readme.md");
+                src.Expanded = true;
+                entities.Expanded = true;
+
+                // show selected value and last toggled node
+                var selectedParagraph = panel.AddChild(new Paragraph(_system, "Selected: None"));
+                tree.Events.OnValueChanged = (Entity entity) =>
+                {
+                    selectedParagraph.Text = "Selected: ${FC:00FF00}" + (tree.SelectedValue ?? "None");
+                };
+                tree.OnNodeToggled = (TreeView view, TreeNode node) =>
+                {
+                    selectedParagraph.Text = "Selected: ${FC:00FF00}" + (tree.SelectedValue ?? "None") + "${RESET}  (" + node.Value + (node.Expanded ? " expanded)" : " collapsed)");
+                };
+
+                // options
+                var showButtons = panel.AddChild(new Checkbox(_system, "Show expand / collapse buttons"));
+                showButtons.Checked = tree.ShowExpandCollapseButtons;
+                showButtons.Events.OnValueChanged = (Entity entity) => tree.ShowExpandCollapseButtons = showButtons.Checked;
+
+                var branchesSelectable = panel.AddChild(new Checkbox(_system, "Branches are selectable (otherwise only leaves)"));
+                branchesSelectable.Checked = tree.BranchesSelectable;
+                branchesSelectable.Events.OnValueChanged = (Entity entity) =>
+                {
+                    tree.BranchesSelectable = branchesSelectable.Checked;
+                    if (!tree.BranchesSelectable && (tree.SelectedNode?.HasChildren == true)) { tree.SelectedNode = null; }
+                };
+
+                var bigIndent = panel.AddChild(new Checkbox(_system, "Big indent"));
+                bigIndent.Events.OnValueChanged = (Entity entity) => tree.Indent = bigIndent.Checked ? 48 : 24;
+
+                var expandAllBtn = panel.AddChild(new Button(_system, "Expand All"));
+                expandAllBtn.Anchor = Anchor.AutoInlineLTR;
+                expandAllBtn.Size.X.SetPercents(50f);
+                expandAllBtn.Events.OnClick = (Entity entity) => tree.ExpandAll();
+
+                var collapseAllBtn = panel.AddChild(new Button(_system, "Collapse All"));
+                collapseAllBtn.Anchor = Anchor.AutoInlineLTR;
+                collapseAllBtn.Size.X.SetPercents(50f);
+                collapseAllBtn.Events.OnClick = (Entity entity) => tree.CollapseAll();
             }
 
             // color inputs

@@ -32,6 +32,7 @@ namespace Iguina.Entities
         int _cachedTextFontSize = 0;
         string? _cachedTextFontId;
         float _cachedTextSpacing = 1f;
+        TextOverflowMode _cachedTextOverflowMode;
         int _lineHeight;
 
         // map from index in normalized text (after removing \r and expanding tabs) to index in source text.
@@ -68,6 +69,9 @@ namespace Iguina.Entities
         /// Max text width.
         /// </summary>
         public int TextMaxWidth { get; private set; }
+
+        // if set, will use this value as max text width (for wrapping) instead of calculating it from parent width.
+        internal int? _textMaxWidthOverride;
 
         // text calculated height and width in pixels
         int _textHeight = 0;
@@ -584,7 +588,36 @@ namespace Iguina.Entities
         {
             var fontSize = GetFontSize();
             var font = StyleSheet.GetProperty<string?>("FontIdentifier", State, null, OverrideStyles);
-            return UISystem.Renderer.MeasureText(txt, font, fontSize, 1f);
+            var spacing = StyleSheet.GetProperty<float>("TextSpacing", State, 1f, OverrideStyles);
+            return UISystem.Renderer.MeasureText(txt, font, fontSize, spacing);
+        }
+
+        /// <summary>
+        /// Count how many lines the current text takes when wrapped at a given width, using current style and overflow mode.
+        /// Uses the same processing as drawing, and the result is cached so drawing with the same width won't process text again.
+        /// </summary>
+        /// <param name="maxWidth">Max text width, in pixels.</param>
+        /// <returns>Lines count (1 for empty text).</returns>
+        internal int CountTextLines(int maxWidth)
+        {
+            if (string.IsNullOrEmpty(Text)) { return 1; }
+            var fontSize = GetFontSize();
+            var font = StyleSheet.GetProperty<string?>("FontIdentifier", State, null, OverrideStyles);
+            var spacing = StyleSheet.GetProperty<float>("TextSpacing", State, 1f, OverrideStyles);
+            if ((_cachedProcessedText == null) ||
+                (_cachedTextWidth != maxWidth) ||
+                (_cachedTextFontSize != fontSize) ||
+                (_cachedTextFontId != font) ||
+                (_cachedTextSpacing != spacing) ||
+                (_cachedTextOverflowMode != TextOverflowMode))
+            {
+                _cachedTextWidth = maxWidth;
+                _cachedTextFontSize = fontSize;
+                _cachedTextFontId = font;
+                _cachedTextSpacing = spacing;
+                RebuildProcessedText();
+            }
+            return Math.Max(1, _cachedProcessedText!.Length);
         }
 
         /// <inheritdoc/>
@@ -597,7 +630,7 @@ namespace Iguina.Entities
             if (!string.IsNullOrEmpty(Text))
             {
                 // calculate max text width
-                TextMaxWidth = Size.X.GetValueInPixels(parentDrawResult.InternalBoundingRect.Width) - 6;
+                TextMaxWidth = _textMaxWidthOverride ?? (Size.X.GetValueInPixels(parentDrawResult.InternalBoundingRect.Width) - 6);
 
                 // calculate text params
                 var state = State;
@@ -611,7 +644,8 @@ namespace Iguina.Entities
                     (_cachedTextWidth != TextMaxWidth) ||
                     (_cachedTextFontSize != fontSize) ||
                     (_cachedTextFontId != font) ||
-                    (_cachedTextSpacing != spacing))
+                    (_cachedTextSpacing != spacing) ||
+                    (_cachedTextOverflowMode != TextOverflowMode))
                 {
                     _cachedTextWidth = TextMaxWidth;
                     _cachedTextFontSize = fontSize;
@@ -793,6 +827,7 @@ namespace Iguina.Entities
             var font = _cachedTextFontId;
             var fontSize = _cachedTextFontSize;
             var spacing = _cachedTextSpacing;
+            _cachedTextOverflowMode = TextOverflowMode;
             _cachedProcessedText = BuildProcessedText(font, fontSize, _cachedTextWidth, spacing);
             _lineHeight = UISystem.Renderer.GetTextLineHeight(font, fontSize);
             _textHeight = _lineHeight * _cachedProcessedText.Length;

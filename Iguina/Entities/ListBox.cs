@@ -194,9 +194,55 @@ namespace Iguina.Entities
         public StyleSheet? ItemsStyleSheet { get; private set; }
 
         /// <summary>
-        /// The height of a single item in list.
+        /// The height of a single item in list, including its margins and extra size.
+        /// This is the exact distance between drawn items.
+        /// Calculated from the items stylesheet merged with <see cref="OverrideItemStyles"/>, so it's always up-to-date.
         /// </summary>
-        protected int ItemHeight { get; private set; }
+        protected int ItemHeight
+        {
+            get
+            {
+                UpdateItemMetrics();
+                return _itemHeight;
+            }
+        }
+        int _itemHeight = 1;
+
+        // paragraph used to resolve items style, without drawing it
+        readonly Paragraph _itemsProbe;
+
+        // items metrics, calculated from effective items style
+        int _itemBoxHeight = 1;
+        int _itemMarginBefore;
+        int _itemMarginAfter;
+        int _itemExtraTop;
+
+        /// <summary>
+        /// Calculate items metrics from the effective items style (stylesheet + overrides).
+        /// This is the single source of truth for the vertical space an item takes, used both for layout math and for drawing.
+        /// </summary>
+        void UpdateItemMetrics()
+        {
+            _itemsProbe.OverrideStyles = OverrideItemStyles;
+            _itemBoxHeight = (ItemsStyleSheet?.DefaultHeight?.Units == MeasureUnit.Pixels) ?
+                (int)ItemsStyleSheet.DefaultHeight.Value.Value :
+                _itemsProbe.MeasureTextLineHeight();
+            _itemBoxHeight = Math.Max(1, _itemBoxHeight);
+            var extra = _itemsProbe.GetExtraSize();
+            _itemMarginBefore = _itemsProbe.GetMarginBefore().Y;
+            _itemMarginAfter = _itemsProbe.GetMarginAfter().Y;
+            _itemExtraTop = extra.Top;
+            _itemHeight = Math.Max(1, _itemBoxHeight + _itemMarginBefore + _itemMarginAfter + extra.Top + extra.Bottom);
+        }
+
+        /// <summary>
+        /// Get the vertical offset of the first item paragraph, relative to where it would be placed automatically.
+        /// By default, leaves room for the item margin before and extra size top.
+        /// </summary>
+        protected virtual int GetFirstItemOffset()
+        {
+            return _itemMarginBefore + _itemExtraTop;
+        }
 
         /// <inheritdoc/>        
         protected override bool WalkInternalChildren => true;
@@ -220,17 +266,8 @@ namespace Iguina.Entities
             OverflowMode = OverflowMode.HideOverflow;
 
             // create paragraph to calculate item height
-            var paragraph = new Paragraph(system, ItemsStyleSheet);
-            if (ItemsStyleSheet.DefaultHeight?.Units == MeasureUnit.Pixels)
-            {
-                ItemHeight = (int)(ItemsStyleSheet.DefaultHeight.Value.Value);
-            }
-            else
-            {
-                ItemHeight = paragraph.MeasureTextLineHeight();
-            }
-            var es = paragraph.GetExtraSize();
-            ItemHeight += Math.Max(paragraph.GetMarginBefore().Y, paragraph.GetMarginAfter().Y) + es.Bottom + es.Top;
+            _itemsProbe = new Paragraph(system, ItemsStyleSheet, string.Empty, false) { LockedState = EntityState.Default };
+            UpdateItemMetrics();
 
             // create scrollbar (list box sets scrollbar max value by itself)
             CreateVerticalScrollbar(false);
@@ -293,7 +330,8 @@ namespace Iguina.Entities
             // render base
             base.DrawEntityType(ref boundingRect, ref internalBoundingRect, parentDrawResult, siblingDrawResult);
 
-            // update which items to show
+            // update items metrics (may change at runtime via overrides) and which items to show
+            UpdateItemMetrics();
             UpdateDisplayedItems();
 
             // calculate how many items we should show at any given time
@@ -307,7 +345,7 @@ namespace Iguina.Entities
                 // create item paragraph
                 var p = new Paragraph(UISystem, ItemsStyleSheet ?? UISystem.DefaultStylesheets.Paragraphs, "", false);
                 p.TextOverflowMode = TextOverflowMode.Overflow;
-                p.ShrinkWidthToMinimalSize = false;
+                p.ShrinkToMinimalSize = false;
                 p.PassFocusTo = this;
                 p._overrideInteractableState = true;
                 p.Size.X.SetPercents(100f);
@@ -386,7 +424,10 @@ namespace Iguina.Entities
         public virtual void SetVisibleItemsCount(int items)
         {
             AutoHeight = false;
-            Size.Y.SetPixels(ItemHeight * items);
+            var padding = GetPadding();
+            var extra = GetExtraSize();
+            var nonContentHeight = Math.Max(0, padding.Top + padding.Bottom - extra.Top - extra.Bottom);
+            Size.Y.SetPixels(ItemHeight * items + nonContentHeight);
         }
 
         /// <summary>
@@ -394,6 +435,14 @@ namespace Iguina.Entities
         /// </summary>
         protected virtual void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
+            // set paragraphs size and spacing, so they are drawn exactly ItemHeight apart.
+            // note: items are placed with auto anchors, which add the item margin before but not the previous item margin after, and shift the box up by extra size top.
+            for (var i = 0; i < _paragraphs.Count; ++i)
+            {
+                _paragraphs[i].Size.Y.SetPixels(_itemBoxHeight);
+                _paragraphs[i].Offset.Y.SetPixels((i == 0) ? GetFirstItemOffset() : (_itemMarginAfter + _itemExtraTop));
+            }
+
             for (var i = startIndex; i < _paragraphs.Count; ++i)
             {
                 // get displayed item index and validate range

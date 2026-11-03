@@ -99,6 +99,9 @@ namespace Iguina
             public StyleSheet? ColorPickersHandle;
             public StyleSheet? ColorButtonsPanel;
             public StyleSheet? ColorButtonsButton;
+            public StyleSheet? TreeViewPanels;
+            public StyleSheet? TreeViewItems;
+            public StyleSheet? TreeViewToggles;
         }
         public _DefaultStylesheets DefaultStylesheets = new();
 

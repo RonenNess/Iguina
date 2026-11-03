@@ -63,6 +63,7 @@ Misc:
     * Drop Down List.
     * Combo Box (drop down with free text / search).
     * Virtual Text View (scrollable view for long texts, like log files).
+    * Tree View (expandable / collapsible tree of selectable nodes).
     * Text Input.
     * Numeric Input.
     * Horizontal / Vertical Lines.
@@ -903,6 +904,7 @@ Some entity types fall back to other default stylesheets when theirs is not set:
 * `ListItems` -> `Paragraphs`, and `DropDownItems` -> `ListItems` -> `Paragraphs`.
 * `ComboBoxPanels` -> `DropDownPanels` -> `ListPanels` -> `Panels`, `ComboBoxItems` -> `DropDownItems` -> `ListItems` -> `Paragraphs`, and `ComboBoxIcon` -> `DropDownIcon`.
 * `ComboBoxTextInput` -> the combo box items stylesheet. Note that this stylesheet is for the text box *inside* the combo box, so it usually shouldn't have a fill texture or padding.
+* `TreeViewPanels` -> `ListPanels` -> `Panels`, `TreeViewItems` -> `ListItems` -> `Paragraphs`, and `TreeViewToggles` -> the tree view items stylesheet.
 * `VerticalScrollbars` -> `VerticalSliders`, and `VerticalScrollbarsHandle` -> `VerticalSlidersHandle`.
 * `HorizontalColorSliders` / `VerticalColorSliders` (and their handles) -> the matching regular slider stylesheets.
 * `NumericTextInput` -> `TextInput`, and `NumericTextInputButton` -> `Buttons`.
@@ -1998,7 +2000,7 @@ public interface IVirtualTextProvider
     // total number of entries. may change between calls (for example when a log grows).
     int GetEntriesCount();
 
-    // get entry by index (0 to GetEntriesCount() - 1). should be a single line.
+    // get entry by index (0 to GetEntriesCount() - 1). usually a single line (see 'AllowLineBreaks').
     string GetEntry(int index);
 }
 ```
@@ -2054,7 +2056,7 @@ logLines.Add("Game started.");
 var numbersView = panel.AddChild(new VirtualTextView(uiSystem, new CallbackVirtualTextProvider(() => 1000, (int i) => $"Number {i}")));
 ```
 
-A `VirtualTextView` is a `Panel`. It shows a scrollbar when it has more entries than it can show, can be scrolled with the mouse wheel, and focused views can be scrolled with the keyboard (up / down). Entries are always drawn as single lines (new line characters are replaced with spaces), and entries wider than the view are cut.
+A `VirtualTextView` is a `Panel`. It shows a scrollbar when it has more entries than it can show, can be scrolled with the mouse wheel, and focused views can be scrolled with the keyboard (up / down). By default entries are drawn as single lines (new line characters are replaced with spaces), and entries wider than the view are cut. Set `EntriesOverflowMode` and / or `AllowLineBreaks` to show entries in multiple lines. Entries never go under the scrollbar.
 
 Default size: 100% width, 400 pixels height. By default it uses the `Panels` stylesheet for the view, and the `Paragraphs` stylesheet for the entries.
 
@@ -2092,13 +2094,31 @@ If true and the view is scrolled to the end, it stays at the end when new entrie
 
 If true, entries are parsed for paragraph [style commands](#enablestylecommands) (like `${FC:FF0000}`), so your provider can color parts of the text. Entries with invalid style commands are shown as plain text instead of throwing an exception. Default is false, since external text (like log files) may contain text that looks like style commands.
 
+### `EntriesOverflowMode`
+
+How to handle entries wider than the view. `TextOverflowMode.Overflow` (default) keeps every entry on a single line and cuts it. `WrapWords` / `WrapImmediate` break long entries into multiple lines. Scrolling is still done in whole entries.
+
+### `AllowLineBreaks`
+
+If true, line breaks inside entries are kept and the entry is shown as multiple lines. Default is false (line breaks are replaced with spaces).
+
+```cs
+var view = panel.AddChild(new VirtualTextView(uiSystem, new ListVirtualTextProvider(messages)));
+view.EntriesOverflowMode = TextOverflowMode.WrapWords;
+view.AllowLineBreaks = true;
+```
+
 ### `SetVisibleEntriesCount(count)`
 
-Set the view's height so it shows exactly this number of entries.
+Set the view's height so it shows exactly this number of single-line entries.
 
 ### `EntryHeight`
 
-The height, in pixels, of a single entry.
+The height, in pixels, of a single-line entry, including the entries style margins (`MarginBefore.Y + MarginAfter.Y`) and extra size. This is exactly the distance between drawn single-line entries. It's calculated from the entries stylesheet merged with `OverrideEntryStyles`, so it's always up-to-date.
+
+### `EntryTextWidth`
+
+The width, in pixels, available for entries text (as calculated on the last draw). Text that is not wider than this is drawn without being cut.
 
 ### `OverrideEntryStyles`
 
@@ -2107,6 +2127,85 @@ A `StyleSheetState` that overrides the stylesheet for all the entries.
 ### `EntriesStyleSheet`
 
 The stylesheet used for the entries.
+
+## TreeView
+
+A scrollable box that shows a tree of nodes. Branches can be expanded / collapsed, and nodes can be selected. Every node is a `TreeNode` with a `Value`, an optional `Label` (shown instead of the value, supports [style commands](#enablestylecommands)) and child nodes. Only the visible rows are created as entities, so trees can be big.
+
+```cs
+var tree = panel.AddChild(new TreeView(uiSystem));
+tree.SetVisibleRowsCount(8);
+
+var src = tree.AddNode("src", "Source");
+src.AddChild("src/main.cs", "main.cs");
+var utils = src.AddChild("src/utils", "Utils");
+utils.AddChild("src/utils/math.cs", "math.cs");
+tree.AddNode("readme.md");
+src.Expanded = true;
+
+tree.Events.OnValueChanged = (Entity entity) => Console.WriteLine("Selected: " + tree.SelectedValue);
+tree.OnNodeToggled = (TreeView view, TreeNode node) => Console.WriteLine(node.Value + (node.Expanded ? " expanded" : " collapsed"));
+```
+
+Branches show expand / collapse buttons (`+` / `-` by default) next to their labels. Clicking a label selects the node. Focused trees can be controlled with the keyboard: up / down move the selection, right expands the selected node, and left collapses it (or selects its parent).
+
+Default size: 100% width, 400 pixels height. By default it uses the `TreeViewPanels` stylesheet for the box, `TreeViewItems` for the labels and `TreeViewToggles` for the expand / collapse buttons. The selected label uses the `Checked` state.
+
+`TreeNode` has the following properties and methods: `Value`, `Label`, `DisplayText`, `UserData`, `Expanded`, `Selectable` (overrides the tree rules for this node, if set), `Parent`, `Children`, `HasChildren`, `Depth`, `Tree`, `AddChild()`, `RemoveChild()`, `ClearChildren()`, `Remove()`, `ExpandAll()`, `CollapseAll()`, `ExpandParents()`, `IsDescendantOf()`, `Traverse()` and `Find()`.
+
+`TreeView` adds the following properties and methods:
+
+### `Root` / `AddNode(value, label?)` / `Clear()`
+
+`Root` is a hidden node whose children are the top-level nodes. `AddNode()` adds a top-level node, and `Clear()` removes all nodes.
+
+### `SelectedNode` / `SelectedValue`
+
+Get / set the selected node, or select by value. Set to null to clear the selection. Removing the selected node (or one of its parents) from the tree clears the selection.
+
+### `Indent`
+
+Indent, in pixels, for every tree level. Default is 24.
+
+### `ShowExpandCollapseButtons`
+
+If true (default), branches show expand / collapse buttons. If false, branches are expanded / collapsed by clicking their labels.
+
+### `BranchesSelectable`
+
+If true (default), nodes with children can be selected. If false, only leaves can be selected, and clicking a branch label expands / collapses it.
+
+### `ToggleBranchesOnLabelClick`
+
+If true, clicking a branch label also expands / collapses it, in addition to selecting it. Default is false.
+
+### `AllowDeselect`
+
+If true, clicking the selected node deselects it. Default is false.
+
+### `ExpandSymbol` / `CollapseSymbol` / `LeafSymbol`
+
+The texts shown on the button of a collapsed branch, an expanded branch, and next to leaves. Defaults are `+`, `-` and an empty string.
+
+### `ExpandAll()` / `CollapseAll()` / `FindNode(value)` / `IsSelectable(node)`
+
+Expand / collapse all nodes, find a node by value, and check if a node can be selected.
+
+### `ScrollToNode(node)` / `ScrollToSelected()` / `ScrollOffset`
+
+Expand the node's parents and scroll so it's visible. `ScrollOffset` is the index of the first visible row.
+
+### `SetVisibleRowsCount(count)` / `RowHeight` / `RowsCount` / `VisibleRowsCount`
+
+Set the height to show exactly this number of rows, and get rows metrics.
+
+### `OnNodeToggled` / `OnNodeClicked`
+
+Callbacks for when a node is expanded or collapsed (by user or code), and when a node label is clicked (even if not selectable).
+
+### `OverrideItemStyles` / `OverrideSelectedItemStyles` / `OverrideToggleStyles`
+
+`StyleSheetState`s that override the stylesheets of labels, the selected label, and expand / collapse buttons.
 
 ## TextInput
 
@@ -2675,6 +2774,22 @@ All changes:
 - Fixed dragging sliders / scrollbars with a very big value range (over ~16 million) throwing an exception, due to float precision.
 - Fixed changing `Paragraph.EnableStyleCommands` not taking effect until the text changes.
 - Added `Paragraph.AreStyleCommandsValid(text)`.
+
+## 1.1.10
+
+- Added `TreeView` entity: a scrollable tree of nodes that can be expanded / collapsed and selected, with configurable indent, expand / collapse buttons, selectable branches, keyboard navigation and more.
+- Added `TreeNode` class, to build trees for `TreeView`.
+- Added `TreeViewPanels`, `TreeViewItems` and `TreeViewToggles` default stylesheets (fall back to the list stylesheets).
+- Added entries wrapping (`EntriesOverflowMode`) and line breaks (`AllowLineBreaks`) to `VirtualTextView`.
+- Added `VirtualTextView.EntryTextWidth`, the real width available for entries text.
+- Fixed `VirtualTextView` row height not matching the drawn rows spacing when the entries style has margins, which left an empty strip at the bottom of the view.
+- Fixed `VirtualTextView.EntryHeight` ignoring `OverrideEntryStyles`. It's now always calculated from the effective entries style.
+- Fixed `VirtualTextView` entries being drawn under the scrollbar.
+- Fixed the same row height issue in `ListBox` (and `DropDown` / `ComboBox`): items are now drawn exactly `ItemHeight` apart, `ItemHeight` includes both margins (`MarginBefore` + `MarginAfter`) and respects `OverrideItemStyles`.
+- `ListBox.SetVisibleItemsCount()` now accounts for the list padding, so it shows exactly the requested number of items.
+- Fixed `Paragraph.MeasureText()` ignoring the `TextSpacing` style property, which made measured text narrower than drawn text.
+- Fixed changing `Paragraph.TextOverflowMode` not taking effect until the text changes.
+- Demo: added tree view example, and made the demo selection panel scrollable when it doesn't fit the screen.
 
 # License
 

@@ -36,7 +36,13 @@ namespace Iguina.Tests
             Commands.Clear();
             return ret;
         }
-        public KeyboardInteractions? GetKeyboardInteraction() => null;
+        public KeyboardInteractions? KeyboardInteraction;
+        public KeyboardInteractions? GetKeyboardInteraction()
+        {
+            var ret = KeyboardInteraction;
+            KeyboardInteraction = null;
+            return ret;
+        }
 
         public bool CopyDown;
         public bool PasteDown;

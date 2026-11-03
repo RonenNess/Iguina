@@ -305,6 +305,169 @@ namespace Iguina.Tests
             }
         }
 
+        /// <summary>
+        /// Create a view with a recording renderer and entries stylesheet with margins.
+        /// </summary>
+        (ProportionalRenderer Renderer, VirtualTextView View) CreateRecordingView(IVirtualTextProvider provider, int marginBefore, int marginAfter, int visibleEntries = 5)
+        {
+            var renderer = new ProportionalRenderer();
+            _input = new ScriptedInputProvider();
+            _system = new UISystem(renderer, _input);
+            var entriesStyle = new StyleSheet() { Default = new StyleSheetState() { MarginBefore = new Point(0, marginBefore), MarginAfter = new Point(0, marginAfter) } };
+            var view = _system.Root.AddChild(new VirtualTextView(_system, null, entriesStyle, provider));
+            view.Anchor = Anchor.TopLeft;
+            view.Size.X.SetPixels(400);
+            view.SetVisibleEntriesCount(visibleEntries);
+            _input.MousePosition = new Point(2000, 2000);
+            _view = view;
+            Frames(2);
+            return (renderer, view);
+        }
+
+        static List<(string Text, Point Position)> DrawnEntries(ProportionalRenderer renderer, string prefix = "line ")
+        {
+            return renderer.DrawnTexts.Where(x => x.Text.StartsWith(prefix)).OrderBy(x => x.Position.Y).ToList();
+        }
+
+        void RecordFrame(ProportionalRenderer renderer)
+        {
+            Frames(1);
+            renderer.ClearRecords();
+            Frames(1);
+        }
+
+        [Test]
+        public void TestRowsDrawnEntryHeightApartWithMargins()
+        {
+            var (renderer, view) = CreateRecordingView(new ListVirtualTextProvider(Enumerable.Range(0, 100).Select(i => "line " + i).ToList()), 2, 6);
+            Assert.That(view.EntryHeight, Is.EqualTo(20 + 2 + 6));
+            Assert.That(view.VisibleEntriesCount, Is.EqualTo(5));
+
+            RecordFrame(renderer);
+            var drawn = DrawnEntries(renderer);
+            Assert.That(drawn.Count, Is.GreaterThanOrEqualTo(5));
+            for (int i = 1; i < drawn.Count; ++i)
+            {
+                Assert.That(drawn[i].Position.Y - drawn[i - 1].Position.Y, Is.EqualTo(view.EntryHeight));
+            }
+
+            // 5 rows fill the view: last fully visible row ends within one margin of the bottom
+            var bottom = view.LastInternalBoundingRect.Bottom;
+            Assert.That(drawn[4].Position.Y + 20, Is.LessThanOrEqualTo(bottom));
+            Assert.That(bottom - (drawn[4].Position.Y + 20), Is.LessThanOrEqualTo(6));
+
+            // override margins at runtime: entry height and drawing follow
+            view.OverrideEntryStyles.MarginBefore = new Point(0, 0);
+            view.OverrideEntryStyles.MarginAfter = new Point(0, 0);
+            Assert.That(view.EntryHeight, Is.EqualTo(20));
+            RecordFrame(renderer);
+            drawn = DrawnEntries(renderer);
+            for (int i = 1; i < drawn.Count; ++i)
+            {
+                Assert.That(drawn[i].Position.Y - drawn[i - 1].Position.Y, Is.EqualTo(20));
+            }
+            Assert.That(view.VisibleEntriesCount, Is.EqualTo(5 * 28 / 20));
+        }
+
+        [Test]
+        public void TestScrollToEndShowsLastEntryFully()
+        {
+            var (renderer, view) = CreateRecordingView(new ListVirtualTextProvider(Enumerable.Range(0, 100).Select(i => "line " + i).ToList()), 0, 6, 7);
+            view.ScrollToEnd();
+            RecordFrame(renderer);
+            Assert.That(view.ScrollOffset, Is.EqualTo(view.VerticalScrollbar!.MaxValue));
+            var last = DrawnEntries(renderer).Last();
+            Assert.That(last.Text, Is.EqualTo("line 99"));
+            Assert.That(last.Position.Y + 20, Is.LessThanOrEqualTo(view.LastInternalBoundingRect.Bottom));
+        }
+
+        [Test]
+        public void TestEntriesDontOverlapScrollbar()
+        {
+            var longLine = string.Concat(Enumerable.Repeat("word ", 30));
+            var (renderer, view) = CreateRecordingView(new ListVirtualTextProvider(Enumerable.Range(0, 100).Select(i => "line " + i + " " + longLine).ToList()), 0, 0);
+            view.EntriesOverflowMode = TextOverflowMode.WrapWords;
+            RecordFrame(renderer);
+            Assert.That(view.VerticalScrollbar!.Visible, Is.True);
+            var scrollbarLeft = view.VerticalScrollbar.LastBoundingRect.Left;
+            Assert.That(renderer.DrawnTexts, Is.Not.Empty);
+            foreach (var text in renderer.DrawnTexts)
+            {
+                Assert.That(text.Position.X + ProportionalRenderer.Measure(text.Text), Is.LessThanOrEqualTo(scrollbarLeft), text.Text);
+                Assert.That(ProportionalRenderer.Measure(text.Text), Is.LessThanOrEqualTo(view.EntryTextWidth));
+            }
+        }
+
+        [Test]
+        public void TestWrappedAndMultilineEntries()
+        {
+            var longLine = string.Concat(Enumerable.Repeat("word ", 30)).Trim();
+            var entries = Enumerable.Range(0, 50).Select(i => i % 2 == 0 ? $"line {i} short" : $"line {i} {longLine}").ToList();
+            var (renderer, view) = CreateRecordingView(new ListVirtualTextProvider(entries), 0, 4, 10);
+            view.EntriesOverflowMode = TextOverflowMode.WrapWords;
+            RecordFrame(renderer);
+
+            // long entries wrap into multiple lines, so fewer entries fit
+            Assert.That(view.VisibleEntriesCount, Is.LessThan(10));
+            Assert.That(renderer.DrawnTexts.Count(x => x.Text.StartsWith("word") || x.Text.Contains(" word")), Is.GreaterThan(view.VisibleEntriesCount / 2));
+
+            // lines of the same entry are packed (line height apart), entries are separated by margin
+            var drawn = renderer.DrawnTexts.OrderBy(x => x.Position.Y).ToList();
+            for (int i = 1; i < drawn.Count; ++i)
+            {
+                var diff = drawn[i].Position.Y - drawn[i - 1].Position.Y;
+                Assert.That(diff, Is.EqualTo(drawn[i].Text.StartsWith("line ") ? 24 : 20));
+            }
+
+            // scroll to end shows last entry fully, and scrolling to an entry makes it fully visible
+            view.ScrollToEnd();
+            RecordFrame(renderer);
+            var bottomText = renderer.DrawnTexts.OrderBy(x => x.Position.Y).Last();
+            Assert.That(bottomText.Position.Y + 20, Is.LessThanOrEqualTo(view.LastInternalBoundingRect.Bottom));
+            Assert.That(renderer.DrawnTexts.Any(x => x.Text.StartsWith("line 49")), Is.True);
+
+            view.ScrollToStart();
+            Frames(1);
+            view.ScrollToEntry(30);
+            RecordFrame(renderer);
+            Assert.That(view.ScrollOffset + view.VisibleEntriesCount - 1, Is.EqualTo(30));
+
+            // line breaks
+            view.EntriesOverflowMode = TextOverflowMode.Overflow;
+            view.Provider = new ListVirtualTextProvider(new[] { "line A\nsecond\r\nthird", "line B" });
+            RecordFrame(renderer);
+            Assert.That(renderer.DrawnTexts.Select(x => x.Text), Does.Contain("line A second third"));
+            view.AllowLineBreaks = true;
+            RecordFrame(renderer);
+            var texts = renderer.DrawnTexts.OrderBy(x => x.Position.Y).Select(x => x.Text).ToList();
+            Assert.That(texts, Is.EqualTo(new[] { "line A", "second", "third", "line B" }));
+        }
+
+        [Test]
+        public void TestDefaultThemeRowsMatchEntryHeight()
+        {
+            // the default theme paragraph style has MarginAfter.Y > 0, which used to make layout and drawing disagree
+            var themePath = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "../../../../Iguina.Demo/Assets/DefaultTheme"));
+            var renderer = new ProportionalRenderer();
+            _input = new ScriptedInputProvider();
+            _system = new UISystem(Path.Combine(themePath, "system_style.json"), renderer, _input);
+            var view = _system.Root.AddChild(new VirtualTextView(_system, new ListVirtualTextProvider(Enumerable.Range(0, 100).Select(i => "line " + i).ToList())));
+            view.Anchor = Anchor.TopLeft;
+            view.Size.X.SetPixels(500);
+            view.SetVisibleEntriesCount(14);
+            _view = view;
+            Assert.That(view.EntryHeight, Is.GreaterThan(20));
+            RecordFrame(renderer);
+
+            Assert.That(view.VisibleEntriesCount, Is.EqualTo(14));
+            var drawn = DrawnEntries(renderer).Select(x => x.Position).Distinct().ToList();
+            for (int i = 1; i < drawn.Count; ++i)
+            {
+                Assert.That(drawn[i].Y - drawn[i - 1].Y, Is.EqualTo(view.EntryHeight));
+            }
+            Assert.That(view.LastInternalBoundingRect.Bottom - (drawn[13].Y + 20), Is.LessThan(view.EntryHeight - 20 + 1));
+        }
+
         [Test]
         public void TestListAndCallbackProviders()
         {

@@ -310,14 +310,16 @@ namespace Iguina.Entities
         }
 
         /// <inheritdoc/>
+        protected override int GetFirstItemOffset()
+        {
+            return ItemHeight / 2;
+        }
+
+        /// <inheritdoc/>
         protected override void SetParagraphs(int scrollOffset, int startIndex = 0)
         {
             if (IsOpened)
             {
-                if (_paragraphs.Count > 0)
-                {
-                    _paragraphs[0].Offset.Y.Value = ItemHeight / 2;
-                }
                 base.SetParagraphs(scrollOffset, startIndex);
             }
             else
