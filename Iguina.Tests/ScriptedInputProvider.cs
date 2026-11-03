@@ -16,7 +16,13 @@ namespace Iguina.Tests
 
         public Point GetMousePosition() => MousePosition;
         public bool IsMouseButtonDown(MouseButton btn) => (btn == MouseButton.Left) && LeftDown;
-        public int GetMouseWheelChange() => 0;
+        public int MouseWheelChange;
+        public int GetMouseWheelChange()
+        {
+            var ret = MouseWheelChange;
+            MouseWheelChange = 0;
+            return ret;
+        }
         public int[] GetTextInput()
         {
             var ret = TextInput.ToArray();

@@ -92,7 +92,38 @@ namespace Iguina.Entities
         /// paragraph.Text = "Hello, ${FC:00FF00}Hero${RESET}! Welcome to my ${OC:FF00FF,OW:2}cave${RESET}."
         /// // in the example above, the word 'Hero' will be rendered with green fill color, and the word 'cave' with purple outline with width value of 2. 
         /// </example>
-        public bool EnableStyleCommands = true;
+        public bool EnableStyleCommands
+        {
+            get => _enableStyleCommands;
+            set
+            {
+                if (_enableStyleCommands != value)
+                {
+                    _enableStyleCommands = value;
+                    _cachedProcessedText = null;
+                }
+            }
+        }
+        bool _enableStyleCommands = true;
+
+        /// <summary>
+        /// Check if a text has valid style commands (or no style commands at all), so it can be drawn with EnableStyleCommands set to true without throwing exceptions.
+        /// </summary>
+        /// <param name="text">Text to check.</param>
+        /// <returns>True if text style commands are valid.</returns>
+        public static bool AreStyleCommandsValid(string text)
+        {
+            if (string.IsNullOrEmpty(text) || !text.Contains("${")) { return true; }
+            try
+            {
+                ExtractStyleCommands(text, out _);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// If true and we're trying to parse an invalid style command, will throw exception.

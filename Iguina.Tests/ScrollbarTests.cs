@@ -116,5 +116,43 @@ namespace Iguina.Tests
             Assert.That(_textInput.CaretOffset, Is.EqualTo(caret));
             Assert.That(_system.TargetedEntity, Is.SameAs(_textInput));
         }
+
+        [Test]
+        public void TestPanelMouseWheelScrollsOneStep()
+        {
+            _input = new ScriptedInputProvider();
+            _system = new UISystem(new TestRenderer(), _input);
+
+            var panel = _system.Root.AddChild(new Panel(_system));
+            panel.Anchor = Anchor.TopLeft;
+            panel.Size.SetPixels(400, 200);
+            panel.OverflowMode = OverflowMode.HideOverflow;
+            panel.InterpolateScrollbarOffset = false;
+            panel.CreateVerticalScrollbar();
+            for (int i = 0; i < 40; ++i)
+            {
+                panel.AddChild(new Paragraph(_system, "line " + i));
+            }
+
+            // point on the panel itself, not on a child
+            _input.MousePosition = new Point(panel.LastBoundingRect.X + 200, 100);
+            Frames(3);
+            _input.MousePosition = new Point(panel.LastBoundingRect.Right - 40, 100);
+            Frames(2);
+            Assert.That(_system.TargetedEntity, Is.SameAs(panel));
+
+            var scrollbar = panel.VerticalScrollbar!;
+            Assert.That(scrollbar.MaxValue, Is.GreaterThan(0));
+            var step = Math.Abs(scrollbar.MouseWheelStep);
+            scrollbar.Value = 0;
+
+            _input.MouseWheelChange = -1;
+            Frames(1);
+            Assert.That(scrollbar.Value, Is.EqualTo(step));
+
+            _input.MouseWheelChange = 1;
+            Frames(1);
+            Assert.That(scrollbar.Value, Is.EqualTo(0));
+        }
     }
 }

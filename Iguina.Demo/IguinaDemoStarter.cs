@@ -554,6 +554,59 @@ PS. you can also change the way words wrap when exceeding the parent width."));
                 }
             }
 
+            // virtual text view
+            {
+                var panel = CreateDemoContainer("Virtual Text View", new Point(780, 1));
+
+                panel.AddChild(new Paragraph(_system, @"Virtual Text View shows long texts, like log files or big documents. Instead of holding the text, it asks a provider object only for the lines it currently shows.
+
+This view shows a document with ${FC:00FFFF}one million lines${RESET}, generated on the fly:"));
+                {
+                    var textView = panel.AddChild(new VirtualTextView(_system, new MillionLinesProvider()));
+                    textView.SetVisibleEntriesCount(6);
+
+                    var startBtn = panel.AddChild(new Button(_system, "Go To Start"));
+                    startBtn.Anchor = Anchor.AutoInlineLTR;
+                    startBtn.Size.X.SetPercents(33f);
+                    startBtn.Events.OnClick = (Entity entity) => textView.ScrollToStart();
+
+                    var middleBtn = panel.AddChild(new Button(_system, "Go To Middle"));
+                    middleBtn.Anchor = Anchor.AutoInlineLTR;
+                    middleBtn.Size.X.SetPercents(34f);
+                    middleBtn.Events.OnClick = (Entity entity) => textView.ScrollOffset = textView.EntriesCount / 2;
+
+                    var endBtn = panel.AddChild(new Button(_system, "Go To End"));
+                    endBtn.Anchor = Anchor.AutoInlineLTR;
+                    endBtn.Size.X.SetPercents(33f);
+                    endBtn.Events.OnClick = (Entity entity) => textView.ScrollToEnd();
+                }
+
+                panel.AddChild(new RowsSpacer(_system));
+                panel.AddChild(new Paragraph(_system, @"And here's a live log that keeps growing. When scrolled to the end, it follows new lines. Scroll up to stop following:"));
+                {
+                    var logLines = new List<string>();
+                    var logView = panel.AddChild(new VirtualTextView(_system, new ListVirtualTextProvider(logLines)));
+                    logView.SetVisibleEntriesCount(6);
+                    logView.AutoScrollToEnd = true;
+                    logView.EnableStyleCommands = true;
+
+                    string[] levels = { "${FC:AAAAAA}DEBUG", "${FC:00FF00}INFO ", "${FC:FFFF00}WARN ", "${FC:FF4444}ERROR" };
+                    string[] messages = { "Player joined the game.", "Loaded level 'forest_01'.", "Texture cache is almost full.", "Failed to connect to server, retrying..", "Saved game to slot 2.", "Enemy spawned at (12, 4)." };
+                    float timeForNextLine = 0f;
+                    logView.Events.AfterUpdate = (Entity entity) =>
+                    {
+                        timeForNextLine -= _system.LastDeltaTime;
+                        if (timeForNextLine <= 0f)
+                        {
+                            timeForNextLine = 0.35f;
+                            var level = levels[Random.Shared.Next(levels.Length)];
+                            var message = messages[Random.Shared.Next(messages.Length)];
+                            logLines.Add($"${{FC:888888}}[{DateTime.Now:HH:mm:ss}]${{RESET}} {level}${{RESET}} {message}");
+                        }
+                    };
+                }
+            }
+
             // color inputs
             {
                 var panel = CreateDemoContainer("Color Pickers", new Point(650, 350));
@@ -929,6 +982,17 @@ In this demo, we'll use the ${FC:00FFFF}Morpheus${RESET} animation library to en
 
                 panel.AddChild(new RowsSpacer(_system));
             }
+        }
+
+        /// <summary>
+        /// Example of a custom virtual text provider, that generates a million lines on the fly.
+        /// A real provider could read lines from a file, a database, a log buffer, etc.
+        /// </summary>
+        class MillionLinesProvider : IVirtualTextProvider
+        {
+            public int GetEntriesCount() => 1_000_000;
+
+            public string GetEntry(int index) => $"Line {index + 1:N0}: the quick brown fox jumps over the lazy dog.";
         }
 
         /// <summary>

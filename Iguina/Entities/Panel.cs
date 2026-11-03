@@ -216,16 +216,5 @@ namespace Iguina.Entities
             }
         }
 
-        /// <inheritdoc/>
-        internal override void DoInteractions(InputState inputState)
-        {
-            base.DoInteractions(inputState);
-
-            // if got scrollbar, apply wheel to it
-            if ((inputState.MouseWheelChange != 0) && (VerticalScrollbar != null))
-            {
-                VerticalScrollbar.PerformMouseWheelScroll(inputState.MouseWheelChange);
-            }
-        }
     }
 }

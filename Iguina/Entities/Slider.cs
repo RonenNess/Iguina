@@ -283,8 +283,9 @@ namespace Iguina.Entities
                 { 
                     valuePercent = 1f - valuePercent; 
                 }
-                int relativeValue = (int)(MathF.Round((valuePercent * valueRange) / stepSize) * stepSize);
-                Value = MinValue + (int)relativeValue;
+                // use double and clamp, since float can't represent big ranges precisely and may exceed max value
+                long relativeValue = (long)(Math.Round(((double)valuePercent * valueRange) / stepSize) * stepSize);
+                Value = (int)Math.Clamp(MinValue + relativeValue, MinValue, MaxValue);
             }
         }
 

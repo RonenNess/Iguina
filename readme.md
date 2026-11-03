@@ -62,6 +62,7 @@ Misc:
     * List Box.
     * Drop Down List.
     * Combo Box (drop down with free text / search).
+    * Virtual Text View (scrollable view for long texts, like log files).
     * Text Input.
     * Numeric Input.
     * Horizontal / Vertical Lines.
@@ -1459,6 +1460,7 @@ paragraph.Text = "You found ${ICO:Textures/UI.png|0|64|16|16|2} a gem!";
 ```
 
 By default, invalid style commands throw an exception. You can set the static `Paragraph.ExceptionOnInvalidStyleCommands` to false to silently ignore them instead.
+To check a text before showing it (for example text from users or files), use the static `Paragraph.AreStyleCommandsValid(text)`, which returns false if drawing the text with style commands would throw.
 
 ### `TextOverflowMode`
 
@@ -1983,6 +1985,128 @@ Commit the current text by code, as described above.
 ### `FindItemByText(text)`
 
 Returns the value of the first item that its text matches the given text, or null if not found. Respects `CaseSensitive`.
+
+## VirtualTextView
+
+A read-only, scrollable view of text entries (usually lines). Instead of holding the text, it asks a provider object only for the entries it currently shows. This makes it suitable for very long texts, like log files or big documents, since nothing is loaded into the UI except the visible lines.
+
+To use it, implement the `IVirtualTextProvider` interface:
+
+```cs
+public interface IVirtualTextProvider
+{
+    // total number of entries. may change between calls (for example when a log grows).
+    int GetEntriesCount();
+
+    // get entry by index (0 to GetEntriesCount() - 1). should be a single line.
+    string GetEntry(int index);
+}
+```
+
+For example, a provider that shows a text file without loading it into memory, by indexing where every line starts:
+
+```cs
+class FileLinesProvider : IVirtualTextProvider
+{
+    readonly FileStream _file;
+    readonly List<long> _lineStarts = new() { 0 };
+
+    public FileLinesProvider(string path)
+    {
+        _file = File.OpenRead(path);
+        int b;
+        while ((b = _file.ReadByte()) != -1)
+        {
+            if (b == '\n') { _lineStarts.Add(_file.Position); }
+        }
+    }
+
+    public int GetEntriesCount() => _lineStarts.Count;
+
+    public string GetEntry(int index)
+    {
+        long start = _lineStarts[index];
+        long end = (index + 1 < _lineStarts.Count) ? _lineStarts[index + 1] : _file.Length;
+        var buffer = new byte[end - start];
+        _file.Position = start;
+        _file.ReadExactly(buffer);
+        return System.Text.Encoding.UTF8.GetString(buffer).TrimEnd('\r', '\n');
+    }
+}
+
+var view = panel.AddChild(new VirtualTextView(uiSystem, new FileLinesProvider("game.log")));
+view.SetVisibleEntriesCount(10);
+```
+
+`GetEntriesCount()` is called every time the view is drawn, and `GetEntry()` is called for every visible entry, every frame. Keep them fast, and cache data if reading it is expensive.
+
+Iguina also comes with two built-in providers for simple cases:
+
+* `ListVirtualTextProvider`: wraps an `IReadOnlyList<string>`. The list is not copied, so lines you add to it later will show up in the view.
+* `CallbackVirtualTextProvider`: takes two callbacks, one for the entries count and one to get entry by index.
+
+```cs
+var logLines = new List<string>();
+var logView = panel.AddChild(new VirtualTextView(uiSystem, new ListVirtualTextProvider(logLines)));
+logView.AutoScrollToEnd = true;
+logLines.Add("Game started.");
+
+var numbersView = panel.AddChild(new VirtualTextView(uiSystem, new CallbackVirtualTextProvider(() => 1000, (int i) => $"Number {i}")));
+```
+
+A `VirtualTextView` is a `Panel`. It shows a scrollbar when it has more entries than it can show, can be scrolled with the mouse wheel, and focused views can be scrolled with the keyboard (up / down). Entries are always drawn as single lines (new line characters are replaced with spaces), and entries wider than the view are cut.
+
+Default size: 100% width, 400 pixels height. By default it uses the `Panels` stylesheet for the view, and the `Paragraphs` stylesheet for the entries.
+
+`VirtualTextView` adds the following properties and methods:
+
+### `Provider`
+
+The `IVirtualTextProvider` to get entries from. Can be replaced at any time. If null, the view is empty.
+
+### `EntriesCount`
+
+Total entries count, as returned by the provider on the last draw.
+
+### `VisibleEntriesCount`
+
+How many entries fully fit in the view, as calculated on the last draw.
+
+### `ScrollOffset`
+
+Get / set the index of the first visible entry. Values out of range are clamped on the next draw.
+
+### `ScrollToStart()` / `ScrollToEnd()`
+
+Scroll to the first / last entry.
+
+### `ScrollToEntry(index)`
+
+Scroll the minimal amount needed so that the given entry is visible.
+
+### `AutoScrollToEnd`
+
+If true and the view is scrolled to the end, it stays at the end when new entries are added (like `tail -f`). If the user scrolls up, the view stops following until scrolled back to the end. Default is false.
+
+### `EnableStyleCommands`
+
+If true, entries are parsed for paragraph [style commands](#enablestylecommands) (like `${FC:FF0000}`), so your provider can color parts of the text. Entries with invalid style commands are shown as plain text instead of throwing an exception. Default is false, since external text (like log files) may contain text that looks like style commands.
+
+### `SetVisibleEntriesCount(count)`
+
+Set the view's height so it shows exactly this number of entries.
+
+### `EntryHeight`
+
+The height, in pixels, of a single entry.
+
+### `OverrideEntryStyles`
+
+A `StyleSheetState` that overrides the stylesheet for all the entries.
+
+### `EntriesStyleSheet`
+
+The stylesheet used for the entries.
 
 ## TextInput
 
@@ -2542,6 +2666,15 @@ All changes:
 - Added `IsEditing` property to `TextInput`.
 - Fixed rendering bug with 3 or more nested entities with hidden overflow, where entities drawn after them were clipped by the wrong region.
 - Fixed `ListBox` and `DropDown` scrollbar range and auto height to be based on items that pass the `DisplayFilter`, instead of all items.
+
+## 1.1.9
+
+- Added `VirtualTextView` entity: a scrollable view for long texts (like log files), that gets only the visible lines from a user-provided `IVirtualTextProvider`.
+- Added `ListVirtualTextProvider` and `CallbackVirtualTextProvider` built-in providers.
+- Fixed panels with scrollbars (including `ListBox`, `DropDown` and `TextInput`) scrolling twice per mouse wheel tick when the mouse is over the panel itself and not over a child entity.
+- Fixed dragging sliders / scrollbars with a very big value range (over ~16 million) throwing an exception, due to float precision.
+- Fixed changing `Paragraph.EnableStyleCommands` not taking effect until the text changes.
+- Added `Paragraph.AreStyleCommandsValid(text)`.
 
 # License
 
