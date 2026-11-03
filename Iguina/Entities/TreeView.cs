@@ -1,4 +1,5 @@
 using Iguina.Defs;
+using Iguina.Utils;
 
 
 namespace Iguina.Entities
@@ -47,18 +48,56 @@ namespace Iguina.Entities
 
         /// <summary>
         /// Text to show on the button of a collapsed branch.
+        /// If null (default), will use the 'TreeExpandText' property of the toggles stylesheet, or '+' if not set.
         /// </summary>
-        public string ExpandSymbol = "+";
+        public string? ExpandSymbol = null;
 
         /// <summary>
         /// Text to show on the button of an expanded branch.
+        /// If null (default), will use the 'TreeCollapseText' property of the toggles stylesheet, or '-' if not set.
         /// </summary>
-        public string CollapseSymbol = "-";
+        public string? CollapseSymbol = null;
 
         /// <summary>
-        /// Text to show in the button column of leaves (empty by default).
+        /// Text to show in the buttons column of leaves.
+        /// If null (default), will use the 'TreeLeafText' property of the toggles stylesheet, or empty string if not set.
         /// </summary>
-        public string LeafSymbol = string.Empty;
+        public string? LeafSymbol = null;
+
+        /// <summary>
+        /// If true (default), will show the icons defined by the 'TreeExpandIcon', 'TreeCollapseIcon' and 'TreeLeafIcon' properties of the toggles stylesheet (if set).
+        /// Icons are shown between the expand / collapse buttons and the labels. To set icons per instance, use <see cref="OverrideToggleStyles"/>.
+        /// </summary>
+        public bool ShowIcons = true;
+
+        /// <summary>
+        /// If true, clicking on a branch icon will expand / collapse it (like the expand / collapse button) instead of selecting it.
+        /// Clicking on a leaf icon always selects the leaf. Default is false.
+        /// </summary>
+        public bool IconsToggleBranches = false;
+
+        /// <summary>
+        /// Get the text currently used for expand buttons (from instance, stylesheet or default).
+        /// </summary>
+        public string EffectiveExpandSymbol => ExpandSymbol ?? GetToggleStyleProperty<string>("TreeExpandText") ?? "+";
+
+        /// <summary>
+        /// Get the text currently used for collapse buttons (from instance, stylesheet or default).
+        /// </summary>
+        public string EffectiveCollapseSymbol => CollapseSymbol ?? GetToggleStyleProperty<string>("TreeCollapseText") ?? "-";
+
+        /// <summary>
+        /// Get the text currently used for leaves buttons column (from instance, stylesheet or default).
+        /// </summary>
+        public string EffectiveLeafSymbol => LeafSymbol ?? GetToggleStyleProperty<string>("TreeLeafText") ?? string.Empty;
+
+        /// <summary>
+        /// Get a property from the toggles stylesheet, with toggles style overrides.
+        /// </summary>
+        T? GetToggleStyleProperty<T>(string propertyName) where T : class
+        {
+            return TogglesStyleSheet.GetProperty<T>(propertyName, EntityState.Default, null, OverrideToggleStyles);
+        }
 
         /// <summary>
         /// Styles to override stylesheet defaults, regardless of entity state, for nodes labels.
@@ -171,8 +210,45 @@ namespace Iguina.Entities
         class RowEntities
         {
             public Paragraph Toggle = null!;
+            public TreeIconEntity Icon = null!;
             public Paragraph Label = null!;
         }
+
+        /// <summary>
+        /// Entity to draw a node icon.
+        /// </summary>
+        class TreeIconEntity : Entity
+        {
+            public IconTexture? Icon;
+            public string? EffectId;
+            public Color TintColor = Color.White;
+
+            public TreeIconEntity(UISystem system) : base(system, null) { }
+
+            /// <inheritdoc/>
+            protected override void DrawEntityType(ref Rectangle boundingRect, ref Rectangle internalBoundingRect, DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
+            {
+                if (Icon == null) { return; }
+                var size = GetIconSize(UISystem, Icon);
+                var dest = new Rectangle(
+                    boundingRect.X + Icon.Offset.X,
+                    boundingRect.Y + (boundingRect.Height - size.Y) / 2 + Icon.Offset.Y,
+                    size.X, size.Y);
+                DrawUtils.Draw(UISystem.Renderer, EffectId, Icon, dest, TintColor, UISystem.SystemStyleSheet.DefaultTexture);
+            }
+        }
+
+        /// <summary>
+        /// Get icon size in pixels.
+        /// </summary>
+        static Point GetIconSize(UISystem system, IconTexture icon)
+        {
+            var scale = icon.TextureScale * system.SystemStyleSheet.TextureScale;
+            return new Point((int)(icon.SourceRect.Width * scale), (int)(icon.SourceRect.Height * scale));
+        }
+
+        // note: paragraphs shift parent rect by 5 pixels (see Paragraph.ProcessParentInternalRect), so we shift icons to match
+        const int ParagraphsLeftShift = 5;
         readonly List<RowEntities> _rowEntities = new();
 
         // paragraphs used to resolve style and measure, without drawing them
@@ -183,7 +259,17 @@ namespace Iguina.Entities
         int _lineHeight = 1;
         int _rowTopOffset;
         int _toggleColumnWidth;
+        int _iconColumnWidth;
+        int _labelLeftOverhang;
         int _availableWidth;
+
+        // resolved texts and icons
+        string _expandText = "+";
+        string _collapseText = "-";
+        string _leafText = string.Empty;
+        IconTexture? _expandIcon;
+        IconTexture? _collapseIcon;
+        IconTexture? _leafIcon;
 
         /// <inheritdoc/>
         internal override bool Interactable => true;
@@ -421,7 +507,29 @@ namespace Iguina.Entities
         {
             _itemsProbe.OverrideStyles = OverrideItemStyles;
             _togglesProbe.OverrideStyles = OverrideToggleStyles;
+            // resolve texts and icons
+            _expandText = EffectiveExpandSymbol;
+            _collapseText = EffectiveCollapseSymbol;
+            _leafText = EffectiveLeafSymbol;
+            _expandIcon = ShowIcons ? GetToggleStyleProperty<IconTexture>("TreeExpandIcon") : null;
+            _collapseIcon = ShowIcons ? GetToggleStyleProperty<IconTexture>("TreeCollapseIcon") : null;
+            _leafIcon = ShowIcons ? GetToggleStyleProperty<IconTexture>("TreeLeafIcon") : null;
+
+            // icons column width and height: biggest icon + a space
+            int iconsWidth = 0;
+            int iconsHeight = 0;
+            foreach (var icon in new[] { _expandIcon, _collapseIcon, _leafIcon })
+            {
+                if (icon == null) { continue; }
+                var size = GetIconSize(UISystem, icon);
+                iconsWidth = Math.Max(iconsWidth, size.X);
+                iconsHeight = Math.Max(iconsHeight, size.Y);
+            }
+            _iconColumnWidth = (iconsWidth > 0) ? (iconsWidth + _itemsProbe.MeasureText(" ").X) : 0;
+
+            // line height: biggest of texts and icons
             _lineHeight = Math.Max(1, Math.Max(_itemsProbe.MeasureTextLineHeight(), ShowExpandCollapseButtons ? _togglesProbe.MeasureTextLineHeight() : 0));
+            _lineHeight = Math.Max(_lineHeight, iconsHeight);
             if (ItemsStyleSheet.DefaultHeight?.Units == MeasureUnit.Pixels)
             {
                 _lineHeight = Math.Max(_lineHeight, (int)ItemsStyleSheet.DefaultHeight.Value.Value);
@@ -432,16 +540,38 @@ namespace Iguina.Entities
             _rowTopOffset = marginBefore.Y + extra.Top;
             _rowHeight = Math.Max(1, _lineHeight + marginBefore.Y + marginAfter.Y + extra.Top + extra.Bottom);
 
-            // toggle column width: widest symbol + a space
-            if (ShowExpandCollapseButtons)
+            // toggle column width: widest symbol + a space (or nothing, if all symbols are empty)
+            var widest = Math.Max(Math.Max(_togglesProbe.MeasureText(_expandText).X, _togglesProbe.MeasureText(_collapseText).X), _togglesProbe.MeasureText(_leafText).X);
+            if (ShowExpandCollapseButtons && (widest > 0))
             {
-                var widest = Math.Max(Math.Max(_togglesProbe.MeasureText(ExpandSymbol).X, _togglesProbe.MeasureText(CollapseSymbol).X), _togglesProbe.MeasureText(LeafSymbol).X);
                 _toggleColumnWidth = widest + _togglesProbe.MeasureText(" ").X;
             }
             else
             {
                 _toggleColumnWidth = 0;
             }
+
+            // how much the labels background (like the selected item highlight) extends to the left of the label text.
+            // we keep this space free after the buttons / icons, so the highlight won't cover them.
+            _labelLeftOverhang = GetLabelLeftOverhang();
+        }
+
+        /// <summary>
+        /// Get how many pixels the labels fill textures may extend to the left of their text, in any state.
+        /// </summary>
+        int GetLabelLeftOverhang()
+        {
+            int ret = 0;
+            foreach (var state in new[] { EntityState.Default, EntityState.Targeted, EntityState.Interacted, EntityState.Checked, EntityState.TargetedChecked })
+            {
+                bool isChecked = (state == EntityState.Checked) || (state == EntityState.TargetedChecked);
+                var overrides = isChecked ? OverrideSelectedItemStyles : OverrideItemStyles;
+                var extraSize = ItemsStyleSheet.GetProperty("ExtraSize", state, Sides.Zero, overrides);
+                var stretched = ItemsStyleSheet.GetProperty<StretchedTexture>("FillTextureStretched", state, null, overrides);
+                var overhang = extraSize.Left + (stretched?.ExtraSize?.Left ?? 0);
+                ret = Math.Max(ret, overhang);
+            }
+            return ret;
         }
 
         /// <summary>
@@ -540,6 +670,35 @@ namespace Iguina.Entities
             return p;
         }
 
+        /// <summary>
+        /// Create entity to show a row icon.
+        /// </summary>
+        TreeIconEntity CreateRowIcon()
+        {
+            var icon = new TreeIconEntity(UISystem);
+            icon.Anchor = Anchor.TopLeft;
+            icon.PassFocusTo = this;
+            icon._overrideInteractableState = true;
+
+            // pass events from icon to self, and select node on click (like label)
+            icon.Events.OnMouseWheelScrollUp = (Entity entity) => { this.Events.OnMouseWheelScrollUp?.Invoke(this); };
+            icon.Events.OnMouseWheelScrollDown = (Entity entity) => { this.Events.OnMouseWheelScrollDown?.Invoke(this); };
+            icon.Events.WhileMouseHover = (Entity entity) => { this.Events.WhileMouseHover?.Invoke(this); };
+            icon.Events.OnClick = (Entity entity) =>
+            {
+                if (entity.UserData is TreeNode node)
+                {
+                    if (IconsToggleBranches && node.HasChildren) { ToggleNode(node); }
+                    else { HandleLabelClick(node); }
+                }
+                this.Events.OnClick?.Invoke(this);
+            };
+
+            AddChildInternal(icon);
+            icon.IgnoreScrollOffset = true;
+            return icon;
+        }
+
         /// <inheritdoc/>
         protected override void DrawEntityType(ref Rectangle boundingRect, ref Rectangle internalBoundingRect, DrawMethodResult parentDrawResult, DrawMethodResult? siblingDrawResult)
         {
@@ -581,6 +740,7 @@ namespace Iguina.Entities
                 _rowEntities.Add(new RowEntities()
                 {
                     Toggle = CreateRowParagraph(TogglesStyleSheet, true),
+                    Icon = CreateRowIcon(),
                     Label = CreateRowParagraph(ItemsStyleSheet, false)
                 });
             }
@@ -588,6 +748,7 @@ namespace Iguina.Entities
             {
                 var last = _rowEntities[^1];
                 RemoveChildInternal(last.Toggle);
+                RemoveChildInternal(last.Icon);
                 RemoveChildInternal(last.Label);
                 _rowEntities.RemoveAt(_rowEntities.Count - 1);
             }
@@ -607,12 +768,24 @@ namespace Iguina.Entities
                 toggle.Visible = ShowExpandCollapseButtons;
                 toggle.UserData = node;
                 toggle.OverrideStyles = OverrideToggleStyles;
-                toggle.Text = node.HasChildren ? (node.Expanded ? CollapseSymbol : ExpandSymbol) : LeafSymbol;
+                toggle.Text = node.HasChildren ? (node.Expanded ? _collapseText : _expandText) : _leafText;
                 toggle.IgnoreInteractions = !node.HasChildren;
                 toggle.Size.X.SetPixels(Math.Max(1, _toggleColumnWidth));
                 toggle.Size.Y.SetPixels(_lineHeight);
                 toggle.Offset.X.SetPixels(x);
                 toggle.Offset.Y.SetPixels(y);
+
+                // icon
+                var icon = entities.Icon;
+                icon.Icon = node.HasChildren ? (node.Expanded ? _collapseIcon : _expandIcon) : _leafIcon;
+                icon.Visible = (icon.Icon != null);
+                icon.UserData = node;
+                icon.EffectId = TogglesStyleSheet.GetProperty<string>("EffectIdentifier", State, null, OverrideToggleStyles);
+                icon.TintColor = TogglesStyleSheet.GetProperty("TintColor", State, Color.White, OverrideToggleStyles);
+                icon.Size.X.SetPixels(Math.Max(1, _iconColumnWidth));
+                icon.Size.Y.SetPixels(_lineHeight);
+                icon.Offset.X.SetPixels(x + _toggleColumnWidth + ParagraphsLeftShift);
+                icon.Offset.Y.SetPixels(y);
 
                 // label
                 var label = entities.Label;
@@ -622,7 +795,8 @@ namespace Iguina.Entities
                 label.Text = node.DisplayText;
                 label.LockedState = selected ? EntityState.Checked : null;
                 label.OverrideStyles = selected ? OverrideSelectedItemStyles : OverrideItemStyles;
-                int labelX = x + _toggleColumnWidth;
+                int labelX = x + _toggleColumnWidth + _iconColumnWidth;
+                if ((_toggleColumnWidth + _iconColumnWidth) > 0) { labelX += _labelLeftOverhang; }
                 label.Size.X.SetPixels(Math.Max(1, rowsWidth - labelX));
                 label.Size.Y.SetPixels(_lineHeight);
                 label.Offset.X.SetPixels(labelX);

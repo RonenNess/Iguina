@@ -873,6 +873,8 @@ These are all the valid keys, with example file names:
     "ComboBoxPanels": "Styles/list_panel.json",
     "ComboBoxItems": "Styles/list_item.json",
     "ComboBoxIcon": "Styles/dropdown_icon.json",
+    "TreeViewItems": "Styles/tree_view_item.json",
+    "TreeViewToggles": "Styles/tree_view_toggles.json",
     "ComboBoxTextInput": "Styles/combobox_text_input.json",
     "VerticalScrollbars": "Styles/scrollbar_vertical.json",
     "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",
@@ -993,6 +995,8 @@ For each state, you can define the following properties:
 * **BoxOutlineWidth** (Sides): Optional outline width to draw around the entity's bounding rectangle.
 * **BoxOutlineOffset** (Point): Bounding rectangle outline offset, in pixels.
 * **BoxOutlineColor** (Color): Bounding rectangle outline color.
+* **TreeExpandText** / **TreeCollapseText** / **TreeLeafText** (string): Tree view only (toggles stylesheet): texts to show on the button of a collapsed branch, an expanded branch, and next to leaves.
+* **TreeExpandIcon** / **TreeCollapseIcon** / **TreeLeafIcon** (IconTexture): Tree view only (toggles stylesheet): icons to show next to the button of a collapsed branch, an expanded branch, and next to leaves.
 
 Here's an example of a button stylesheet, taken from the built-in theme:
 
@@ -2147,7 +2151,7 @@ tree.Events.OnValueChanged = (Entity entity) => Console.WriteLine("Selected: " +
 tree.OnNodeToggled = (TreeView view, TreeNode node) => Console.WriteLine(node.Value + (node.Expanded ? " expanded" : " collapsed"));
 ```
 
-Branches show expand / collapse buttons (`+` / `-` by default) next to their labels. Clicking a label selects the node. Focused trees can be controlled with the keyboard: up / down move the selection, right expands the selected node, and left collapses it (or selects its parent).
+Branches show expand / collapse buttons (`+` / `-` by default) next to their labels, and every node can also show an icon (for example, folder and file icons) between the button and the label. Clicking a label (or icon) selects the node. Focused trees can be controlled with the keyboard: up / down move the selection, right expands the selected node, and left collapses it (or selects its parent).
 
 Default size: 100% width, 400 pixels height. By default it uses the `TreeViewPanels` stylesheet for the box, `TreeViewItems` for the labels and `TreeViewToggles` for the expand / collapse buttons. The selected label uses the `Checked` state.
 
@@ -2185,7 +2189,46 @@ If true, clicking the selected node deselects it. Default is false.
 
 ### `ExpandSymbol` / `CollapseSymbol` / `LeafSymbol`
 
-The texts shown on the button of a collapsed branch, an expanded branch, and next to leaves. Defaults are `+`, `-` and an empty string.
+The texts shown on the button of a collapsed branch, an expanded branch, and next to leaves. If null (default), the `TreeExpandText`, `TreeCollapseText` and `TreeLeafText` properties of the toggles stylesheet are used, and if those are not set either, `+`, `-` and an empty string. Use `EffectiveExpandSymbol`, `EffectiveCollapseSymbol` and `EffectiveLeafSymbol` to get the texts actually in use.
+
+### Icons
+
+Icons are defined in the toggles stylesheet (`TreeViewToggles`), with the `TreeExpandIcon` (collapsed branch), `TreeCollapseIcon` (expanded branch) and `TreeLeafIcon` properties. Icons and texts can be used at the same time: the icon is shown right after the expand / collapse text, and labels are aligned after the widest text and icon. Rows grow to fit the icons if needed. For example, the built-in theme `tree_view_toggles.json`:
+
+```json
+{
+    "InheritFrom": "paragraph_base_style.json",
+    "Default": {
+        "TreeExpandText": "+",
+        "TreeCollapseText": "-",
+        "TreeLeafText": "",
+        "TreeExpandIcon": {
+            "SourceRect": {"X": 240, "Y": 64, "Width": 16, "Height": 16},
+            "TextureScale": 0.75
+        },
+        "TreeCollapseIcon": {
+            "SourceRect": {"X": 240, "Y": 64, "Width": 16, "Height": 16},
+            "TextureScale": 0.75
+        },
+        "TreeLeafIcon": {
+            "SourceRect": {"X": 240, "Y": 48, "Width": 16, "Height": 16},
+            "TextureScale": 0.75
+        }
+    }
+}
+```
+
+To set texts or icons for a single tree view, use `OverrideToggleStyles` (for example `tree.OverrideToggleStyles.TreeLeafIcon = new IconTexture() { ... }`). The icon is drawn with the toggles stylesheet `TintColor` and `EffectIdentifier`.
+
+### `ShowIcons`
+
+If true (default), shows the icons defined in the toggles stylesheet. Set to false to hide them.
+
+### `IconsToggleBranches`
+
+If true, clicking a branch icon expands / collapses it (like the expand / collapse button) instead of selecting it. Clicking a leaf icon always selects the leaf. Default is false.
+
+Note: labels backgrounds (like the selected item highlight) may extend to the left of the label text, via the `ExtraSize` style property or a `FillTextureStretched` with `ExtraSize`. The tree view keeps this space free after the buttons and icons, so the highlight never covers them. To keep the gap between icons and text small, use a small left extra size for the items highlight (the built-in theme uses `tree_view_item.json` for that).
 
 ### `ExpandAll()` / `CollapseAll()` / `FindNode(value)` / `IsSelectable(node)`
 
@@ -2780,6 +2823,8 @@ All changes:
 - Added `TreeView` entity: a scrollable tree of nodes that can be expanded / collapsed and selected, with configurable indent, expand / collapse buttons, selectable branches, keyboard navigation and more.
 - Added `TreeNode` class, to build trees for `TreeView`.
 - Added `TreeViewPanels`, `TreeViewItems` and `TreeViewToggles` default stylesheets (fall back to the list stylesheets).
+- Added `TreeExpandText`, `TreeCollapseText`, `TreeLeafText`, `TreeExpandIcon`, `TreeCollapseIcon` and `TreeLeafIcon` stylesheet properties, to define tree view expand / collapse texts and node icons from stylesheet files.
+- Added `tree_view_toggles.json` to the demo theme, with folder / file icons for tree views, and `tree_view_item.json` with a selection highlight that fits next to icons.
 - Added entries wrapping (`EntriesOverflowMode`) and line breaks (`AllowLineBreaks`) to `VirtualTextView`.
 - Added `VirtualTextView.EntryTextWidth`, the real width available for entries text.
 - Fixed `VirtualTextView` row height not matching the drawn rows spacing when the entries style has margins, which left an empty strip at the bottom of the view.

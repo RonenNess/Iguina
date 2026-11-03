@@ -10,6 +10,7 @@ namespace Iguina.Tests
     {
         public List<(string Text, Point Position)> DrawnTexts = new();
         public List<(Rectangle Rect, Color Color)> DrawnRectangles = new();
+        public List<(Rectangle Dest, Rectangle Source)> DrawnTextures = new();
 
         public static int CharWidth(char c) => c switch
         {
@@ -30,6 +31,11 @@ namespace Iguina.Tests
             DrawnTexts.Add((text, position));
         }
 
+        public new void DrawTexture(string? effectIdentifier, string textureId, Rectangle destRect, Rectangle sourceRect, Color color)
+        {
+            DrawnTextures.Add((destRect, sourceRect));
+        }
+
         public new void DrawRectangle(Rectangle rectangle, Color color)
         {
             DrawnRectangles.Add((rectangle, color));
@@ -39,6 +45,7 @@ namespace Iguina.Tests
         {
             DrawnTexts.Clear();
             DrawnRectangles.Clear();
+            DrawnTextures.Clear();
         }
     }
 }

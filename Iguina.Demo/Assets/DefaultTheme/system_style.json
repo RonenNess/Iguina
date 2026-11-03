@@ -60,6 +60,8 @@
         "ComboBoxPanels": "Styles/list_panel.json",
         "ComboBoxItems": "Styles/list_item.json",
         "ComboBoxIcon": "Styles/dropdown_icon.json",
+        "TreeViewItems": "Styles/tree_view_item.json",
+        "TreeViewToggles": "Styles/tree_view_toggles.json",
         "ComboBoxTextInput": "Styles/combobox_text_input.json",
         "VerticalScrollbars": "Styles/scrollbar_vertical.json",
         "VerticalScrollbarsHandle": "Styles/scrollbar_vertical_handle.json",

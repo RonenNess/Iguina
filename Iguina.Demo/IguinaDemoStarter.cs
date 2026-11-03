@@ -674,6 +674,14 @@ This view shows a document with ${FC:00FFFF}one million lines${RESET}, generated
                     if (!tree.BranchesSelectable && (tree.SelectedNode?.HasChildren == true)) { tree.SelectedNode = null; }
                 };
 
+                var showIcons = panel.AddChild(new Checkbox(_system, "Show icons (from stylesheet)"));
+                showIcons.Checked = tree.ShowIcons;
+                showIcons.Events.OnValueChanged = (Entity entity) => tree.ShowIcons = showIcons.Checked;
+
+                var iconsToggle = panel.AddChild(new Checkbox(_system, "Clicking branch icons expands / collapses them"));
+                iconsToggle.Checked = tree.IconsToggleBranches;
+                iconsToggle.Events.OnValueChanged = (Entity entity) => tree.IconsToggleBranches = iconsToggle.Checked;
+
                 var bigIndent = panel.AddChild(new Checkbox(_system, "Big indent"));
                 bigIndent.Events.OnValueChanged = (Entity entity) => tree.Indent = bigIndent.Checked ? 48 : 24;
 

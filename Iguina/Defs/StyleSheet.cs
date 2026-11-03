@@ -135,6 +135,36 @@ namespace Iguina.Defs
         /// Outline color for the bounding rectangle outlines, if set.
         /// </summary>
         public Color? BoxOutlineColor { get; set; }
+
+        /// <summary>
+        /// Tree view: text to show on the expand button of a collapsed branch (default is '+').
+        /// </summary>
+        public string? TreeExpandText { get; set; }
+
+        /// <summary>
+        /// Tree view: text to show on the collapse button of an expanded branch (default is '-').
+        /// </summary>
+        public string? TreeCollapseText { get; set; }
+
+        /// <summary>
+        /// Tree view: text to show in the buttons column of leaves (default is empty).
+        /// </summary>
+        public string? TreeLeafText { get; set; }
+
+        /// <summary>
+        /// Tree view: icon to show next to the button of a collapsed branch.
+        /// </summary>
+        public IconTexture? TreeExpandIcon { get; set; }
+
+        /// <summary>
+        /// Tree view: icon to show next to the button of an expanded branch.
+        /// </summary>
+        public IconTexture? TreeCollapseIcon { get; set; }
+
+        /// <summary>
+        /// Tree view: icon to show next to leaves.
+        /// </summary>
+        public IconTexture? TreeLeafIcon { get; set; }
     }
 
     /// <summary>

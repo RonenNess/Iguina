@@ -1,0 +1,20 @@
+{
+    "InheritFrom": "paragraph_base_style.json",
+    "Default": {
+        "TreeExpandText": "+",
+        "TreeCollapseText": "-",
+        "TreeLeafText": "",
+        "TreeExpandIcon": {
+            "SourceRect": {"X": 240, "Y": 64, "Width": 16, "Height": 16},
+            "TextureScale": 0.75
+        },
+        "TreeCollapseIcon": {
+            "SourceRect": {"X": 240, "Y": 64, "Width": 16, "Height": 16},
+            "TextureScale": 0.75
+        },
+        "TreeLeafIcon": {
+            "SourceRect": {"X": 240, "Y": 48, "Width": 16, "Height": 16},
+            "TextureScale": 0.75
+        }
+    }
+}

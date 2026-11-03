@@ -16,12 +16,12 @@ namespace Iguina.Tests
         List<string> _toggled = new();
         int _valueChangedCount;
 
-        void CreateTree(int visibleRows = 10)
+        void CreateTree(int visibleRows = 10, StyleSheet? togglesStyle = null, string? themeFolder = null, StyleSheet? itemsStyle = null)
         {
             _renderer = new ProportionalRenderer();
             _input = new ScriptedInputProvider();
-            _system = new UISystem(_renderer, _input);
-            _tree = _system.Root.AddChild(new TreeView(_system));
+            _system = (themeFolder != null) ? new UISystem(Path.Combine(themeFolder, "system_style.json"), _renderer, _input) : new UISystem(_renderer, _input);
+            _tree = _system.Root.AddChild(((togglesStyle != null) || (itemsStyle != null)) ? new TreeView(_system, _system.DefaultStylesheets.Panels, itemsStyle, togglesStyle) : new TreeView(_system));
             _tree.Anchor = Anchor.TopLeft;
             _tree.Size.X.SetPixels(400);
             _tree.SetVisibleRowsCount(visibleRows);
@@ -234,6 +234,213 @@ namespace Iguina.Tests
             _tree.SelectedValue = "a1";
             PressKey(KeyboardInteractions.MoveDown);
             Assert.That(_tree.SelectedValue, Is.EqualTo("b"));
+        }
+
+        static readonly Rectangle ExpandIconSrc = new Rectangle(0, 0, 10, 10);
+        static readonly Rectangle CollapseIconSrc = new Rectangle(10, 0, 10, 12);
+        static readonly Rectangle LeafIconSrc = new Rectangle(20, 0, 8, 10);
+
+        static StyleSheet CreateTogglesStyle(bool withTexts, bool withIcons)
+        {
+            var state = new StyleSheetState();
+            if (withTexts)
+            {
+                state.TreeExpandText = "[+]";
+                state.TreeCollapseText = "[-]";
+                state.TreeLeafText = "*";
+            }
+            if (withIcons)
+            {
+                state.TreeExpandIcon = new IconTexture() { SourceRect = ExpandIconSrc };
+                state.TreeCollapseIcon = new IconTexture() { SourceRect = CollapseIconSrc };
+                state.TreeLeafIcon = new IconTexture() { SourceRect = LeafIconSrc };
+            }
+            return new StyleSheet() { Default = state };
+        }
+
+        List<Rectangle> DrawnIcons(Rectangle source) => _renderer.DrawnTextures.Where(x => x.Source.Equals(source)).Select(x => x.Dest).Distinct().OrderBy(x => x.Y).ToList();
+
+        [Test]
+        public void TestToggleTextsFromStylesheet()
+        {
+            CreateTree(togglesStyle: CreateTogglesStyle(true, false));
+            Assert.That(_tree.EffectiveExpandSymbol, Is.EqualTo("[+]"));
+            Assert.That(TextPosition("[+]").Y, Is.EqualTo(TextPosition("A2").Y));
+            Assert.That(TextPosition("[-]").Y, Is.EqualTo(TextPosition("A").Y));
+            Assert.That(_renderer.DrawnTexts.Where(x => x.Text == "*").Select(x => x.Position).Distinct().Count(), Is.EqualTo(2));
+            Assert.That(TextPosition("A1").X - TextPosition("A").X, Is.EqualTo(_tree.Indent));
+
+            // labels are placed after the widest toggle text
+            Assert.That(TextPosition("A").X, Is.GreaterThanOrEqualTo(TextPosition("[-]").X + ProportionalRenderer.Measure("[-]")));
+
+            // instance values override stylesheet, and null goes back to stylesheet
+            _tree.ExpandSymbol = ">";
+            Frames(1);
+            Assert.That(TextPosition(">").Y, Is.EqualTo(TextPosition("A2").Y));
+            Assert.That(_renderer.DrawnTexts.Any(x => x.Text == "[+]"), Is.False);
+            _tree.ExpandSymbol = null;
+            Frames(1);
+            Assert.That(TextPosition("[+]").Y, Is.EqualTo(TextPosition("A2").Y));
+
+            // override styles per instance
+            _tree.OverrideToggleStyles.TreeCollapseText = "v";
+            Frames(1);
+            Assert.That(TextPosition("v").Y, Is.EqualTo(TextPosition("A").Y));
+
+            // still clickable with custom texts
+            ClickText("[+]");
+            Assert.That(_tree.FindNode("a2")!.Expanded, Is.True);
+        }
+
+        [Test]
+        public void TestDefaultToggleTextsWithoutStylesheet()
+        {
+            CreateTree();
+            Assert.That(_tree.EffectiveExpandSymbol, Is.EqualTo("+"));
+            Assert.That(_tree.EffectiveCollapseSymbol, Is.EqualTo("-"));
+            Assert.That(_tree.EffectiveLeafSymbol, Is.EqualTo(string.Empty));
+            Assert.That(_renderer.DrawnTextures, Is.Empty);
+        }
+
+        [Test]
+        public void TestIconsFromStylesheet()
+        {
+            CreateTree(togglesStyle: CreateTogglesStyle(false, true));
+
+            // rows: A (expanded), A1 (leaf), A2 (collapsed), B (leaf)
+            Assert.That(DrawnIcons(CollapseIconSrc), Has.Count.EqualTo(1));
+            Assert.That(DrawnIcons(ExpandIconSrc), Has.Count.EqualTo(1));
+            Assert.That(DrawnIcons(LeafIconSrc), Has.Count.EqualTo(2));
+
+            // icon is between the toggle text and the label, on the same row
+            var collapseIcon = DrawnIcons(CollapseIconSrc)[0];
+            var minus = TextPosition("-");
+            var labelA = TextPosition("A");
+            Assert.That(collapseIcon.X, Is.GreaterThanOrEqualTo(minus.X + ProportionalRenderer.Measure("-")));
+            Assert.That(labelA.X, Is.GreaterThanOrEqualTo(collapseIcon.Right));
+            Assert.That(collapseIcon.Y, Is.InRange(labelA.Y - 2, labelA.Y + 20));
+
+            // all labels of the same depth are aligned, whatever icon they have
+            Assert.That(TextPosition("B").X, Is.EqualTo(labelA.X));
+            Assert.That(TextPosition("A1").X, Is.EqualTo(TextPosition("A2").X));
+
+            // icon changes when branch is expanded
+            ClickText("+");
+            Assert.That(_tree.FindNode("a2")!.Expanded, Is.True);
+            Assert.That(DrawnIcons(CollapseIconSrc), Has.Count.EqualTo(2));
+            Assert.That(DrawnIcons(ExpandIconSrc), Is.Empty);
+
+            // clicking icon selects node
+            var leafIcon = DrawnIcons(LeafIconSrc)[0];
+            ClickAt(new Point(leafIcon.X + 2, leafIcon.Y + 2));
+            Assert.That(_tree.SelectedValue, Is.EqualTo("a1"));
+
+            // per instance icon override and hiding icons
+            _tree.OverrideToggleStyles.TreeLeafIcon = new IconTexture() { SourceRect = new Rectangle(50, 50, 10, 10) };
+            Frames(1);
+            Assert.That(DrawnIcons(LeafIconSrc), Is.Empty);
+            Assert.That(DrawnIcons(new Rectangle(50, 50, 10, 10)), Is.Not.Empty);
+
+            var labelXWithIcons = TextPosition("A").X;
+            _tree.ShowIcons = false;
+            Frames(1);
+            Assert.That(_renderer.DrawnTextures, Is.Empty);
+            Assert.That(TextPosition("A").X, Is.LessThan(labelXWithIcons));
+        }
+
+        [Test]
+        public void TestIconsWithoutToggleButtons()
+        {
+            CreateTree(togglesStyle: CreateTogglesStyle(true, true));
+            _tree.ShowExpandCollapseButtons = false;
+            Frames(1);
+            Assert.That(_renderer.DrawnTexts.Any(x => x.Text.StartsWith("[")), Is.False);
+            Assert.That(DrawnIcons(CollapseIconSrc), Has.Count.EqualTo(1));
+            Assert.That(TextPosition("A").X, Is.GreaterThanOrEqualTo(DrawnIcons(CollapseIconSrc)[0].Right));
+        }
+
+        [Test]
+        public void TestSelectionHighlightDoesntCoverIcon()
+        {
+            // selected label highlight texture extends 20 pixels to the left of the label
+            var highlightSrc = new Rectangle(100, 100, 4, 4);
+            var itemsStyle = new StyleSheet()
+            {
+                Checked = new StyleSheetState()
+                {
+                    FillTextureStretched = new StretchedTexture() { SourceRect = highlightSrc, ExtraSize = new Sides(20, 10, 0, 0) }
+                }
+            };
+            CreateTree(togglesStyle: CreateTogglesStyle(false, true), itemsStyle: itemsStyle);
+
+            foreach (var value in new[] { "a", "a1", "b" })
+            {
+                _tree.SelectedValue = value;
+                Frames(2);
+                var highlight = _renderer.DrawnTextures.Where(x => x.Source.Equals(highlightSrc)).Select(x => x.Dest).Distinct().ToList();
+                Assert.That(highlight, Has.Count.EqualTo(1));
+
+                // find the icon on the same row
+                var icon = _renderer.DrawnTextures.Where(x => !x.Source.Equals(highlightSrc) && Math.Abs(x.Dest.Center.Y - highlight[0].Center.Y) < 10).Select(x => x.Dest).Distinct().Single();
+                Assert.That(highlight[0].X, Is.GreaterThanOrEqualTo(icon.Right), value);
+            }
+        }
+
+        [Test]
+        public void TestIconsToggleBranches()
+        {
+            CreateTree(togglesStyle: CreateTogglesStyle(false, true));
+            _tree.IconsToggleBranches = true;
+            Frames(1);
+
+            // click on expanded branch icon collapses it without selecting
+            var collapseIcon = DrawnIcons(CollapseIconSrc)[0];
+            ClickAt(new Point(collapseIcon.X + 2, collapseIcon.Y + 2));
+            Assert.That(_tree.FindNode("a")!.Expanded, Is.False);
+            Assert.That(_tree.SelectedNode, Is.Null);
+            Assert.That(_toggled, Is.EqualTo(new[] { "a-" }));
+
+            // click again expands
+            var expandIcon = DrawnIcons(ExpandIconSrc)[0];
+            ClickAt(new Point(expandIcon.X + 2, expandIcon.Y + 2));
+            Assert.That(_tree.FindNode("a")!.Expanded, Is.True);
+
+            // leaf icon still selects
+            var leafIcon = DrawnIcons(LeafIconSrc)[0];
+            ClickAt(new Point(leafIcon.X + 2, leafIcon.Y + 2));
+            Assert.That(_tree.SelectedValue, Is.EqualTo("a1"));
+
+            // without the flag, branch icon selects
+            _tree.IconsToggleBranches = false;
+            collapseIcon = DrawnIcons(CollapseIconSrc)[0];
+            ClickAt(new Point(collapseIcon.X + 2, collapseIcon.Y + 2));
+            Assert.That(_tree.SelectedValue, Is.EqualTo("a"));
+            Assert.That(_tree.FindNode("a")!.Expanded, Is.True);
+        }
+
+        [Test]
+        public void TestDefaultThemeTreeStyle()
+        {
+            var themePath = Path.GetFullPath(Path.Combine(TestContext.CurrentContext.TestDirectory, "../../../../Iguina.Demo/Assets/DefaultTheme"));
+            CreateTree(themeFolder: themePath);
+            Assert.That(_system.DefaultStylesheets.TreeViewToggles, Is.Not.Null);
+            Assert.That(_tree.EffectiveExpandSymbol, Is.EqualTo("+"));
+            Assert.That(_tree.EffectiveCollapseSymbol, Is.EqualTo("-"));
+
+            // folder icons for branches, file icons for leaves
+            var folder = new Rectangle(240, 64, 16, 16);
+            var file = new Rectangle(240, 48, 16, 16);
+            Assert.That(DrawnIcons(folder), Has.Count.EqualTo(2));
+            Assert.That(DrawnIcons(file), Has.Count.EqualTo(2));
+            Assert.That(_tree.RowHeight, Is.GreaterThanOrEqualTo(DrawnIcons(folder)[0].Height));
+
+            // selected highlight doesn't cover the icon
+            Assert.That(_system.DefaultStylesheets.TreeViewItems, Is.Not.Null);
+            _tree.SelectedValue = "a1";
+            Frames(2);
+            var highlight = _renderer.DrawnTextures.Where(x => x.Source.Equals(new Rectangle(0, 80, 16, 16))).Select(x => x.Dest).Distinct().Single();
+            var leafIcon = DrawnIcons(file).First(x => Math.Abs(x.Center.Y - highlight.Center.Y) < 15);
+            Assert.That(highlight.X, Is.GreaterThanOrEqualTo(leafIcon.Right));
         }
 
         [Test]
